@@ -50,27 +50,27 @@
             ].filter(s => s.name !== '' && s.data.length > 0)
         });
 
-        // Redimensionnement initial
-        setTimeout(() => chart#uid#.reflow(), 100);
+        // Forcer le reflow après création
+    setTimeout(() => chart#uid#.reflow(), 50);
 
-        // Mise à jour en temps réel
-        for (let i = 1; i <= 10; i++) {
-            const index = i < 10 ? '0' + i : i;
-            const cmdId = '#idCmdGraphe' + index + '#';
-            if (cmdId !== '' && cmdId !== '#') {
-                jeedom.cmd.addUpdateFunction(cmdId, function(_options) {
-                    const date = new Date();
-                    const dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                        date.getHours(), date.getMinutes(), date.getSeconds());
-                    const y = _options.display_value;
-                    const seriesIndex = i - 1;
+    // Mise à jour en temps réel
+    for (let i = 1; i <= 10; i++) {
+        const index = i < 10 ? '0' + i : i;
+        const cmdId = '#idCmdGraphe' + index + '#';
+        if (cmdId !== '' && cmdId !== '#') {
+            jeedom.cmd.addUpdateFunction(cmdId, function(_options) {
+                const date = new Date();
+                const dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
+                    date.getHours(), date.getMinutes(), date.getSeconds());
+                const y = parseFloat(_options.display_value);
+                const seriesIndex = i - 1;
 
-                    if (chart#uid#.series[seriesIndex]) {
-                        chart#uid#.series[seriesIndex].addPoint([dateUTC, y], true, true, true);
-                        chart#uid#.reflow(); // Mise à jour visuelle immédiate
-                    }
-                });
-            }
+                if (chart#uid# && chart#uid#.series[seriesIndex]) {
+                    chart#uid#.series[seriesIndex].addPoint([dateUTC, y], true, true, true);
+                    chart#uid#.reflow(); // ESSENTIEL
+                }
+            });
         }
+    }
     </script>
 </div>
