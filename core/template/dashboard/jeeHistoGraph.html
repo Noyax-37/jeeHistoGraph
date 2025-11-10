@@ -1,0 +1,76 @@
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd jeeHistoGraph #custom_layout# #eqLogic_class# #class#"
+    data-eqType="#eqType#"
+    data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
+    data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#"
+    style="width: #width#;height: #height#;#style#; display: flex; flex-direction: column; overflow: hidden;">
+
+    <center class="widget-name" style="flex: 0 0 auto; padding: 5px 0; font-size: 0.9em; line-height: 1.2;">
+        <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+        <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+    </center>
+
+    <div id="container#uid#" style="flex: 1; width: 100%; min-height: 0;"></div>
+
+    <script>
+        const chart#uid# = Highcharts.chart('container#uid#', {
+            navigation: { buttonOptions: { enabled: false } },
+            chart: { backgroundColor: 'rgb(255, 255, 255)', type: 'line' },
+            title: { text: '' },
+            xAxis: { visible: true, type: 'datetime' },
+            yAxis: {
+                opposite: true,
+                labels: { format: '{value}#unite#' },
+                title: { text: '' }
+            },
+            plotOptions: {
+                line: { dataLabels: { enabled: false } }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:12px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} #unite#</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true,
+                borderRadius: 10
+            },
+            credits: { enabled: false },
+            legend: { enabled: true },
+            series: [
+                { name: '#index01#', colorIndex: 0, color: '#color1#', marker: { enabled: false }, data: [#listeHistoGraphe01#] },
+                { name: '#index02#', colorIndex: 1, color: '#color2#', marker: { enabled: false }, data: [#listeHistoGraphe02#] },
+                { name: '#index03#', colorIndex: 2, color: '#color3#', marker: { enabled: false }, data: [#listeHistoGraphe03#] },
+                { name: '#index04#', colorIndex: 3, color: '#color4#', marker: { enabled: false }, data: [#listeHistoGraphe04#] },
+                { name: '#index05#', colorIndex: 4, color: '#color5#', marker: { enabled: false }, data: [#listeHistoGraphe05#] },
+                { name: '#index06#', colorIndex: 5, color: '#color6#', marker: { enabled: false }, data: [#listeHistoGraphe06#] },
+                { name: '#index07#', colorIndex: 6, color: '#color7#', marker: { enabled: false }, data: [#listeHistoGraphe07#] },
+                { name: '#index08#', colorIndex: 7, color: '#color8#', marker: { enabled: false }, data: [#listeHistoGraphe08#] },
+                { name: '#index09#', colorIndex: 8, color: '#color9#', marker: { enabled: false }, data: [#listeHistoGraphe09#] },
+                { name: '#index10#', colorIndex: 9, color: '#color10#', marker: { enabled: false }, data: [#listeHistoGraphe10#] }
+            ].filter(s => s.name !== '' && s.data.length > 0)
+        });
+
+        // Redimensionnement initial
+        setTimeout(() => chart#uid#.reflow(), 100);
+
+        // Mise à jour en temps réel
+        for (let i = 1; i <= 10; i++) {
+            const index = i < 10 ? '0' + i : i;
+            const cmdId = '#idCmdGraphe' + index + '#';
+            if (cmdId !== '' && cmdId !== '#') {
+                jeedom.cmd.addUpdateFunction(cmdId, function(_options) {
+                    const date = new Date();
+                    const dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
+                        date.getHours(), date.getMinutes(), date.getSeconds());
+                    const y = _options.display_value;
+                    const seriesIndex = i - 1;
+
+                    if (chart#uid#.series[seriesIndex]) {
+                        chart#uid#.series[seriesIndex].addPoint([dateUTC, y], true, true, true);
+                        chart#uid#.reflow(); // Mise à jour visuelle immédiate
+                    }
+                });
+            }
+        }
+    </script>
+</div>

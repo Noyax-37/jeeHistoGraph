@@ -1,0 +1,117 @@
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd jeeHistoGraph #custom_layout# #eqLogic_class# #class#"
+    data-eqType="#eqType#"
+    data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
+    data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#"
+    style="width: #width#;height: #height#;#style#">
+
+    <center class="widget-name">
+        <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+        <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+    </center>
+
+
+    <div id="container#uid#" style="width:100%; height:100%">
+    </div>
+
+    <script>
+
+        const chart#uid# = Highcharts.chart('container#uid#', {
+            navigation: {
+                buttonOptions: {
+                    enabled: false
+                }
+            },
+            chart: {
+                backgroundColor: 'rgb(255, 255, 255)',
+                type: 'line'
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                visible: true,
+                type: 'datetime'
+            },
+            yAxis: {
+                opposite: true,
+                labels: {
+                    format: '{value}#unite#'
+                },
+                title: {
+                    text: ''
+                }
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:12px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} #unite#</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true,
+                borderRadius: 10
+            },
+            credits: {
+                enabled: false
+            },
+            legend: {
+                enabled: false
+            },
+            series: [{
+                name: '#index01#',
+                yAxis: 0,
+                colorIndex: 0,
+                marker: {
+                    enabled: false
+                },
+                data: [
+                    #listeHistoGraphe01#
+                ]
+            }, {
+                name: '#index02#',
+                yAxis: 0,
+                colorIndex: 2,
+                marker: {
+                    enabled: false
+                },
+                data: [
+                    #listeHistoGraphe02#
+                ]
+            }]
+        });
+
+        jeedom.cmd.addUpdateFunction('#idCmdGraphe01#', function(_options) {
+            var date = new Date();
+            var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
+                date.getHours(), date.getMinutes(), date.getSeconds());
+            var y = _options.display_value;
+            var n = chart#uid#.series[1].points.length - 1;
+            if (n >= 0) {
+                var lastY = chart#uid#.series[1].points[n].y;
+                chart#uid#.series[1].addPoint([dateUTC, lastY], true);
+            }
+            chart#uid#.series[0].addPoint([dateUTC, y], true);
+        })
+
+        jeedom.cmd.addUpdateFunction('#idCmdGraphe02#', function(_options) {
+            var date = new Date();
+            var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
+                date.getHours(), date.getMinutes(), date.getSeconds());
+            var y = _options.display_value;
+            var n = chart#uid#.series[0].points.length - 1;
+            if (n >= 0) {
+                var lastY = chart#uid#.series[0].points[n].y;
+                chart#uid#.series[0].addPoint([dateUTC, lastY], true);
+            }
+            chart#uid#.series[1].addPoint([dateUTC, y], true);
+        })
+
+     </script>
+
+</div>

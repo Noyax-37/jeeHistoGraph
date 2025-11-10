@@ -1,0 +1,18 @@
+{
+  "pre-install": {
+  },
+  "apt": {
+  },
+  "pip3": {
+  },
+  "npm": {
+  },
+  "composer": {
+  },
+  "yarn": {
+  },
+  "plugin": {
+  },
+  "post-install": {
+  }
+}
