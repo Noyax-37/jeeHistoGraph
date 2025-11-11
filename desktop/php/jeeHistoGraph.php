@@ -73,7 +73,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 		<ul class="nav nav-tabs" role="tablist">
 			<li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
-			<li role="presentation"><a href="#commandtab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li>
 		</ul>
 		<div class="tab-content">
 			<!-- Onglet de configuration de l'équipement -->
@@ -126,12 +125,60 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								</div>
 							</div>
 
-							<legend><i class="fas fa-cogs"></i> {{Paramètres spécifiques}}</legend>
+							<legend><i class="fas fa-sliders-h"></i> {{Configuration du graphique}}</legend>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Période affichée (jours)}}</label>
+                                <div class="col-sm-3">
+                                    <input type="number" min="1" max="365" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Type de graphique}}</label>
+                                <div class="col-sm-4">
+                                    <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graphType">
+                                        <option value="line">{{Ligne classique}}</option>
+                                        <option value="spline">{{Courbe lisse}}</option>
+                                        <option value="areaspline">{{Aire lisse}}</option>
+                                        <option value="area">{{Aire}}</option>
+                                        <option value="column">{{Colonne}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Afficher la légende}}</label>
+                                <div class="col-sm-3">
+                                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="showLegend" checked>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Empilement (aire uniquement)}}</label>
+                                <div class="col-sm-4">
+                                    <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking">
+                                        <option value="">{{Aucun}}</option>
+                                        <option value="normal">{{Normal}}</option>
+                                        <option value="percent">{{Pourcentage}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Nb max points par courbe}}</label>
+                                <div class="col-sm-3">
+                                    <input type="number" min="50" max="2000" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="maxPoints" value="500">
+                                </div>
+                                <div class="col-sm-5"><small>{{Évite les ralentissements sur mobile}}</small></div>
+                            </div>
+
+                            <legend><i class="fas fa-palette"></i> {{Courbes (jusqu'à 10)}}</legend>
 
 							<div class="form-group Colors">
 								<label class="col-sm-2 control-label">{{}}</label>
 								<label class="col-sm-2 control-label">{{}}</label>
-								<a class="btn btn-warning tooltips col-sm-2"  id="btTeleinfoRazCouleurs"><i class="fas fa-medkit"></i>{{ Couleurs par défaut}}</a>
+								<a class="btn btn-warning tooltips col-sm-2"  id="btjeeHistoGraphRazCouleurs"><i class="fas fa-medkit"></i>{{ Couleurs par défaut}}</a>
 							</div>
 							<div class="form-group">
 								<label class="col-sm-2 control-label">{{Courbe}}</label>
@@ -190,28 +237,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 				</form>
 			</div><!-- /.tabpanel #eqlogictab-->
 
-			<!-- Onglet des commandes de l'équipement -->
-			<div role="tabpanel" class="tab-pane" id="commandtab">
-				<a class="btn btn-default btn-sm pull-right cmdAction" data-action="add" style="margin-top:5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une commande}}</a>
-				<br><br>
-				<div class="table-responsive">
-					<table id="table_cmd" class="table table-bordered table-condensed">
-						<thead>
-							<tr>
-								<th class="hidden-xs" style="min-width:50px;width:70px;">ID</th>
-								<th style="min-width:200px;width:350px;">{{Nom}}</th>
-								<th>{{Type}}</th>
-								<th style="min-width:260px;">{{Options}}</th>
-								<th>{{Etat}}</th>
-								<th style="min-width:80px;width:200px;">{{Actions}}</th>
-							</tr>
-						</thead>
-						<tbody>
-						</tbody>
-					</table>
-				</div>
-			</div><!-- /.tabpanel #commandtab-->
-
 		</div><!-- /.tab-content -->
 	</div><!-- /.eqLogic -->
 </div><!-- /.row row-overflow -->
@@ -223,7 +248,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 $colordefaut = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4',
                     '#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
 
-$('#btTeleinfoRazCouleurs').on('click', function () {
+$('#btjeeHistoGraphRazCouleurs').on('click', function () {
     $('#favcolor1').value($colordefaut[0]);
     $('#favcolor2').value($colordefaut[1]);
     $('#favcolor3').value($colordefaut[2]);

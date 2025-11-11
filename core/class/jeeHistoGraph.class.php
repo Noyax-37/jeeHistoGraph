@@ -165,10 +165,10 @@ public function toHtml($_version = 'dashboard') {
     $version = jeedom::versionAlias($_version);
 
     $unite = '';
-    $delai = 1;
+    $delai = $this->getConfiguration('delai_histo', 1);
     $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
-    $minTime = time() - 3 * 60 * 60;
-
+    $minTime = time() - $delai * 24 * 60 * 60;
+    $replace["graphType"] = $this->getConfiguration('graphType', 'line');
     // Initialiser toutes les clés
     for ($i = 1; $i <= 10; $i++) {
         $index = str_pad($i, 2, '0', STR_PAD_LEFT);

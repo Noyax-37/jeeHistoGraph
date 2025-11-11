@@ -14,7 +14,7 @@
     <script>
         const chart#uid# = Highcharts.chart('container#uid#', {
             navigation: { buttonOptions: { enabled: false } },
-            chart: { backgroundColor: 'rgb(255, 255, 255)', type: 'line' },
+            chart: { type: 'graphType' },
             title: { text: '' },
             xAxis: { visible: true, type: 'datetime' },
             yAxis: {
@@ -60,9 +60,9 @@
         const index = i < 10 ? '0' + i : i;
         const cmdId = '#idCmdGraphe' + index + '#';
         if (cmdSeries[i] !== '' && cmdSeries[i] !== '#') {
-            console.log('Setting up update function for command', cmdSeries[i]);
+            //console.log('Setting up update function for command', cmdSeries[i]);
             jeedom.cmd.addUpdateFunction(cmdSeries[i], function(_options) {
-                console.log('Updating graph #uid# for command', cmdSeries[i]);
+                //console.log('Updating graph #uid# for command', cmdSeries[i]);
                 const date = new Date();
                 const dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
                     date.getHours(), date.getMinutes(), date.getSeconds());
