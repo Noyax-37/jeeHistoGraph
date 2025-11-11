@@ -54,156 +54,27 @@
     setTimeout(() => chart#uid#.reflow(), 50);
 
     // Mise à jour en temps réel
-        if ('#idCmdGraphe01#' !== '' && '#idCmdGraphe01#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe01#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
+    cmdSeries = [ 0, '#idCmdGraphe01#', '#idCmdGraphe02#', '#idCmdGraphe03#', '#idCmdGraphe04#', '#idCmdGraphe05#',
+                    '#idCmdGraphe06#', '#idCmdGraphe07#', '#idCmdGraphe08#', '#idCmdGraphe09#', '#idCmdGraphe10#' ];
+    for (let i = 1; i <= 10; i++) {
+        const index = i < 10 ? '0' + i : i;
+        const cmdId = '#idCmdGraphe' + index + '#';
+        if (cmdSeries[i] !== '' && cmdSeries[i] !== '#') {
+            console.log('Setting up update function for command', cmdSeries[i]);
+            jeedom.cmd.addUpdateFunction(cmdSeries[i], function(_options) {
+                console.log('Updating graph #uid# for command', cmdSeries[i]);
+                const date = new Date();
+                const dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
                     date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[0].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[0].points[n].y;
-                    chart#uid#.series[0].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[0].addPoint([dateUTC, y], true);
-            })
-        };
+                const y = parseFloat(_options.display_value);
+                const seriesIndex = i - 1;
 
-        if ('#idCmdGraphe02#' !== '' && '#idCmdGraphe02#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe02#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[1].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[1].points[n].y;
-                    chart#uid#.series[1].addPoint([dateUTC, lastY], true, true, true);
+                if (chart#uid# && chart#uid#.series[seriesIndex]) {
+                    chart#uid#.series[seriesIndex].addPoint([dateUTC, y], true, true, true);
                 }
-                chart#uid#.series[1].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe03#' !== '' && '#idCmdGraphe03#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe03#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[2].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[2].points[n].y;
-                    chart#uid#.series[2].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[2].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe04#' !== '' && '#idCmdGraphe04#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe04#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[3].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[3].points[n].y;
-                    chart#uid#.series[3].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[3].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe05#' !== '' && '#idCmdGraphe05#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe05#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[4].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[4].points[n].y;
-                    chart#uid#.series[4].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[4].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe06#' !== '' && '#idCmdGraphe06#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe06#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[5].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[5].points[n].y;
-                    chart#uid#.series[5].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[5].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe07#' !== '' && '#idCmdGraphe07#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe07#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[6].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[6].points[n].y;
-                    chart#uid#.series[6].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[6].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe08#' !== '' && '#idCmdGraphe08#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe08#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[7].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[7].points[n].y;
-                    chart#uid#.series[7].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[7].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe09#' !== '' && '#idCmdGraphe09#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe09#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[8].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[8].points[n].y;
-                    chart#uid#.series[8].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[8].addPoint([dateUTC, y], true);
-            })
-        };
-
-        if ('#idCmdGraphe10#' !== '' && '#idCmdGraphe10#' !== '#') {
-            jeedom.cmd.addUpdateFunction('#idCmdGraphe10#', function(_options) {
-                var date = new Date();
-                var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(),
-                    date.getHours(), date.getMinutes(), date.getSeconds());
-                var y = _options.display_value;
-                var n = chart#uid#.series[9].points.length - 1;
-                if (n >= 0) {
-                    var lastY = chart#uid#.series[9].points[n].y;
-                    chart#uid#.series[9].addPoint([dateUTC, lastY], true, true, true);
-                }
-                chart#uid#.series[9].addPoint([dateUTC, y], true);
-            })
-        };
-
+            });
+        }
+    }
 
     </script>
 </div>
