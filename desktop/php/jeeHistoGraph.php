@@ -6,6 +6,15 @@ if (!isConnect('admin')) {
 $plugin = plugin::byId('jeeHistoGraph');
 sendVarToJS('eqType', $plugin->getId());
 $eqLogics = eqLogic::byType($plugin->getId());
+
+// Récupérer l'équipement en cours d'édition
+$eqLogic = null;
+if (init('id') != '') {
+    $eqLogic = eqLogic::byId(init('id'));
+}
+if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
+    $eqLogic = null;
+}
 ?>
 
 <div class="row row-overflow">
@@ -126,7 +135,17 @@ $eqLogics = eqLogic::byType($plugin->getId());
 							</div>
 
 							<legend><i class="fas fa-sliders-h"></i> {{Configuration du graphique}}</legend>
-
+							<div class="form-group">
+								<label class="col-sm-3 control-label">{{Nombre de graphiques}}</label>
+								<div class="col-sm-3">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nbGraphs">
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+									</select>
+								</div>
+							</div>
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">{{Période affichée (jours)}}</label>
                                 <div class="col-sm-3">
@@ -173,43 +192,60 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                 <div class="col-sm-5"><small>{{Évite les ralentissements sur mobile}}</small></div>
                             </div>
 
-                            <legend><i class="fas fa-palette"></i> {{Courbes (jusqu'à 10)}}</legend>
-
-							<div class="form-group Colors">
-								<label class="col-sm-2 control-label">{{}}</label>
-								<label class="col-sm-2 control-label">{{}}</label>
-								<a class="btn btn-warning tooltips col-sm-2"  id="btjeeHistoGraphRazCouleurs"><i class="fas fa-medkit"></i>{{ Couleurs par défaut}}</a>
-							</div>
-							<div class="form-group">
-								<label class="col-sm-2 control-label">{{Courbe}}</label>
-								<label class="col-sm-2 control-label pull-left">{{Libellé affiché}}</label>
-								<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>
-								<label class="col-sm-6 control-label pull-left">{{Commande à afficher}}</label>
-							</div>
+							<legend><i class="fas fa-palette"></i> {{Courbes par graphique}}</legend>
 
 							<?php
-								//création du tableau des paramètres des index
-								$index=array('01','02','03','04','05','06','07','08','09','10');
-								$color = 0;
-								$tableau = '';
-								foreach($index as $numindex){
-									$color += 1;
-									$tableau.='<div class="form-group">';
-										$tableau.='<label class="col-sm-2 control-label">{{Courbe '.$numindex.'}} :</label>';
-										$tableau.='<div class="col-sm-2">';
-											$tableau.='<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="index'.$numindex.'_nom" placeholder="..."/>';
-										$tableau.='</div>';
-										$tableau.='<div class="col-sm-1">';
-											$tableau.='<input type="color" class="eqLogicAttr configKey" id="favcolor'.$color.'"  data-l1key="configuration" data-l2key="color'.$color.'" name="favcolor'.$color.'">';
-										$tableau.='</div>';
-										$tableau.='<div class="col-sm-6 input-group">';
-											$tableau.='<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="cmdGraphe'.$numindex.'"></input>';
-											$tableau.='<a class="btn btn-default listEquipementInfo cursor btn-sm input-group-addon" data-input="cmdGraphe'.$numindex.'"><i class="fas fa-list-alt"></i></a>';
-										$tableau.='</div>';
-									$tableau.='</div>';
+							$nbGraphs = 1;
+							if (is_object($eqLogic)) {
+								$nbGraphs = $eqLogic->getConfiguration('nbGraphs', 1);
+							}
+							$nbGraphs = max(1, min(4, $nbGraphs));
+							if ($nbGraphs < 1 || $nbGraphs > 4) $nbGraphs = 1;
+
+							for ($g = 1; $g <= 4; $g++) {
+								$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
+								echo '<div class="graphConfig" data-graph="' . $g . '" ' . $display . '>';
+								echo '<div class="form-group">';
+								echo '<label class="col-sm-12 control-label" style="background:#f1f1f1;padding:8px;margin:10px 0 5px;border-radius:4px;text-align:center;display:block;">';
+								echo '<i class="fas fa-chart-line"></i> <strong>{{Graphique ' . $g . " (si le libellé n'est pas renseigné, la courbe n'est pas affichée)}}</strong>";
+								echo '</label>';
+								echo '</div>';
+
+								// Bouton RAZ couleurs
+								echo '<div class="form-group Colors">';
+								echo '<label class="col-sm-2 control-label">{{}}</label>';
+								echo '<label class="col-sm-2 control-label">{{}}</label>';
+								echo '<a class="btn btn-warning tooltips col-sm-2 btjeeHistoGraphRazCouleurs" data-graph="' . $g . '"><i class="fas fa-medkit"></i> {{Couleurs par défaut}}</a>';
+								echo '</div>';
+
+								echo '<div class="form-group">';
+								echo '<label class="col-sm-2 control-label">{{Courbe}}</label>';
+								echo '<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>';
+								echo '<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>';
+								echo '<label class="col-sm-6 control-label pull-left">{{Commande}}</label>';
+								echo '</div>';
+
+								for ($i = 1; $i <= 10; $i++) {
+									$index = str_pad($i, 2, '0', STR_PAD_LEFT);
+									$colorIdx = (($g-1)*10) + $i;
+
+									echo '<div class="form-group">';
+									echo '<label class="col-sm-2 control-label">{{Courbe ' . $index . '}} :</label>';
+									echo '<div class="col-sm-2">';
+									echo '<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph' . $g . '_index' . $index . '_nom" placeholder="..."/>';
+									echo '</div>';
+									echo '<div class="col-sm-1">';
+									echo '<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g' . $g . '_c' . $i . '" data-l1key="configuration" data-l2key="graph' . $g . '_color' . $i . '" value="#FF4500">';
+									echo '</div>';
+									echo '<div class="col-sm-6 input-group">';
+									echo '<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="graph' . $g . '_cmdGraphe' . $index . '"></input>';
+									echo '<a class="btn btn-default listEquipementInfo cursor btn-sm input-group-addon" data-input="graph' . $g . '_cmdGraphe' . $index . '"><i class="fas fa-list-alt"></i></a>';
+									echo '</div>';
+									echo '</div>';
 								}
+								echo '</div>'; // .graphConfig
+							}
 							?>
-							<?php echo $tableau ?>
 
 							<div class="form-group">
 								</br>
@@ -243,32 +279,34 @@ $eqLogics = eqLogic::byType($plugin->getId());
 
 
 <script>
-
-//création du tableau des paramètres des couleurs par défaut
-$colordefaut = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4',
-                    '#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
-
-$('#btjeeHistoGraphRazCouleurs').on('click', function () {
-    $('#favcolor1').value($colordefaut[0]);
-    $('#favcolor2').value($colordefaut[1]);
-    $('#favcolor3').value($colordefaut[2]);
-    $('#favcolor4').value($colordefaut[3]);
-    $('#favcolor5').value($colordefaut[4]);
-    $('#favcolor6').value($colordefaut[5]);
-    $('#favcolor7').value($colordefaut[6]);
-    $('#favcolor8').value($colordefaut[7]);
-    $('#favcolor9').value($colordefaut[8]);
-    $('#favcolor10').value($colordefaut[9]);
+document.querySelector('[data-l1key="configuration"][data-l2key="nbGraphs"]').addEventListener('change', function() {
+    const nb = parseInt(this.value);
+    document.querySelectorAll('.graphConfig').forEach((el, i) => {
+        el.style.display = (i + 1 <= nb) ? '' : 'none';
+    });
 });
 
-//$('#favcolor14').value('#00FF00');
-//    document.getElementById("favcolor14").value = "#00FF00";
-//    $('.eqLogicAttr[data-l1key=configuration][data-l2key=color14]').value("#00FF00");
-//eqLogicAttr configKey" id="favcolor14"  data-l1key="configuration" data-l2key="color14
+document.querySelectorAll('.btjeeHistoGraphRazCouleurs').forEach(btn => {
+    btn.addEventListener('click', function() {
+		// Couleurs par défaut par graphique
+		if(typeof(defaultColors)=='undefined'){
+			defaultColors = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4','#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
+		}
+        const graph = this.getAttribute('data-graph');
+        defaultColors.forEach((color, i) => {
+            const input = document.querySelector('#favcolor_g' + graph + '_c' + (i+1));
+            if (input) input.value = color;
+            input.dispatchEvent(new Event('change'));
+        });
+    });
+});
 
-
+// Init au chargement
+$(function() {
+    const nb = parseInt($('[data-l1key="configuration"][data-l2key="nbGraphs"]').val()) || 1;
+    $('[data-l1key="configuration"][data-l2key="nbGraphs"]').val(nb).trigger('change');
+});
 </script>
-
 
 <!-- Inclusion du fichier javascript du plugin (dossier, nom_du_fichier, extension_du_fichier, id_du_plugin) -->
 <?php include_file('desktop', 'jeeHistoGraph', 'js', 'jeeHistoGraph'); ?>

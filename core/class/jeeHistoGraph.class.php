@@ -163,80 +163,123 @@ public function toHtml($_version = 'dashboard') {
     }
 
     $version = jeedom::versionAlias($_version);
-
-    $unite = '';
     $delai = $this->getConfiguration('delai_histo', 1);
     $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
     $minTime = time() - $delai * 24 * 60 * 60;
-    $replace["graphType"] = $this->getConfiguration('graphType', 'line');
-    // Initialiser toutes les clés
-    for ($i = 1; $i <= 10; $i++) {
-        $index = str_pad($i, 2, '0', STR_PAD_LEFT);
-        $replace["#listeHistoGraphe{$index}#"] = '';
-        $replace["#index{$index}#"] = '';
-        $replace["#idCmdGraphe{$index}#"] = '';
-        $replace["#color{$i}#"] = '';
-    }
 
-    for ($i = 1; $i <= 10; $i++) {
-        $index = str_pad($i, 2, '0', STR_PAD_LEFT);
-        $cmdKey = "cmdGraphe{$index}";
-        $nomKey = "index{$index}_nom";
+    $nbGraphs = max(1, min(4, $this->getConfiguration('nbGraphs', 1)));
+    $replace['#nbGraphs#'] = $nbGraphs;
+    $replace['#graphType#'] = $this->getConfiguration('graphType', 'line');
 
-        $cmdGraphe = $this->getConfiguration($cmdKey);
-        $indexNom = $this->getConfiguration($nomKey);
-        $color = $this->getConfiguration("color{$i}");
+    // === Générer les conteneurs ===
+    $graphContainers = '';
+    $chartScripts = '';
 
-        // Si nom vide ou commande vide → série vide
-        if (empty($indexNom) || empty($cmdGraphe)) {
+    $defaultColors = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4','#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
+
+    for ($g = 1; $g <= 4; $g++) {
+        if ($g > $nbGraphs) {
             continue;
         }
 
-        $listeHisto = '';
-        $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
-        if (is_object($cmd)) {
-            $histo = $cmd->getHistory($startTime);
-            $lastValue = null;
-            $n = 0;
+        $uid = $replace['#uid#'];
+        $containerId = "graphContainer{$uid}_{$g}";
 
-            foreach ($histo as $row) {
-                $ts = strtotime($row->getDatetime());
-                if ($ts >= $minTime) {
-                    $n++;
-                    $value = $row->getValue();
-                    $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . ","
-                      . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$value}],\n";
-                } else {
-                    $lastValue = $row->getValue();
+        // Conteneur
+        $height = round(100 / $nbGraphs, 2);
+        $graphContainers .= "<div id=\"{$containerId}\" style=\"height: {$height}%; min-height: 100px; width: 100%;\"></div>";
+
+        // === Générer les séries ===
+        $seriesJS = '';
+        $cmdUpdateJS = '';
+
+        for ($i = 1; $i <= 10; $i++) {
+            $index = str_pad($i, 2, '0', STR_PAD_LEFT);
+            $cmdKey = "graph{$g}_cmdGraphe{$index}";
+            $nomKey = "graph{$g}_index{$index}_nom";
+            $colorKey = "graph{$g}_color{$i}";
+
+            $cmdGraphe = $this->getConfiguration($cmdKey);
+            $indexNom = $this->getConfiguration($nomKey);
+            $color = $this->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
+
+            if (empty($indexNom) || empty($cmdGraphe)) {
+                continue;
+            }
+
+            $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
+            $listeHisto = '';
+            $cmdId = '';
+
+            if (is_object($cmd)) {
+                $histo = $cmd->getHistory($startTime);
+                $lastValue = null;
+                $n = 0;
+
+                foreach ($histo as $row) {
+                    $ts = strtotime($row->getDatetime());
+                    if ($ts >= $minTime) {
+                        $n++;
+                        $value = $row->getValue();
+                        $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$value}],\n";
+                    } else {
+                        $lastValue = $row->getValue();
+                    }
                 }
+
+                if ($n == 0 && $lastValue !== null) {
+                    $ts = $minTime;
+                    $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$lastValue}],\n";
+                }
+
+                $ts = time();
+                $value = $cmd->execCmd();
+                $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$value}],\n";
+
+                $replace['#unite#'] = $cmd->getUnite();
+                $cmdId = str_replace('#', '', $cmdGraphe);
             }
 
-            if ($n == 0 && $lastValue !== null) {
-                $ts = $minTime;
-                $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . ","
-                  . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$lastValue}],\n";
+            // Série
+            $seriesJS .= "{ name: " . json_encode($indexNom) . ", color: " . json_encode($color) . ", marker: { enabled: false }, data: [{$listeHisto}] },\n";
+
+            // Mise à jour temps réel
+            if ($cmdId) {
+                $cmdUpdateJS .= "
+                if ('{$cmdId}' !== '') {
+                    jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                        const dateUTC = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(),
+                            new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+                        const y = parseFloat(_options.display_value);
+                        if (window.chart_g{$g} && window.chart_g{$g}.series[{$i}-1]) {
+                            window.chart_g{$g}.series[{$i}-1].addPoint([dateUTC, y], true, true, true);
+                        }
+                    });
+                }\n";
             }
-
-            $ts = time();
-            $value = $cmd->execCmd();
-            $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . ","
-              . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$value}],\n";
-
-            $unite = $cmd->getUnite();
         }
 
-        $cmdId = str_replace('#', '', $cmdGraphe);
-
-        // Remplir les placeholders
-        $replace["#listeHistoGraphe{$index}#"] = $listeHisto;
-        $replace["#index{$index}#"] = $indexNom;
-        $replace["#idCmdGraphe{$index}#"] = $cmdId;
-        $replace["#color{$i}#"] = $color;
+        // Highcharts
+        $chartScripts .= "
+        window.chart_g{$g} = Highcharts.chart('{$containerId}', {
+            chart: { type: graphType },
+            title: { text: '' },
+            xAxis: { type: 'datetime' },
+            yAxis: { opposite: true, labels: { format: '{value}#unite#' }, title: { text: '' } },
+            tooltip: { shared: true, useHTML: true, borderRadius: 10,
+                pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f} #unite#</b></td></tr>' },
+            credits: { enabled: false },
+            legend: { enabled: true },
+            series: [{$seriesJS}].filter(s => s.name && s.data.length > 0)
+        });
+        setTimeout(() => window.chart_g{$g} && window.chart_g{$g}.reflow(), 50);
+        {$cmdUpdateJS}
+        ";
     }
 
-    $replace['#unite#'] = $unite;
+    $replace['#graph_containers#'] = $graphContainers;
+    $replace['#chart_scripts#'] = $chartScripts;
 
-    log::add('jeeHistoGraph', 'debug', 'Graphique généré pour eqLogic ' . $this->getId());
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $this->postToHtml($_version, $html);
 }
