@@ -187,8 +187,7 @@ public function toHtml($_version = 'dashboard') {
         $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
 
         // Conteneur
-        $height = round(100 / $nbGraphs, 2);
-        $graphContainers .= "<div id=\"{$containerId}\" style=\"height: {$height}%; min-height: 100px; width: 100%;\"></div>";
+        $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 100%;\"></div>";
 
         // === Générer les séries ===
         $seriesJS = '';
@@ -213,6 +212,9 @@ public function toHtml($_version = 'dashboard') {
             $cmdId = '';
 
             if (is_object($cmd)) {
+                $unite = $cmd->getUnite() ?: '';
+                $unite = trim($unite);
+                $unite = $unite === '' ? '' : ' ' . $unite;
                 $histo = $cmd->getHistory($startTime);
                 $lastValue = null;
                 $n = 0;
@@ -242,7 +244,13 @@ public function toHtml($_version = 'dashboard') {
             }
 
             // Série
-            $seriesJS .= "{ name: " . json_encode($indexNom) . ", color: " . json_encode($color) . ", marker: { enabled: false }, data: [{$listeHisto}] },\n";
+            $seriesJS .= "{ 
+                              name: " . json_encode($indexNom) . ", 
+                              color: " . json_encode($color) . ", 
+                              marker: { enabled: false }, 
+                              data: [{$listeHisto}],
+                              unite: " . json_encode($unite) . "
+                          },\n";
 
             // Mise à jour temps réel
             if ($cmdId) {
@@ -270,9 +278,14 @@ public function toHtml($_version = 'dashboard') {
                               }
                     },
             xAxis: { type: 'datetime' },
-            yAxis: { opposite: true, labels: { format: '{value}#unite#' }, title: { text: '' } },
-            tooltip: { shared: true, useHTML: true, borderRadius: 10,
-                pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f} #unite#</b></td></tr>' },
+            yAxis: {  opposite: true, 
+                      labels: { format: '{value}' }, 
+                      title: { text: '' } 
+                    },
+            tooltip: {  shared: true, 
+                        useHTML: true, 
+                        borderRadius: 10,
+                        pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr>' },
             credits: { enabled: false },
             legend: { enabled: true },
             series: [{$seriesJS}].filter(s => s.name && s.data.length > 0)
