@@ -168,8 +168,12 @@ public function toHtml($_version = 'dashboard') {
     $minTime = time() - $delai * 24 * 60 * 60;
 
     $nbGraphs = max(1, min(4, $this->getConfiguration('nbGraphs', 1)));
+    $defaultZoom = $this->getConfiguration('defaultZoom', 'all');
+
     $replace['#nbGraphs#'] = $nbGraphs;
     $replace['#graphType#'] = $this->getConfiguration('graphType', 'line');
+    $replace['#defaultZoom#'] = $defaultZoom;
+    $replace['#delai_histo#'] = $delai;
 
     // === Générer les conteneurs ===
     $graphContainers = '';
@@ -214,7 +218,7 @@ public function toHtml($_version = 'dashboard') {
             if (is_object($cmd)) {
                 $unite = $cmd->getUnite() ?: '';
                 $unite = trim($unite);
-                $unite = $unite === '' ? '' : ' ' . $unite;
+                $unite = $unite === '' ? '' : $unite . ' ';
                 $histo = $cmd->getHistory($startTime);
                 $lastValue = null;
                 $n = 0;

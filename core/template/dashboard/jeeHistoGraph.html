@@ -10,6 +10,13 @@
 
     <!-- === CSS intégré - 2 graphiques empilés === -->
     <style>
+        .jeeHistoGraph {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
         .jeeHistoGraph .graphs-container {
             height: 100%;
             display: grid;
@@ -19,56 +26,235 @@
             box-sizing: border-box;
         }
 
-        .jeeHistoGraph .graphs-container > div {
-            min-height: 120px;
-            border-radius: 4px;
+        .jeeHistoGraph .graphs-container {
+            flex: 1;
+            min-height: 0;           /* ESSENTIEL : permet au flex de rétrécir */
             overflow: hidden;
-            position: relative;
+            display: grid;
+            gap: 6px;
+            padding: 0 4px 4px;
+            box-sizing: border-box;
+        }
+        /* Conteneur individuel du graphique */
+        .jeeHistoGraph .graphs-container > div {
+            min-height: 0;
+            overflow: hidden;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* === 1 graphique === */
-        .jeeHistoGraph .graphs-layout-1 {
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr;
-        }
-
-        /* === 2 graphiques : empilés (1 au-dessus, 1 en dessous) === */
-        .jeeHistoGraph .graphs-layout-2 {
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr 1fr;
-        }
-
-        /* === 3 graphiques : 2 en haut, 1 en bas pleine largeur === */
-        .jeeHistoGraph .graphs-layout-3 {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-        }
-        .jeeHistoGraph .graphs-layout-3 > div:nth-child(1) { grid-column: 1; grid-row: 1; }
-        .jeeHistoGraph .graphs-layout-3 > div:nth-child(2) { grid-column: 2; grid-row: 1; }
+        /* Grille responsive */
+        .jeeHistoGraph .graphs-layout-1 { grid-template: 1fr / 1fr; }
+        .jeeHistoGraph .graphs-layout-2 { grid-template: 1fr 1fr / 1fr; }
+        .jeeHistoGraph .graphs-layout-3 { grid-template: 1fr 1fr / 1fr 1fr; }
         .jeeHistoGraph .graphs-layout-3 > div:nth-child(3) { grid-column: 1 / -1; grid-row: 2; }
+        .jeeHistoGraph .graphs-layout-4 { grid-template: 1fr 1fr / 1fr 1fr; }
 
-        /* === 4 graphiques : grille 2×2 === */
-        .jeeHistoGraph .graphs-layout-4 {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+        .jeeHistoGraph .zoom-control {
+            padding: 4px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: nowrap;
         }
 
+        .jeeHistoGraph .zoom-control select {
+            padding: 2px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 90px;
+        }
+        .jeeHistoGraph .time-control-panel {
+            flex: 0 0 auto;
+            border-bottom: 1px solid #ddd;
+            padding: 6px 10px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .jeeHistoGraph .zoom-select {
+            padding: 2px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        .jeeHistoGraph .time-slider {
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .jeeHistoGraph .time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+
+        .jeeHistoGraph .time-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: none;
+        }
     </style>
 
-    <!-- Conteneur avec classe dynamique -->
-    <div class="graphs-container graphs-layout-#nbGraphs#">
-        #graph_containers#
+<!-- === Contrôle de zoom + déplacement temporel === -->
+<div class="time-control-panel">
+    <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+        <span style="font-weight: 500;">Zoom :</span>
+        <select id="zoomSelect_#uid#" class="zoom-select">
+            <option value="all">Tout</option>
+            <option value="30min">30 min</option>
+            <option value="1h">1 h</option>
+            <option value="1d">1 jour</option>
+            <option value="1M">1 mois</option>
+            <option value="1y">1 an</option>
+        </select>
     </div>
 
-    <script>
-        try {
-            const nbGraphs = #nbGraphs#;
-            const graphType = '#graphType#';
-            const unite = '#unite#';
+    <div style="flex: 1; min-width: 100px;">
+        <input type="range" id="timeSlider_#uid#" class="time-slider" min="0" max="100" value="100" style="width: 100%;">
+    </div>
 
-            #chart_scripts#
-        } catch(e) {
-            console.error('Erreur Highcharts:', e);
+    <div style="font-size: 0.8em; color: #555; white-space: nowrap;" id="timeLabel_#uid#">—</div>
+</div>
+
+<!-- === CONTENEUR DES GRAPHIQUES === -->
+<div class="graphs-container graphs-layout-#nbGraphs#" style="flex: 1; min-height: 0; overflow: hidden; display: grid; gap: 6px; padding: 0;">
+    #graph_containers#
+</div>
+
+<script>
+try {
+    const uid = '#uid#';
+    const nbGraphs = #nbGraphs#;
+    const graphType = '#graphType#';
+    const defaultZoom = '#defaultZoom#';
+    const delaiHisto = #delai_histo# * 24 * 60 * 60 * 1000; // ms
+    const now = Date.now();
+    const fullStart = now - delaiHisto;
+
+    let currentZoom = defaultZoom;
+    let currentStart = fullStart;
+    let currentEnd = now;
+
+    // Durées en ms
+    const zoomDurations = {
+        '30min': 30 * 60 * 1000,
+        '1h': 60 * 60 * 1000,
+        '1d': 24 * 60 * 60 * 1000,
+        '1M': 30 * 24 * 60 * 60 * 1000,
+        '1y': 365 * 24 * 60 * 60 * 1000,
+        'all': delaiHisto
+    };
+
+    // Éléments UI
+    const zoomSelect = document.getElementById('zoomSelect_' + uid);
+    const timeSlider = document.getElementById('timeSlider_' + uid);
+    const timeLabel = document.getElementById('timeLabel_' + uid);
+
+    // Initialiser les graphiques
+    window.charts = window.charts || {};
+    #chart_scripts#
+
+    // Mettre à jour tous les graphiques
+    function updateAllCharts(start, end) {
+        for (let g = 1; g <= nbGraphs; g++) {
+            const chart = window['chart_g' + g];
+            if (chart && chart.xAxis && chart.xAxis[0]) {
+                chart.xAxis[0].setExtremes(start, end);
+            }
         }
-    </script>
+    }
+
+    // Mettre à jour le slider
+    function updateSlider() {
+        const duration = zoomDurations[currentZoom];
+        const totalRange = delaiHisto;
+        const windowSize = currentZoom === 'all' ? totalRange : duration;
+        const maxOffset = totalRange - windowSize;
+        if (maxOffset <= 0) {
+            timeSlider.value = 100;
+            timeSlider.disabled = true;
+        } else {
+            const offset = currentStart - fullStart;
+            const percent = (offset / maxOffset) * 100;
+            timeSlider.value = percent;
+            timeSlider.disabled = false;
+        }
+    }
+
+    // Mettre à jour le label
+    function updateLabel() {
+        const start = new Date(currentStart);
+        const end = new Date(currentEnd);
+        const fmt = (d) => {
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yy = d.getFullYear();
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mi = String(d.getMinutes()).padStart(2, '0');
+            return `${dd}/${mm}/${yy} ${hh}:${mi}`;
+        };
+        timeLabel.textContent = `${fmt(start)} → ${fmt(end)}`;
+    }
+
+    // Appliquer zoom + position
+    function applyZoomAndPan() {
+        const duration = zoomDurations[currentZoom];
+        let start, end;
+
+        if (currentZoom === 'all') {
+            start = fullStart;
+            end = now;
+        } else {
+            const totalRange = delaiHisto;
+            const maxOffset = totalRange - duration;
+            const offsetPercent = timeSlider.value / 100;
+            const offset = maxOffset * offsetPercent;
+            start = fullStart + offset;
+            end = start + duration;
+        }
+
+        currentStart = start;
+        currentEnd = end;
+        updateAllCharts(start, end);
+        updateSlider();
+        updateLabel();
+    }
+
+    // Événements
+    zoomSelect.value = defaultZoom;
+    zoomSelect.addEventListener('change', function() {
+        currentZoom = this.value;
+        applyZoomAndPan();
+    });
+
+    timeSlider.addEventListener('input', function() {
+        applyZoomAndPan();
+    });
+
+    // Initialisation
+    setTimeout(() => {
+        applyZoomAndPan();
+    }, 400);
+
+} catch(e) {
+    console.error('Erreur Highcharts:', e);
+}
+</script>
 </div>

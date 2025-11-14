@@ -152,21 +152,22 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
                                     <input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
                                 </div>
                             </div>
+							
+							<div class="form-group">
+								<label class="col-sm-3 control-label">{{Période de zoom par défaut}}</label>
+								<div class="col-sm-4">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="defaultZoom">
+										<option value="all">{{Tout}}</option>
+										<option value="30min">30 minutes</option>
+										<option value="1h">1 heure</option>
+										<option value="1d">1 jour</option>
+										<option value="1M">1 mois</option>
+										<option value="1y">1 an</option>
+									</select>
+								</div>
+							</div>
 
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">{{Type de graphique}}</label>
-                                <div class="col-sm-4">
-                                    <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graphType">
-                                        <option value="line">{{Ligne classique}}</option>
-                                        <option value="spline">{{Courbe lisse}}</option>
-                                        <option value="areaspline">{{Aire lisse}}</option>
-                                        <option value="area">{{Aire}}</option>
-                                        <option value="column">{{Colonne}}</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
+							<div class="form-group">
                                 <label class="col-sm-3 control-label">{{Afficher la légende}}</label>
                                 <div class="col-sm-3">
                                     <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="showLegend" checked>
@@ -206,9 +207,13 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
 								echo '<div class="graphConfig" data-graph="' . $g . '" ' . $display . '>';
 								echo '<div class="form-group">';
-								echo '<legend><i class="fas fa-chart-line"></i>{{Graphique ' . $g . " titre: }}";
+								echo '<legend><i class="fas fa-chart-line"></i>{{Graphique}} ' . $g . '</legend>';
+								echo '<div class="form-group">';
+                                echo '<label class="col-sm-3 control-label"> {{titre graphique}} ' . $g . ' : </label>';
+								echo '<div class="col-sm-6">';
 								echo '<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
-								echo '</legend>';
+								echo '</div>';
+								echo '</div>';
 								echo '</div>';
 
 								// Bouton RAZ couleurs
