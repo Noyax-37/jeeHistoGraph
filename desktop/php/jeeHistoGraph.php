@@ -161,6 +161,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										<option value="30min">30 minutes</option>
 										<option value="1h">1 heure</option>
 										<option value="1d">1 jour</option>
+										<option value="1w">1 semaine</option>
 										<option value="1M">1 mois</option>
 										<option value="1y">1 an</option>
 									</select>
