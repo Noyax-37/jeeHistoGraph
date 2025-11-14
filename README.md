@@ -1,25 +1,98 @@
-# Template de plugin pour Jeedom
+# jeeHistoGraph - Graphiques multi-courbes personnalisables pour Jeedom
 
-Ce "template de plugin" sert de base à la réalisation de plugins pour **Jeedom**.
-
-La documentation générale relative à la conception de plugin est consultable [ici](https://doc.jeedom.com/fr_FR/dev/). Dans le détail :   
-* [Utilisation du template de plugin](https://doc.jeedom.com/fr_FR/dev/plugin_template) : Le template de plugin est une base de plugin pour Jeedom qui doit être adaptée avec l'id de votre plugin et à laquelle il suffit d'ajouter vos propres fonctions. 
-* [Fichier info.json](https://doc.jeedom.com/fr_FR/dev/structure_info_json) : Intégré depuis la version 3.0 de Jeedom, le fichier **info.json** est obligatoire pour le bon fonctionnement des plugins et leur bon déploiement sur le Market Jeedom.
-* [Icône du plugin](https://doc.jeedom.com/fr_FR/dev/Icone_de_plugin) : Afin de pouvoir être publié sur le Market Jeedom, tout plugin doit disposer d’une icône. Attention à ne pas utiliser le même code couleur que les icônes des plugins Jeedom officiels.
-* [Widget du plugin](https://doc.jeedom.com/fr_FR/dev/widget_plugin) : Présentation des différentes manières d'inclure des widgets personnalisés au plugin.
-* [Documentation du plugin](https://doc.jeedom.com/fr_FR/dev/documentation_plugin) : Présentation de la mise en place d'une documentation car un bon plugin n'est rien sans documentation adéquate.
-* [Publication du plugin](https://doc.jeedom.com/fr_FR/dev/publication_plugin) : Description des pré-requis indispensables à la publication du plugin.
+![jeeHistoGraph](https://via.placeholder.com/800x400?text=jeeHistoGraph+Plugin)  
+*Plugin Jeedom permettant d'afficher jusqu'à **4 graphiques indépendants**, chacun avec **jusqu'à 10 courbes**, avec zoom, déplacement temporel et mise à jour en temps réel.*
 
 ---
-Si vous créez une branch nommée prettier, le robot workflows fera une passe complete sur le code pour que le code soit le plus uniforme possible.
----
-test workflow en cours... for commit
+
+## Fonctionnalités
+
+- **4 graphiques** maximum par équipement
+- **10 courbes** maximum par graphique
+- **Jusqu'à 40 courbes** au total
+- **Zoom prédéfini** : 30 min, 1h, 1j, 1sem, 1mois, 1an, ou tout
+- **Défilement temporel** avec curseur
+- **Mise à jour en temps réel** des courbes
+- **Couleurs personnalisables** + bouton de réinitialisation
+- **Titre par graphique**
+- **Légende activable/désactivable**
+- **Empilement** (normal ou pourcentage) pour les graphiques en aire
+- **Limitation du nombre de points** (évite les ralentissements)
+- **Responsive** : s’adapte à la taille du widget
 
 ---
-Nouvel assistant pour un gain de temps à la création de votre plugin
+
+## Captures d’écran
+
+> *(À venir : ajoutez ici des captures de l’interface de configuration et des graphiques affichés)*
+
 ---
-Sur votre terminal, vous pouvez vous rendre dans plugin_info, et executer : php helperConfiguration.php
-Un assistant en CLI vous posera quelques questions, (l'id du plugin, la catégorie, si démon, etcc), puis s'occupera de renommer tous les fichiers et le reste.
-Voila, votre plugin est basiquement prêt pour coder votre travail.
+
+## Installation
+
+1. Téléchargez le plugin via le **Market Jeedom** ou installez-le manuellement :
+   ```bash
+   cd /var/www/html/plugins
+   git clone https://github.com/votre-nom/jeeHistoGraph.git
+
+Activez le plugin dans Jeedom → Plugins → Gestion des plugins
+Cliquez sur "Ajouter" pour créer un nouvel équipement
 
 
+Configuration
+1. Paramètres généraux
+
+Nombre de graphiques : 1 à 4
+Période affichée (jours) : données chargées (ex: 7 jours)
+Zoom par défaut : période initiale affichée
+Afficher la légende : oui/non
+Empilement : aucun, normal, pourcentage (uniquement en aire)
+Nb max points par courbe : 500 par défaut (ajustez pour les performances)
+
+2. Configuration des graphiques
+Pour chaque graphique (1 à 4) :
+
+Titre du graphique
+10 courbes possibles :
+Libellé : obligatoire pour afficher la courbe
+Couleur : personnalisable (clic sur le sélecteur)
+Commande : sélectionnez une commande numérique avec historique
+
+Bouton "Couleurs par défaut" : réinitialise les 10 couleurs du graphique
+
+Note : Une courbe sans libellé ne s’affiche pas, même si la commande est valide.
+
+Affichage sur le dashboard
+
+Le widget s’adapte automatiquement à la taille
+Contrôles en haut :
+Sélecteur de zoom
+Curseur temporel (défilement dans la période)
+Plage horaire affichée
+
+
+
+Performances & Bonnes pratiques
+
+Limitez le nombre de points si vous avez plus de 10 courbes ou une longue période
+Utilisez des commandes avec historique activé
+Évitez les commandes à haute fréquence (>1 point/seconde) sur de longues périodes
+
+
+Support & Contribution
+
+Forum Jeedom : Recherche "jeeHistoGraph"
+GitHub Issues : github.com/votre-nom/jeeHistoGraph/issues
+
+
+Changelog
+v1.0.0 (14/11/2025)
+
+Version initiale
+4 graphiques × 10 courbes
+Zoom + déplacement temporel
+Mise à jour en temps réel
+Couleurs personnalisables
+
+
+Développé avec ❤️ pour la communauté Jeedom

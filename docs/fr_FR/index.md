@@ -1,6 +1,12 @@
-# Plugin template
+# Plugin jeeHistoGraph
 
-Ce "template de plugin" sert de base à la réalisation de plugins pour **Jeedom**.
+plugin permettant de créer des équipement pour afficher jusqu’à 4 graphiques simultanément avec pour chacun jusqu’à 10 courbes. On peut sélectionner la période sur laquelle récupérer les données puis afficher une partie de celles ci par un zoom sélectionnable avec navigation sur la plage de temps sélectionnée.
+
+Quelques images:
+
+configuration d’un équipement pour 2 graphiques affichés:
+![configuration](./images/configuration.png)
+
 
 La documentation générale relative à la conception de plugin est consultable [ici](https://doc.jeedom.com/fr_FR/dev/).
 
