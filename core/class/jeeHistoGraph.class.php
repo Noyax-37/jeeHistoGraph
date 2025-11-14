@@ -184,6 +184,7 @@ public function toHtml($_version = 'dashboard') {
 
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
+        $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
 
         // Conteneur
         $height = round(100 / $nbGraphs, 2);
@@ -263,7 +264,11 @@ public function toHtml($_version = 'dashboard') {
         $chartScripts .= "
         window.chart_g{$g} = Highcharts.chart('{$containerId}', {
             chart: { type: graphType },
-            title: { text: '' },
+            title: {  text: '{$titleGraph}', 
+                      style:  { fontWeight: 'bold',
+                                color: 'rgb(100, 100, 100)'
+                              }
+                    },
             xAxis: { type: 'datetime' },
             yAxis: { opposite: true, labels: { format: '{value}#unite#' }, title: { text: '' } },
             tooltip: { shared: true, useHTML: true, borderRadius: 10,
