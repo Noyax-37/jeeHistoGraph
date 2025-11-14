@@ -1,24 +1,90 @@
-# Plugin jeeHistoGraph
+# Documentation du plugin jeeHistoGraph
 
-plugin permettant de créer des équipement pour afficher jusqu’à 4 graphiques simultanément avec pour chacun jusqu’à 10 courbes. On peut sélectionner la période sur laquelle récupérer les données puis afficher une partie de celles ci par un zoom sélectionnable avec navigation sur la plage de temps sélectionnée.
+## Présentation
 
-Quelques images:
+`jeeHistoGraph` est un plugin Jeedom permettant d'afficher **jusqu'à 4 graphiques** sur un même équipement, chacun pouvant contenir **jusqu'à 10 courbes**.  
+Idéal pour regrouper des données hétérogènes (températures, consommations, capteurs, etc.) dans un seul widget clair et interactif.
 
-configuration d’un équipement pour 2 graphiques affichés:
-![configuration](./images/configuration.png)
+---
 
+## Fonctionnalités principales
 
-La documentation générale relative à la conception de plugin est consultable [ici](https://doc.jeedom.com/fr_FR/dev/).
+| Fonctionnalité | Description |
+|----------------|-----------|
+| **Multi-graphiques** | 1 à 4 graphiques indépendants |
+| **Multi-courbes** | Jusqu’à 10 courbes par graphique |
+| **Zoom interactif** | 30 min, 1h, 1j, 1sem, 1mois, 1an, ou tout |
+| **Défilement temporel** | Curseur pour naviguer dans la période |
+| **Mise à jour temps réel** | Les nouvelles valeurs s’ajoutent automatiquement |
+| **Personnalisation** | Couleurs, titres, légende, empilement |
+| **Responsive** | S’adapte à toutes les tailles de widget |
 
-Dans le détail :   
-* [Utilisation du template de plugin](https://doc.jeedom.com/fr_FR/dev/plugin_template) : Le template de plugin est une base de plugin pour Jeedom qui doit être adaptée avec l'id de votre plugin et à laquelle il suffit d'ajouter vos propres fonctions.
+---
 
-* [Fichier info.json](https://doc.jeedom.com/fr_FR/dev/structure_info_json) : Intégré depuis la version 3.0 de Jeedom, le fichier **info.json** est obligatoire pour le bon fonctionnement des plugins et leur bon déploiement sur le Market Jeedom.
+## Configuration de l’équipement
 
-* [Icône du plugin](https://doc.jeedom.com/fr_FR/dev/Icone_de_plugin) : Afin de pouvoir être publié sur le Market Jeedom, tout plugin doit disposer d’une icône. Attention à ne pas utiliser le même code couleur que les icônes des plugins Jeedom officiels.
+### Onglet "Équipement"
 
-* [Widget du plugin](https://doc.jeedom.com/fr_FR/dev/widget_plugin) : Présentation des différentes manières d'inclure des widgets personnalisés au plugin.
+#### Paramètres généraux
+- **Nom de l’équipement** : nom affiché
+- **Objet parent** : emplacement dans l’arborescence
+- **Catégorie** : pour le filtrage
+- **Activer / Visible** : état du widget
 
-* [Documentation du plugin](https://doc.jeedom.com/fr_FR/dev/documentation_plugin) : Présentation de la mise en place d'une documentation car un bon plugin n'est rien sans documentation adéquate.
+#### Configuration des graphiques
+| Champ | Description |
+|------|-------------|
+| **Nombre de graphique(s)** | 1 à 4 |
+| **Période affichée (jours)** | Charge les X derniers jours d’historique |
+| **Période de zoom par défaut** | Zoom affiché au chargement |
+| **Afficher la légende** | Active/désactive la légende |
+| **Empilement** | Aucun / Normal / Pourcentage (uniquement en aire) |
+| **Nb max points par courbe** | 500 par défaut – à réduire si ralentissements |
 
-* [Publication du plugin](https://doc.jeedom.com/fr_FR/dev/publication_plugin) : Description des pré-requis indispensables à la publication du plugin.
+---
+
+### Configuration d’un graphique (1 à 4)
+
+Pour chaque graphique :
+1. **Titre du graphique** : affiché en haut
+2. **Bouton "Couleurs par défaut"** : réinitialise les couleurs
+3. **Courbes (1 à 10)** :
+   - **Libellé** : **obligatoire** pour afficher la courbe
+   - **Couleur** : personnalisable via le sélecteur
+   - **Commande** : cliquez sur l’icône pour sélectionner une commande numérique avec historique
+
+> **Attention** : Si le libellé est vide, la courbe **n’apparaît pas**, même si la commande est valide.
+
+---
+
+## Affichage sur le dashboard
+
+Le widget affiche :
+- Un **sélecteur de zoom** en haut
+- Un **curseur temporel** pour naviguer dans la période
+- La **plage horaire actuelle** (ex: `14/11/2025 10:30 → 14/11/2025 11:30`)
+- Les **graphiques** en grille responsive :
+  - 1 graphique → pleine largeur
+  - 2 graphiques → empilés
+  - 3 graphiques → 2 en haut, 1 en bas
+  - 4 graphiques → grille 2×2
+
+---
+
+## Conseils d’optimisation
+
+- **Réduisez `Nb max points par courbe`** si le widget est lent
+- **Limitez la période affichée** si vous avez beaucoup de données
+- **Utilisez des commandes avec historique activé**
+- **Évitez les commandes à très haute fréquence** sur de longues périodes
+
+---
+
+## Support
+
+- **Forum Jeedom** : [Recherche "jeeHistoGraph"](https://community.jeedom.com)
+- **GitHub** : [github.com/votre-nom/jeeHistoGraph](https://github.com/votre-nom/jeeHistoGraph)
+
+---
+
+**Plugin développé pour la communauté Jeedom**
