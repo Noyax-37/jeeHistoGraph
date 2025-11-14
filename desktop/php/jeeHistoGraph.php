@@ -134,9 +134,9 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<legend><i class="fas fa-sliders-h"></i> {{Configuration du graphique}}</legend>
+							<legend><i class="fas fa-sliders-h"></i> {{Configuration du ou des graphique(s)}}</legend>
 							<div class="form-group">
-								<label class="col-sm-3 control-label">{{Nombre de graphiques}}</label>
+								<label class="col-sm-3 control-label">{{Nombre de graphique(s)}}</label>
 								<div class="col-sm-3">
 									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nbGraphs">
 										<option value="1">1</option>
@@ -149,7 +149,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">{{Période affichée (jours)}}</label>
                                 <div class="col-sm-3">
-                                    <input type="number" min="1" max="365" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
+                                    <input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
                                 </div>
                             </div>
 
@@ -185,14 +185,14 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
                             </div>
 
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">{{Nb max points par courbe}}</label>
+                                <label class="col-sm-3 control-label">{{Nb max points par courbe (500 par défaut)}}</label>
                                 <div class="col-sm-3">
-                                    <input type="number" min="50" max="2000" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="maxPoints" value="500">
+                                    <input type="number" min="50" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="maxPoints" value="500">
                                 </div>
-                                <div class="col-sm-5"><small>{{Évite les ralentissements sur mobile}}</small></div>
+                                <div class="col-sm-5"><small>{{ à ajuster pour éviter les ralentissements}}</small></div>
                             </div>
 
-							<legend><i class="fas fa-palette"></i> {{Courbes par graphique}}</legend>
+							<legend></i> {{ }}</legend>
 
 							<?php
 							$nbGraphs = 1;
@@ -206,9 +206,9 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
 								echo '<div class="graphConfig" data-graph="' . $g . '" ' . $display . '>';
 								echo '<div class="form-group">';
-								echo '<label class="col-sm-12 control-label" style="background:#f1f1f1;padding:8px;margin:10px 0 5px;border-radius:4px;text-align:center;display:block;">';
-								echo '<i class="fas fa-chart-line"></i> <strong>{{Graphique ' . $g . " (si le libellé n'est pas renseigné, la courbe n'est pas affichée)}}</strong>";
-								echo '</label>';
+								echo '<legend><i class="fas fa-chart-line"></i>{{Graphique ' . $g . " titre: }}";
+								echo '<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
+								echo '</legend>';
 								echo '</div>';
 
 								// Bouton RAZ couleurs
@@ -244,6 +244,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									echo '</div>';
 								}
 								echo '</div>'; // .graphConfig
+								echo '<hr/>';
 							}
 							?>
 
