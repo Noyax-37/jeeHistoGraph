@@ -14,62 +14,50 @@
 * You should have received a copy of the GNU General Public License
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
-
 /* * ***************************Includes********************************* */
-require_once __DIR__  . '/../../../../core/php/core.inc.php';
-
+require_once __DIR__ . '/../../../../core/php/core.inc.php';
 class jeeHistoGraph extends eqLogic {
-  /*     * *************************Attributs****************************** */
-
+  /* * *************************Attributs****************************** */
   /*
   * Permet de définir les possibilités de personnalisation du widget (en cas d'utilisation de la fonction 'toHtml' par exemple)
   * Tableau multidimensionnel - exemple: array('custom' => true, 'custom::layout' => false)
   public static $_widgetPossibility = array();
   */
-
   /*
   * Permet de crypter/décrypter automatiquement des champs de configuration du plugin
   * Exemple : "param1" & "param2" seront cryptés mais pas "param3"
   public static $_encryptConfigKey = array('param1', 'param2');
   */
-
-  /*     * ***********************Methode static*************************** */
-
+  /* * ***********************Methode static*************************** */
   /*
   * Fonction exécutée automatiquement toutes les minutes par Jeedom
   public static function cron() {}
   */
-
   /*
   * Fonction exécutée automatiquement toutes les 5 minutes par Jeedom
   public static function cron5() {}
   */
-
   /*
   * Fonction exécutée automatiquement toutes les 10 minutes par Jeedom
   public static function cron10() {}
   */
-
   /*
   * Fonction exécutée automatiquement toutes les 15 minutes par Jeedom
   public static function cron15() {}
   */
-
   /*
   * Fonction exécutée automatiquement toutes les 30 minutes par Jeedom
   public static function cron30() {}
   */
-
   /*
   * Fonction exécutée automatiquement toutes les heures par Jeedom
   public static function cronHourly() {}
   */
-
   /*
   * Fonction exécutée automatiquement tous les jours par Jeedom
   public static function cronDaily() {}
   */
-  
+ 
   /*
   * Permet de déclencher une action avant modification d'une variable de configuration du plugin
   * Exemple avec la variable "param3"
@@ -78,7 +66,6 @@ class jeeHistoGraph extends eqLogic {
     return $value;
   }
   */
-
   /*
   * Permet de déclencher une action après modification d'une variable de configuration du plugin
   * Exemple avec la variable "param3"
@@ -86,7 +73,6 @@ class jeeHistoGraph extends eqLogic {
     // no return value
   }
   */
-
   /*
    * Permet d'indiquer des éléments supplémentaires à remonter dans les informations de configuration
    * lors de la création semi-automatique d'un post sur le forum community
@@ -96,13 +82,10 @@ class jeeHistoGraph extends eqLogic {
       return "les infos essentiel de mon plugin";
    }
    */
-
-  /*     * *********************Méthodes d'instance************************* */
-
+  /* * *********************Méthodes d'instance************************* */
   // Fonction exécutée automatiquement avant la création de l'équipement
   public function preInsert() {
 }
-
   // Fonction exécutée automatiquement après la création de l'équipement
   public function postInsert() {
           $color = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4',
@@ -119,31 +102,24 @@ class jeeHistoGraph extends eqLogic {
                ->setconfiguration('color10',$color[9]);
           $this->save();
   }
-
   // Fonction exécutée automatiquement avant la mise à jour de l'équipement
   public function preUpdate() {
   }
-
   // Fonction exécutée automatiquement après la mise à jour de l'équipement
   public function postUpdate() {
   }
-
   // Fonction exécutée automatiquement avant la sauvegarde (création ou mise à jour) de l'équipement
   public function preSave() {
   }
-
   // Fonction exécutée automatiquement après la sauvegarde (création ou mise à jour) de l'équipement
   public function postSave() {
   }
-
   // Fonction exécutée automatiquement avant la suppression de l'équipement
   public function preRemove() {
   }
-
   // Fonction exécutée automatiquement après la suppression de l'équipement
   public function postRemove() {
   }
-
   /*
   * Permet de crypter/décrypter automatiquement des champs de configuration des équipements
   * Exemple avec le champ "Mot de passe" (password)
@@ -154,75 +130,57 @@ class jeeHistoGraph extends eqLogic {
     $this->setConfiguration('password', utils::encrypt($this->getConfiguration('password')));
   }
   */
-
   // Permet de modifier l'affichage du widget (également utilisable par les commandes)
 public function toHtml($_version = 'dashboard') {
     $replace = $this->preToHtml($_version);
     if (!is_array($replace)) {
         return $replace;
     }
-
     $version = jeedom::versionAlias($_version);
-    $delai = $this->getConfiguration('delai_histo', 1);
-    $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
-    $minTime = time() - $delai * 24 * 60 * 60;
-
     $nbGraphs = max(1, min(4, $this->getConfiguration('nbGraphs', 1)));
-    $defaultZoom = $this->getConfiguration('defaultZoom', 'all');
 
     $replace['#nbGraphs#'] = $nbGraphs;
     $replace['#graphType#'] = $this->getConfiguration('graphType', 'line');
-    $replace['#defaultZoom#'] = $defaultZoom;
-    $replace['#delai_histo#'] = $delai;
 
-    // === Générer les conteneurs ===
     $graphContainers = '';
     $chartScripts = '';
-
     $defaultColors = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4','#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
 
     for ($g = 1; $g <= 4; $g++) {
-        if ($g > $nbGraphs) {
-            continue;
-        }
-
+        if ($g > $nbGraphs) continue;
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
         $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
-
-        // Conteneur
         $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 100%;\"></div>";
 
-        // === Générer les séries ===
+        $delaiGraph = $this->getConfiguration("delai_histo_graph{$g}");
+        $delai = (!empty($delaiGraph) && is_numeric($delaiGraph) && $delaiGraph > 0) 
+            ? intval($delaiGraph) 
+            : $this->getConfiguration('delai_histo', 1);
+        $replace['#delai_histo_graph' . $g . '#'] = $delai;
+        $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
+        $minTime = time() - $delai * 24 * 60 * 60;
+
+
         $seriesJS = '';
         $cmdUpdateJS = '';
-
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $cmdKey = "graph{$g}_cmdGraphe{$index}";
             $nomKey = "graph{$g}_index{$index}_nom";
             $colorKey = "graph{$g}_color{$i}";
-
             $cmdGraphe = $this->getConfiguration($cmdKey);
             $indexNom = $this->getConfiguration($nomKey);
             $color = $this->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
-
-            if (empty($indexNom) || empty($cmdGraphe)) {
-                continue;
-            }
+            if (empty($indexNom) || empty($cmdGraphe)) continue;
 
             $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
-            $listeHisto = '';
-            $cmdId = '';
-
+            $listeHisto = ''; $cmdId = '';
             if (is_object($cmd)) {
                 $unite = $cmd->getUnite() ?: '';
-                $unite = trim($unite);
-                $unite = $unite === '' ? '' : $unite . ' ';
+                $unite = trim($unite) === '' ? '' : $unite . ' ';
                 $histo = $cmd->getHistory($startTime);
-                $lastValue = null;
-                $n = 0;
-
+                $lastValue = null; $n = 0;
                 foreach ($histo as $row) {
                     $ts = strtotime($row->getDatetime());
                     if ($ts >= $minTime) {
@@ -233,30 +191,22 @@ public function toHtml($_version = 'dashboard') {
                         $lastValue = $row->getValue();
                     }
                 }
-
                 if ($n == 0 && $lastValue !== null) {
                     $ts = $minTime;
                     $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$lastValue}],\n";
                 }
-
                 $ts = time();
                 $value = $cmd->execCmd();
                 $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$value}],\n";
-
-                $replace['#unite#'] = $cmd->getUnite();
                 $cmdId = str_replace('#', '', $cmdGraphe);
             }
-
-            // Série
-            $seriesJS .= "{ 
-                              name: " . json_encode($indexNom) . ", 
-                              color: " . json_encode($color) . ", 
-                              marker: { enabled: false }, 
-                              data: [{$listeHisto}],
-                              unite: " . json_encode($unite) . "
-                          },\n";
-
-            // Mise à jour temps réel
+            $seriesJS .= "{
+                name: " . json_encode($indexNom) . ",
+                color: " . json_encode($color) . ",
+                marker: { enabled: false },
+                data: [{$listeHisto}],
+                unite: " . json_encode($unite) . "
+            },\n";
             if ($cmdId) {
                 $cmdUpdateJS .= "
                 if ('{$cmdId}' !== '') {
@@ -272,26 +222,34 @@ public function toHtml($_version = 'dashboard') {
             }
         }
 
-        // Highcharts
+        $showLegend = $this->getConfiguration('showLegend', 1) ? 'true' : 'false';
+        $rangeSelector = "{
+            buttons: [
+                { type: 'minute', count: 30, text: '30m' },
+                { type: 'hour', count: 1, text: '1h' },
+                { type: 'day', count: 1, text: '1j' },
+                { type: 'week', count: 1, text: '1s' },
+                { type: 'month', count: 1, text: '1m' },
+                { type: 'year', count: 1, text: '1a' },
+                { type: 'all', text: 'Tous' }
+            ],
+            inputEnabled: false,
+            buttonTheme: { width: 50 }
+        }";
+
+        $navigator = '{ enabled: true }';
+
         $chartScripts .= "
         window.chart_g{$g} = Highcharts.chart('{$containerId}', {
             chart: { type: graphType },
-            title: {  text: '{$titleGraph}', 
-                      style:  { fontWeight: 'bold',
-                                color: 'rgb(100, 100, 100)'
-                              }
-                    },
+            title: { text: '{$titleGraph}', style: { fontWeight: 'bold', color: 'rgb(100, 100, 100)' } },
             xAxis: { type: 'datetime' },
-            yAxis: {  opposite: true, 
-                      labels: { format: '{value}' }, 
-                      title: { text: '' } 
-                    },
-            tooltip: {  shared: true, 
-                        useHTML: true, 
-                        borderRadius: 10,
-                        pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr>' },
+            yAxis: { opposite: true, labels: { format: '{value}' }, title: { text: '' } },
+            tooltip: { shared: true, useHTML: true, borderRadius: 10, pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr>' },
             credits: { enabled: false },
-            legend: { enabled: true },
+            legend: { enabled: {$showLegend} },
+            rangeSelector: {$rangeSelector},
+            navigator: {$navigator},
             series: [{$seriesJS}].filter(s => s.name && s.data.length > 0)
         });
         setTimeout(() => window.chart_g{$g} && window.chart_g{$g}.reflow(), 50);
@@ -301,36 +259,26 @@ public function toHtml($_version = 'dashboard') {
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
-
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $this->postToHtml($_version, $html);
 }
-
-  /*     * **********************Getteur Setteur*************************** */
+  /* * **********************Getteur Setteur*************************** */
 }
-
 class jeeHistoGraphCmd extends cmd {
-  /*     * *************************Attributs****************************** */
-
+  /* * *************************Attributs****************************** */
   /*
   public static $_widgetPossibility = array();
   */
-
-  /*     * ***********************Methode static*************************** */
-
-
-  /*     * *********************Methode d'instance************************* */
-
+  /* * ***********************Methode static*************************** */
+  /* * *********************Methode d'instance************************* */
   /*
   * Permet d'empêcher la suppression des commandes même si elles ne sont pas dans la nouvelle configuration de l'équipement envoyé en JS
   public function dontRemoveCmd() {
     return true;
   }
   */
-
   // Exécution d'une commande
   public function execute($_options = array()) {
   }
-
-  /*     * **********************Getteur Setteur*************************** */
+  /* * **********************Getteur Setteur*************************** */
 }

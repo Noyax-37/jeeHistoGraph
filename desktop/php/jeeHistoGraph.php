@@ -151,23 +151,9 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
                                 <div class="col-sm-3">
                                     <input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
                                 </div>
+								<label class="col-sm-3 control-label">{{par défaut 1 jour}}</label>
                             </div>
 							
-							<div class="form-group">
-								<label class="col-sm-3 control-label">{{Période de zoom par défaut}}</label>
-								<div class="col-sm-4">
-									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="defaultZoom">
-										<option value="all">{{Tout}}</option>
-										<option value="30min">30 minutes</option>
-										<option value="1h">1 heure</option>
-										<option value="1d">1 jour</option>
-										<option value="1w">1 semaine</option>
-										<option value="1M">1 mois</option>
-										<option value="1y">1 an</option>
-									</select>
-								</div>
-							</div>
-
 							<div class="form-group">
                                 <label class="col-sm-3 control-label">{{Afficher la légende}}</label>
                                 <div class="col-sm-3">
@@ -207,14 +193,21 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 							for ($g = 1; $g <= 4; $g++) {
 								$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
 								echo '<div class="graphConfig" data-graph="' . $g . '" ' . $display . '>';
-								echo '<div class="form-group">';
-								echo '<legend><i class="fas fa-chart-line"></i>{{Graphique}} ' . $g . '</legend>';
-								echo '<div class="form-group">';
-                                echo '<label class="col-sm-3 control-label"> {{titre graphique}} ' . $g . ' : </label>';
-								echo '<div class="col-sm-6">';
-								echo '<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
-								echo '</div>';
-								echo '</div>';
+									echo '<div class="form-group">';
+										echo '<legend><i class="fas fa-chart-line"></i>{{Graphique}} ' . $g . '</legend>';
+										echo '<div class="form-group">';
+                                			echo '<label class="col-sm-3 control-label"> {{titre graphique}} ' . $g . ' : </label>';
+											echo '<div class="col-sm-6">';
+												echo '<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
+											echo '</div>';
+										echo '</div>';
+										echo '<div class="form-group">';
+											echo '<label class="col-sm-3 control-label">{{Période personnalisée (jours) :}}</label>';
+											echo '<div class="col-sm-3">';
+												echo '<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph' . $g . '" placeholder="{{Global}}" title="{{Laisser vide pour utiliser la période globale}}">';
+											echo '</div>';
+										echo '<div class="col-sm-6"><small>{{Laisser vide = période globale (' . ($eqLogic ? $eqLogic->getConfiguration('delai_histo', 1) : 1) . ' jour(s))}}</small></div>';
+									echo '</div>';
 								echo '</div>';
 
 								// Bouton RAZ couleurs

@@ -1,6 +1,5 @@
 # jeeHistoGraph - Graphiques multi-courbes personnalisables pour Jeedom
 
-![jeeHistoGraph](https://via.placeholder.com/800x400?text=jeeHistoGraph+Plugin)  
 *Plugin Jeedom permettant d'afficher jusqu'à **4 graphiques indépendants**, chacun avec **jusqu'à 10 courbes**, avec zoom, déplacement temporel et mise à jour en temps réel.*
 
 ---
@@ -30,10 +29,7 @@
 
 ## Installation
 
-1. Téléchargez le plugin via le **Market Jeedom** ou installez-le manuellement :
-   ```bash
-   cd /var/www/html/plugins
-   git clone https://github.com/votre-nom/jeeHistoGraph.git
+1. Téléchargez le plugin via le **Market Jeedom**
 
 Activez le plugin dans Jeedom → Plugins → Gestion des plugins
 Cliquez sur "Ajouter" pour créer un nouvel équipement
@@ -82,17 +78,14 @@ Utilisez des commandes avec historique activé
 Support & Contribution
 
 Forum Jeedom : Recherche "jeeHistoGraph"
-GitHub Issues : github.com/votre-nom/jeeHistoGraph/issues
+GitHub Issues : [github.com](https://github.com/Noyax-37/jeeHistoGraph/issues)
 
 
-Changelog
-v1.0.0 (14/11/2025)
+[Changelog]/docs/fr_FR/changelog.md
+
 
 Version initiale
 4 graphiques × 10 courbes
 Zoom + déplacement temporel
 Mise à jour en temps réel
 Couleurs personnalisables
-
-
-Développé avec ❤️ pour la communauté Jeedom
