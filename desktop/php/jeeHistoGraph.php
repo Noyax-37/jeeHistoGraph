@@ -147,13 +147,24 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">{{Période affichée (jours)}}</label>
+                                <label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
                                 <div class="col-sm-3">
                                     <input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
                                 </div>
-								<label class="col-sm-3 control-label">{{par défaut 1 jour}}</label>
                             </div>
-							
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{{Type de graphique}}</label>
+                                <div class="col-sm-4">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graphType" id="globalGraphType">
+										<option value="line">{{Ligne classique}}</option>
+										<option value="spline">{{Courbe lisse}}</option>
+										<option value="areaspline">{{Aire lisse}}</option>
+										<option value="area">{{Aire}}</option>
+										<option value="column">{{Colonne}}</option>
+										<option value="perGraph">{{À paramétrer par graphique}}</option>
+									</select>
+                                </div>
+                            </div>							
 							<div class="form-group">
                                 <label class="col-sm-3 control-label">{{Afficher la légende}}</label>
                                 <div class="col-sm-3">
@@ -207,6 +218,18 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 												echo '<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph' . $g . '" placeholder="{{Global}}" title="{{Laisser vide pour utiliser la période globale}}">';
 											echo '</div>';
 										echo '<div class="col-sm-6"><small>{{Laisser vide = période globale (' . ($eqLogic ? $eqLogic->getConfiguration('delai_histo', 1) : 1) . ' jour(s))}}</small></div>';
+									echo '</div>';
+									echo '<div class="form-group graphTypePerGraph" style="display:none;">';
+									echo '    <label class="col-sm-3 control-label">{{Type de ligne}}</label>';
+									echo '    <div class="col-sm-4">';
+									echo '        <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_type">';
+									echo '            <option value="line">{{Ligne classique}}</option>';
+									echo '            <option value="spline">{{Courbe lisse}}</option>';
+									echo '            <option value="areaspline">{{Aire lisse}}</option>';
+									echo '            <option value="area">{{Aire}}</option>';
+									echo '            <option value="column">{{Colonne}}</option>';
+									echo '        </select>';
+									echo '    </div>';
 									echo '</div>';
 								echo '</div>';
 
@@ -305,6 +328,19 @@ document.querySelectorAll('.btjeeHistoGraphRazCouleurs').forEach(btn => {
 $(function() {
     const nb = parseInt($('[data-l1key="configuration"][data-l2key="nbGraphs"]').val()) || 1;
     $('[data-l1key="configuration"][data-l2key="nbGraphs"]').val(nb).trigger('change');
+});
+
+// Gestion du type de graphique global
+$('#globalGraphType').on('change', function() {
+    const isPerGraph = $(this).val() === 'perGraph';
+    $('.graphTypePerGraph').each(function() {
+        $(this).closest('.graphConfig').find('.graphTypePerGraph').toggle(isPerGraph);
+    });
+});
+
+// Au chargement
+$(function() {
+    $('#globalGraphType').trigger('change');
 });
 </script>
 

@@ -140,7 +140,7 @@ public function toHtml($_version = 'dashboard') {
     $nbGraphs = max(1, min(4, $this->getConfiguration('nbGraphs', 1)));
 
     $replace['#nbGraphs#'] = $nbGraphs;
-    $replace['#graphType#'] = $this->getConfiguration('graphType', 'line');
+    $globalGraphType = $this->getConfiguration('graphType', 'line');
 
     $graphContainers = '';
     $chartScripts = '';
@@ -148,6 +148,10 @@ public function toHtml($_version = 'dashboard') {
 
     for ($g = 1; $g <= 4; $g++) {
         if ($g > $nbGraphs) continue;
+        $graphType = $globalGraphType;
+        if ($globalGraphType === 'perGraph') {
+            $graphType = $this->getConfiguration("graph{$g}_type", 'line');
+        }
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
         $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
@@ -241,7 +245,7 @@ public function toHtml($_version = 'dashboard') {
 
         $chartScripts .= "
         window.chart_g{$g} = Highcharts.chart('{$containerId}', {
-            chart: { type: graphType },
+            chart: { type: '{$graphType}' },
             title: { text: '{$titleGraph}', style: { fontWeight: 'bold', color: 'rgb(100, 100, 100)' } },
             xAxis: { type: 'datetime' },
             yAxis: { opposite: true, labels: { format: '{value}' }, title: { text: '' } },
