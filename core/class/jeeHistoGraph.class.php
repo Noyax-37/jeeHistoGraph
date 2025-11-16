@@ -165,6 +165,20 @@ public function toHtml($_version = 'dashboard') {
         $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
         $minTime = time() - $delai * 24 * 60 * 60;
 
+        $stacking = '';
+        if ($globalGraphType === 'perGraph') {
+            $stacking = $this->getConfiguration("stacking_graph{$g}", '');
+        } else {
+            $stacking = $this->getConfiguration('stacking', '');
+        }
+
+        $bgTransparent = $this->getConfiguration("graph{$g}_bg_transparent", 1);
+        $bgColor = '#ffffff'; // blanc par défaut
+        if (!$bgTransparent) {
+            $bgColor = $this->getConfiguration("graph{$g}_bg_color", '#ffffff');
+        }
+        $chartBgColor = $bgTransparent ? 'transparent' : $bgColor;
+        log::add('jeeHistoGraph', 'debug', "Graph {$g} background color: {$chartBgColor}");
 
         $seriesJS = '';
         $cmdUpdateJS = '';
@@ -241,12 +255,28 @@ public function toHtml($_version = 'dashboard') {
             buttonTheme: { width: 50 }
         }";
 
-        $navigator = '{ enabled: true }';
+        $navigator = '{ enabled: true, label: { enabled: false } }';
+
+        $plotOptions = '';
+        if (in_array($graphType, ['area', 'areaspline', 'column']) && !empty($stacking)) {
+            $plotOptions = "plotOptions: { series: { stacking: '{$stacking}' } },";
+        }
 
         $chartScripts .= "
         window.chart_g{$g} = Highcharts.chart('{$containerId}', {
-            chart: { type: '{$graphType}' },
-            title: { text: '{$titleGraph}', style: { fontWeight: 'bold', color: 'rgb(100, 100, 100)' } },
+            chart: { 
+                type: '{$graphType}',
+                plotBackgroundColor: '{$chartBgColor}'
+            },
+            {$plotOptions}
+            title: { 
+                text: '{$titleGraph}', 
+                height: 10,
+                style: { 
+                    fontWeight: 'bold', 
+                    color: 'rgb(100, 100, 100)' 
+                }
+            },
             xAxis: { type: 'datetime' },
             yAxis: { opposite: true, labels: { format: '{value}' }, title: { text: '' } },
             tooltip: { shared: true, useHTML: true, borderRadius: 10, pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr>' },

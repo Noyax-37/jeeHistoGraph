@@ -165,6 +165,18 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									</select>
                                 </div>
                             </div>							
+
+							<div class="form-group" id="globalStackingContainer">
+								<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne)}}</label>
+								<div class="col-sm-4">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking" id="globalStacking">
+										<option value="">{{Aucun}}</option>
+										<option value="normal">{{Normal}}</option>
+										<option value="percent">{{Pourcentage}}</option>
+									</select>
+								</div>
+							</div>
+
 							<div class="form-group">
                                 <label class="col-sm-3 control-label">{{Afficher la légende}}</label>
                                 <div class="col-sm-3">
@@ -172,24 +184,20 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">{{Empilement (aire uniquement)}}</label>
-                                <div class="col-sm-4">
-                                    <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking">
-                                        <option value="">{{Aucun}}</option>
-                                        <option value="normal">{{Normal}}</option>
-                                        <option value="percent">{{Pourcentage}}</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
+							<div class="form-group">
                                 <label class="col-sm-3 control-label">{{Nb max points par courbe (500 par défaut)}}</label>
                                 <div class="col-sm-3">
                                     <input type="number" min="50" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="maxPoints" value="500">
                                 </div>
                                 <div class="col-sm-5"><small>{{ à ajuster pour éviter les ralentissements}}</small></div>
                             </div>
+
+							<div class="form-group">
+								<label class="col-sm-3 control-label"></label>
+								<div class="col-sm-6">
+									<a class="btn btn-info" id="bt_resetAllBg"><i class="fas fa-undo"></i> {{Remettre tous les fonds transparents}}</a>
+								</div>
+							</div>
 
 							<legend></i> {{ }}</legend>
 
@@ -203,70 +211,93 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 							for ($g = 1; $g <= 4; $g++) {
 								$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
-								echo '<div class="graphConfig" data-graph="' . $g . '" ' . $display . '>';
-									echo '<div class="form-group">';
-										echo '<legend><i class="fas fa-chart-line"></i>{{Graphique}} ' . $g . '</legend>';
-										echo '<div class="form-group">';
-                                			echo '<label class="col-sm-3 control-label"> {{titre graphique}} ' . $g . ' : </label>';
-											echo '<div class="col-sm-6">';
-												echo '<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
-											echo '</div>';
-										echo '</div>';
-										echo '<div class="form-group">';
-											echo '<label class="col-sm-3 control-label">{{Période personnalisée (jours) :}}</label>';
-											echo '<div class="col-sm-3">';
-												echo '<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph' . $g . '" placeholder="{{Global}}" title="{{Laisser vide pour utiliser la période globale}}">';
-											echo '</div>';
-										echo '<div class="col-sm-6"><small>{{Laisser vide = période globale (' . ($eqLogic ? $eqLogic->getConfiguration('delai_histo', 1) : 1) . ' jour(s))}}</small></div>';
-									echo '</div>';
-									echo '<div class="form-group graphTypePerGraph" style="display:none;">';
-									echo '    <label class="col-sm-3 control-label">{{Type de ligne}}</label>';
-									echo '    <div class="col-sm-4">';
-									echo '        <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_type">';
-									echo '            <option value="line">{{Ligne classique}}</option>';
-									echo '            <option value="spline">{{Courbe lisse}}</option>';
-									echo '            <option value="areaspline">{{Aire lisse}}</option>';
-									echo '            <option value="area">{{Aire}}</option>';
-									echo '            <option value="column">{{Colonne}}</option>';
-									echo '        </select>';
-									echo '    </div>';
-									echo '</div>';
-								echo '</div>';
+								echo	'<div class="graphConfig" data-graph="' . $g . '" ' . $display . '>';
+								echo		'<div class="form-group">';
+								echo		'<legend><i class="fas fa-chart-line"></i>{{Graphique}} ' . $g . '</legend>';
+								echo			'<div class="form-group">';
+                                echo				'<label class="col-sm-3 control-label"> {{titre graphique}} ' . $g . ' : </label>';
+								echo				'<div class="col-sm-6">';
+								echo					'<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
+								echo				'</div>';
+								echo			'</div>';
+								echo 			'<div class="form-group">';
+								echo 				'<label class="col-sm-3 control-label">{{Fond transparent}} ' . $g . '</label>';
+								echo				'<div class="col-sm-3">';
+								echo 					'<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_transparent" checked>';
+								echo 				'</div>';
+								echo 				'<div class="col-sm-3 bgColorInput" style="display:none;">';
+								echo 					'<input type="color" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_bg_color" value="#ffffff">';
+								echo 				'</div>';
+								echo 			'</div>';
+								echo			'<div class="form-group">';
+								echo				'<label class="col-sm-3 control-label">{{Période personnalisée (jours) :}}</label>';
+								echo					'<div class="col-sm-3">';
+								echo						'<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph' . $g . '" placeholder="{{Global}}" title="{{Laisser vide pour utiliser la période globale}}">';
+								echo					'</div>';
+								echo 					'<div class="col-sm-6"><small>{{Laisser vide = période globale (' . ($eqLogic ? $eqLogic->getConfiguration('delai_histo', 1) : 1) . ' jour(s))}}</small></div>';
+								echo 			'</div>';
+								echo			'<div class="form-group graphTypePerGraph" style="display:none;">';
+								echo				'<div class="form-group perGraph";">';
+								echo					'<label class="col-sm-3 control-label">{{Type de ligne :}}</label>';
+								echo					'<div class="col-sm-3">';
+								echo						'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_type">';
+								echo							'<option value="line">{{Ligne classique}}</option>';
+								echo							'<option value="spline">{{Courbe lisse}}</option>';
+								echo							'<option value="areaspline">{{Aire lisse}}</option>';
+								echo							'<option value="area">{{Aire}}</option>';
+								echo							'<option value="column">{{Colonne}}</option>';
+								echo						'</select>';
+								echo					'</div>';
+								echo				'</div>';
+								echo 			'</div>';
+								echo			'<div class="form-group stackingPerGraph" style="display:none;" data-graph="' . $g . ' ?>">';
+								echo				'<div class="form-group stackGraph";">';
+								echo					'<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>';
+								echo					'<div class="col-sm-3">';
+								echo						'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph' . $g .'">';
+								echo							'<option value="">{{Aucun}}</option>';
+								echo							'<option value="normal">{{Normal}}</option>';
+								echo							'<option value="percent">{{Pourcentage}}</option>';
+								echo						'</select>';
+								echo					'</div>';
+								echo				'</div>';
+								echo			'</div>';
+								echo		'</div>';
 
 								// Bouton RAZ couleurs
-								echo '<div class="form-group Colors">';
-								echo '<label class="col-sm-2 control-label">{{}}</label>';
-								echo '<label class="col-sm-2 control-label">{{}}</label>';
-								echo '<a class="btn btn-warning tooltips col-sm-2 btjeeHistoGraphRazCouleurs" data-graph="' . $g . '"><i class="fas fa-medkit"></i> {{Couleurs par défaut}}</a>';
-								echo '</div>';
+								echo		'<div class="form-group Colors">';
+								echo			'<label class="col-sm-2 control-label">{{}}</label>';
+								echo			'<label class="col-sm-2 control-label">{{}}</label>';
+								echo			'<a class="btn btn-warning tooltips col-sm-2 btjeeHistoGraphRazCouleurs" data-graph="' . $g . '"><i class="fas fa-medkit"></i> {{Couleurs par défaut}}</a>';
+								echo		'</div>';
 
-								echo '<div class="form-group">';
-								echo '<label class="col-sm-2 control-label">{{Courbe}}</label>';
-								echo '<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>';
-								echo '<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>';
-								echo '<label class="col-sm-6 control-label pull-left">{{Commande}}</label>';
-								echo '</div>';
+								echo		'<div class="form-group">';
+								echo			'<label class="col-sm-2 control-label">{{Courbe}}</label>';
+								echo			'<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>';
+								echo			'<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>';
+								echo			'<label class="col-sm-6 control-label pull-left">{{Commande}}</label>';
+								echo		'</div>';
 
 								for ($i = 1; $i <= 10; $i++) {
 									$index = str_pad($i, 2, '0', STR_PAD_LEFT);
 									$colorIdx = (($g-1)*10) + $i;
 
-									echo '<div class="form-group">';
-									echo '<label class="col-sm-2 control-label">{{Courbe ' . $index . '}} :</label>';
-									echo '<div class="col-sm-2">';
-									echo '<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph' . $g . '_index' . $index . '_nom" placeholder="..."/>';
-									echo '</div>';
-									echo '<div class="col-sm-1">';
-									echo '<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g' . $g . '_c' . $i . '" data-l1key="configuration" data-l2key="graph' . $g . '_color' . $i . '" value="#FF4500">';
-									echo '</div>';
-									echo '<div class="col-sm-6 input-group">';
-									echo '<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="graph' . $g . '_cmdGraphe' . $index . '"></input>';
-									echo '<a class="btn btn-default listEquipementInfo cursor btn-sm input-group-addon" data-input="graph' . $g . '_cmdGraphe' . $index . '"><i class="fas fa-list-alt"></i></a>';
-									echo '</div>';
-									echo '</div>';
+									echo		'<div class="form-group">';
+									echo			'<label class="col-sm-2 control-label">{{Courbe ' . $index . '}} :</label>';
+									echo			'<div class="col-sm-2">';
+									echo				'<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph' . $g . '_index' . $index . '_nom" placeholder="..."/>';
+									echo			'</div>';
+									echo			'<div class="col-sm-1">';
+									echo				'<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g' . $g . '_c' . $i . '" data-l1key="configuration" data-l2key="graph' . $g . '_color' . $i . '" value="#FF4500">';
+									echo			'</div>';
+									echo			'<div class="col-sm-6 input-group">';
+									echo				'<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="graph' . $g . '_cmdGraphe' . $index . '"></input>';
+									echo				'<a class="btn btn-default listEquipementInfo cursor btn-sm input-group-addon" data-input="graph' . $g . '_cmdGraphe' . $index . '"><i class="fas fa-list-alt"></i></a>';
+									echo			'</div>';
+									echo		'</div>';
 								}
-								echo '</div>'; // .graphConfig
-								echo '<hr/>';
+								echo	'</div>'; // .graphConfig
+								echo	'<hr/>';
 							}
 							?>
 
@@ -342,6 +373,60 @@ $('#globalGraphType').on('change', function() {
 $(function() {
     $('#globalGraphType').trigger('change');
 });
+
+// === Gestion du stacking selon le type de graphique ===
+function updateStackingVisibility() {
+    const isPerGraph = $('#globalGraphType').val() === 'perGraph';
+    $('#globalStackingContainer').toggle(!isPerGraph);
+    $('.stackingPerGraph').each(function() {
+        const graphNum = $(this).data('graph');
+        const $graphConfig = $(this).closest('.graphConfig');
+        const isVisible = $graphConfig.is(':visible');
+        $(this).toggle(isPerGraph && isVisible);
+    });
+}
+
+// Mettre à jour au changement de type global
+$('#globalGraphType').on('change', updateStackingVisibility);
+
+// Mettre à jour au changement du nombre de graphiques
+$('[data-l1key="configuration"][data-l2key="nbGraphs"]').on('change', updateStackingVisibility);
+
+// Initialisation
+$(function() {
+    updateStackingVisibility();
+});
+
+// Gestion de l'affichage de l'input couleur selon la case "transparent"
+$(document).on('change', '[data-l2key^="graph"][data-l2key$="_bg_transparent"]', function() {
+    const $checkbox = $(this);
+    const graphNum = $checkbox.data('l2key').match(/graph(\d)_bg_transparent/)[1];
+    const $colorInput = $checkbox.closest('.form-group').find('[data-l2key="graph' + graphNum + '_bg_color"]').closest('.bgColorInput');
+    
+    if ($checkbox.is(':checked')) {
+        $colorInput.hide();
+    } else {
+        $colorInput.show();
+    }
+});
+
+// Bouton global : remettre tous les fonds transparents
+$('#bt_resetAllBg').on('click', function() {
+    $('.graphConfig:visible').each(function() {
+        const graphNum = $(this).data('graph');
+        const $checkbox = $(this).find('[data-l2key="graph' + graphNum + '_bg_transparent"]');
+        const $colorInput = $(this).find('[data-l2key="graph' + graphNum + '_bg_color"]').closest('.bgColorInput');
+        
+        $checkbox.prop('checked', true).trigger('change');
+        $colorInput.hide();
+    });
+});
+
+// Initialisation au chargement
+$(function() {
+    $('[data-l2key^="graph"][data-l2key$="_bg_transparent"]').trigger('change');
+});
+
 </script>
 
 <!-- Inclusion du fichier javascript du plugin (dossier, nom_du_fichier, extension_du_fichier, id_du_plugin) -->
