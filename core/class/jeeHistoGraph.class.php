@@ -180,7 +180,6 @@ public function toHtml($_version = 'dashboard') {
             $bgColor = $this->getConfiguration("graph{$g}_bg_color", '#ffffff');
         }
         $chartBgColor = $bgTransparent ? 'transparent' : $bgColor;
-        log::add('jeeHistoGraph', 'debug', "Graph {$g} background color: {$chartBgColor}");
 
         $seriesJS = '';
         $cmdUpdateJS = '';
@@ -204,19 +203,27 @@ public function toHtml($_version = 'dashboard') {
                 if ($finalCurveType === 'inherit_curve') {
                     $finalCurveType = $graphType;
                 }
-                $unite = $cmd->getUnite() ?: '';
-                $unite = trim($unite) === '' ? '' : $unite . ' ';
+                $manualUnit = trim($this->getConfiguration("graph{$g}_unite{$i}", ''));
+                if ($manualUnit !== '') {
+                    $unite = $manualUnit;
+                    $coef = floatval($this->getConfiguration("graph{$g}_coef{$i}", '1'));
+                    log::add('jeeHistoGraph', 'debug', "Graph {$g} Curve {$i} using manual unit '{$unite}' with coefficient {$coef}");
+                } else {
+                    $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : '';
+                    $coef = 1;
+                }
+                $unite = $unite !== '' ? $unite : '';
                 $histo = $cmd->getHistory($startTime);
-                $lastValue = null; $n = 0;
+                $lastValue = null; 
+                $n = 0;
                 foreach ($histo as $row) {
                     $ts = strtotime($row->getDatetime());
-                    log::add('jeeHistoGraph', 'debug', 'données : ' . json_encode($ts) . ' / ' . json_encode($row->getValue()));
                     if ($ts >= $minTime) {
                         $n++;
-                        $value = $row->getValue();
+                        $value = $coef * $row->getValue();
                         $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$value}],\n";
                     } else {
-                        $lastValue = $row->getValue();
+                        $lastValue = $coef * $row->getValue();
                     }
                 }
                 if ($n == 0 && $lastValue !== null) {
@@ -224,7 +231,7 @@ public function toHtml($_version = 'dashboard') {
                     $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$lastValue}],\n";
                 }
                 $ts = time();
-                $value = $cmd->execCmd();
+                $value = $coef * $cmd->execCmd();
                 $listeHisto .= "[Date.UTC(" . date("Y", $ts) . "," . (date("m", $ts)-1) . "," . date("d", $ts) . "," . date("H", $ts) . "," . date("i", $ts) . "," . date("s", $ts) . "),{$value}],\n";
                 $cmdId = str_replace('#', '', $cmdGraphe);
             }
@@ -306,7 +313,7 @@ public function toHtml($_version = 'dashboard') {
                 shared: true, 
                 useHTML: true, 
                 borderRadius: 10, 
-                pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr><br>' 
+                pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.2f}{series.options.unite}</b></td></tr><br>' 
             },
             credits: { enabled: false },
             legend: { 

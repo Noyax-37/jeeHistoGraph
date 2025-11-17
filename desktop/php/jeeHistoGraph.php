@@ -261,7 +261,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								// Bouton RAZ couleurs
 								echo		'<div class="form-group Colors">';
 								echo			'<label class="col-sm-2 control-label">{{}}</label>';
-								echo			'<label class="col-sm-2 control-label">{{}}</label>';
+								echo			'<label class="col-sm-4 control-label">{{}}</label>';
 								echo			'<a class="btn btn-warning tooltips col-sm-2 btjeeHistoGraphRazCouleurs" data-graph="' . $g . '"><i class="fas fa-medkit"></i> {{Couleurs par défaut}}</a>';
 								echo		'</div>';
 
@@ -278,12 +278,12 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									$colorIdx = (($g-1)*10) + $i;
 
 									echo		'<div class="form-group">';
-									echo			'<label class="col-sm-2 control-label">{{Courbe ' . $index . '}} :</label>';
+									echo			'<label class="col-sm-1 control-label">{{Courbe ' . $index . '}} :</label>';
 									echo			'<div class="col-sm-2">';
 									echo				'<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph' . $g . '_index' . $index . '_nom" placeholder="..."/>';
 									echo			'</div>';
 									echo			'<div class="col-sm-2">';
-									echo				'<select class="eqLogicAttr form-control curveTypeSelect curveTypeSelect' . $g . '" data-l1key="configuration" data-l2key="graph' . $g . '_curve' . $i . '_type">';
+									echo				'<select class="eqLogicAttr form-control curveTypeSelect' . $g . '" data-l1key="configuration" data-l2key="graph' . $g . '_curve' . $i . '_type">';
 									echo					'<option value="inherit_curve" selected>{{Config graphique}}</option>';
 									echo					'<option value="line">{{Ligne}}</option>';
 									echo					'<option value="spline">{{Courbe lisse}}</option>';
@@ -293,12 +293,20 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									echo				'</select>';
 									echo			'</div>';
 									echo			'<div class="col-sm-1">';
-									echo				'<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g' . $g . '_c' . $i . '" data-l1key="configuration" data-l2key="graph' . $g . '_color' . $i . '" value="#FF4500">';
+									echo				'<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g' . $g . '_c' . $i . '" data-l1key="configuration" data-l2key="graph' . $g . '_color' . $i . '" value="#FF4500"></input>';
 									echo			'</div>';
-									echo			'<div class="col-sm-4 input-group">';
-									echo				'<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="graph' . $g . '_cmdGraphe' . $index . '"></input>';
-									echo				'<a class="btn btn-default listEquipementInfo cursor btn-sm input-group-addon" data-input="graph' . $g . '_cmdGraphe' . $index . '"><i class="fas fa-list-alt"></i></a>';
+									echo			'<div class="col-sm-4">';
+									echo			'<div class="input-group">';
+									echo				'<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_cmdGraphe' . $index . '">';
+									echo				'<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph' . $g . '_cmdGraphe' . $index . '"><i class="fas fa-list-alt"></i></a></input>';
 									echo			'</div>';
+									echo			'</div>';
+									echo			'<div class="col-sm-1">';
+									echo                '<input type="text" class="eqLogicAttr configKey" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph' . $g . '_unite' . $i . '"></input>';
+									echo			'</div>';
+									echo			'<div class="col-sm-1">';
+									echo                '<input type="text" class="eqLogicAttr configKey" placeholder="coef" title="coefficient à appliquer (ne sera appliqué que si l unité est complétée)" data-l1key="configuration" data-l2key="graph'. $g . '_coef' . $i . '"></input>';
+									echo            '</div>';
 									echo		'</div>';
 								}
 								echo	'</div>'; // .graphConfig
