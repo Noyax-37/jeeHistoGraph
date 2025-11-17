@@ -232,7 +232,6 @@ public function toHtml($_version = 'dashboard') {
                 name: " . json_encode($indexNom) . ",
                 color: " . json_encode($color) . ",
                 type: " . json_encode($finalCurveType) . ",
-                marker: { enabled: false },
                 data: [{$listeHisto}],
                 unite: " . json_encode($unite) . "
             },\n";
@@ -302,7 +301,13 @@ public function toHtml($_version = 'dashboard') {
                 labels: { format: '{value}' },
                 title: { text: '' },
             },
-            tooltip: { shared: true, useHTML: true, borderRadius: 10, pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr>' },
+            tooltip: { 
+                xDateFormat: '%d/%m %Hh%M',
+                shared: true, 
+                useHTML: true, 
+                borderRadius: 10, 
+                pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr><br>' 
+            },
             credits: { enabled: false },
             legend: { 
                 enabled: {$showLegend},
