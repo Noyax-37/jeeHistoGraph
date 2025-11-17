@@ -242,31 +242,45 @@ public function toHtml($_version = 'dashboard') {
 
         $showLegend = $this->getConfiguration('showLegend', 1) ? 'true' : 'false';
         $rangeSelector = "{
+            enabled: true,
+            selected: 6,
+            inputEnabled: false,
+            floating: true,
+            allButtonsEnabled: true,
             buttons: [
                 { type: 'minute', count: 30, text: '30m' },
                 { type: 'hour', count: 1, text: '1h' },
                 { type: 'day', count: 1, text: '1j' },
-                { type: 'week', count: 1, text: '1s' },
-                { type: 'month', count: 1, text: '1m' },
-                { type: 'year', count: 1, text: '1a' },
-                { type: 'all', text: 'Tous' }
+                { type: 'day', count: 7, text: '1s' },
+                { type: 'day', count: 30, text: '1m' },
+                { type: 'day', count: 365, text: '1y' },
+                { type: 'all', text: 'Tout' }
             ],
-            inputEnabled: false,
-            buttonTheme: { width: 50 }
+            inputPosition: {
+                x: 0,
+                y: 0
+            },
+            buttonPosition: {
+                x: 0,
+                y: 0
+            }
         }";
 
-        $navigator = '{ enabled: true, label: { enabled: false } }';
+        $navigator =    '{ 
+                        enabled: true,
+                        margin: 1
+                        }';
 
         $plotOptions = '';
         if (in_array($graphType, ['area', 'areaspline', 'column']) && !empty($stacking)) {
-            $plotOptions = "plotOptions: { series: { stacking: '{$stacking}' } },";
+            $plotOptions = "plotOptions: { series: { stacking: '{$stacking}' }, height: '100%' },";
         }
 
         $chartScripts .= "
         window.chart_g{$g} = Highcharts.chart('{$containerId}', {
-            chart: { 
+            chart: {
                 type: '{$graphType}',
-                plotBackgroundColor: '{$chartBgColor}'
+                plotBackgroundColor: '{$chartBgColor}',
             },
             {$plotOptions}
             title: { 
@@ -278,10 +292,16 @@ public function toHtml($_version = 'dashboard') {
                 }
             },
             xAxis: { type: 'datetime' },
-            yAxis: { opposite: true, labels: { format: '{value}' }, title: { text: '' } },
+            yAxis: {
+                opposite: true,
+                labels: { format: '{value}' },
+                title: { text: '' },
+            },
             tooltip: { shared: true, useHTML: true, borderRadius: 10, pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.1f}{series.options.unite}</b></td></tr>' },
             credits: { enabled: false },
-            legend: { enabled: {$showLegend} },
+            legend: { 
+                enabled: {$showLegend},
+            },
             rangeSelector: {$rangeSelector},
             navigator: {$navigator},
             series: [{$seriesJS}].filter(s => s.name && s.data.length > 0)

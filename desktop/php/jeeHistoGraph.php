@@ -153,15 +153,15 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">{{Type de graphique}}</label>
+                                <label class="col-sm-3 control-label">{{Type de graphique (global ou individuel)}}</label>
                                 <div class="col-sm-4">
 									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graphType" id="globalGraphType">
+										<option value="perGraph">{{À paramétrer par graphique}}</option>
 										<option value="line">{{Ligne classique}}</option>
 										<option value="spline">{{Courbe lisse}}</option>
 										<option value="areaspline">{{Aire lisse}}</option>
 										<option value="area">{{Aire}}</option>
 										<option value="column">{{Colonne}}</option>
-										<option value="perGraph">{{À paramétrer par graphique}}</option>
 									</select>
                                 </div>
                             </div>							
