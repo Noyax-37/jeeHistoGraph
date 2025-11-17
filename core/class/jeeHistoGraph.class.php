@@ -104,7 +104,9 @@ class jeeHistoGraph extends eqLogic {
 
         $this->setConfiguration('globalGraphType', 'line');
         for ($g = 1; $g <= 4; $g++) {
-            $this->setConfiguration("graph{$g}_type", 'inherit_graph');
+            $this   ->setConfiguration("graph{$g}_type", 'inherit_graph')
+                    ->setConfiguration("graph{$g}_regroup", "aucun")
+                    ->setConfiguration("graph{$g}_typeRegroup", "aucun");
             for ($i = 1; $i <= 10; $i++) {
                 $this->setConfiguration("graph{$g}_curve{$i}_type", 'inherit_curve');
             }
@@ -181,8 +183,49 @@ public function toHtml($_version = 'dashboard') {
         }
         $chartBgColor = $bgTransparent ? 'transparent' : $bgColor;
 
+$dataGrouping = '';
+$regroup = $this->getConfiguration("graph{$g}_regroup", 'aucun');
+$typeRegroup = $this->getConfiguration("graph{$g}_typeRegroup", 'aucun');
+
+if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+    $units = '';
+    switch ($regroup) {
+        case 'minute':
+            $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
+            break;
+        case 'hour':
+            $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
+            break;
+        case 'day':
+            $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
+            break;
+        case 'week':
+            $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
+            break;
+        case 'month':
+            $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
+            break;
+        case 'year':
+            $units = "[[ 'year', [1] ]]";
+            break;
+        default:
+            $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
+    }
+
+    $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
+
+    $dataGrouping = "
+    dataGrouping: {
+        enabled: true,
+        forced: true,
+        approximation: '{$approximation}',
+        units: {$units}
+    }";
+}        
+        
         $seriesJS = '';
         $cmdUpdateJS = '';
+
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $cmdKey = "graph{$g}_cmdGraphe{$index}";
@@ -308,20 +351,25 @@ public function toHtml($_version = 'dashboard') {
                 labels: { format: '{value}' },
                 title: { text: '' },
             },
-            tooltip: { 
-                xDateFormat: '%d/%m %Hh%M',
-                shared: true, 
-                useHTML: true, 
-                borderRadius: 10, 
-                pointFormat: '<tr><td style=\"color:{series.color}\">{series.name}: </td><td><b>{point.y:.2f}{series.options.unite}</b></td></tr><br>' 
-            },
             credits: { enabled: false },
             legend: { 
                 enabled: {$showLegend},
             },
             rangeSelector: {$rangeSelector},
             navigator: {$navigator},
-            series: [{$seriesJS}].filter(s => s.name && s.data.length > 0)
+            series: [{$seriesJS}].filter(s => s.name && s.data.length > 0),
+plotOptions: {
+    series: {
+        tooltip: {
+            xDateFormat: '%d/%m/%Y %Hh%M',
+            valueDecimals: 2,
+            valueSuffix: ' {unite}'
+        },
+        dataGrouping: { enabled: false },
+        {$dataGrouping}
+    }
+},
+series: [{$seriesJS}]
         });
         setTimeout(() => window.chart_g{$g} && window.chart_g{$g}.reflow(), 50);
         {$cmdUpdateJS}

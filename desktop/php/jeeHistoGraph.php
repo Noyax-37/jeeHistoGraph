@@ -244,6 +244,30 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								echo					'<a class="btn btn-primary" id="bt_forceAllToGraph' . $g . '"><i class="fas fa-magic"></i> Tout forcer au même type</a>';
 								echo				'</div>';
 								echo			'</div>';
+								echo			'<div class="form-group">';
+								echo				'<label class="col-sm-3 control-label">{{Faire de regroupement par :}}</label>';
+								echo				'<div class="col-sm-3">';
+								echo					'<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_regroup">';
+								echo						'<option value="aucun">{{Aucun groupement}}</option>';
+								echo						'<option value="minute">{{par minute}}</option>';
+								echo						'<option value="hour">{{par heure}}</option>';
+								echo						'<option value="day">{{par jour}}</option>';
+								echo						'<option value="week">{{par semaine}}</option>';
+								echo						'<option value="month">{{par mois}}</option>';
+								echo						'<option value="year">{{par année}}</option>';
+								echo					'</select>';
+								echo				'</div>';
+								echo				'<label class="col-sm-3 control-label">{{Type de regroupement :}}</label>';
+								echo				'<div class="col-sm-3">';
+								echo					'<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_typeRegroup">';
+								echo						'<option value="aucun">{{Aucun type}}</option>';
+								echo						'<option value="avg">{{moyenne}}</option>';
+								echo						'<option value="sum">{{somme}}</option>';
+								echo						'<option value="min">{{mini}}</option>';
+								echo						'<option value="max">{{maxi}}</option>';
+								echo					'</select>';
+								echo				'</div>';
+								echo			'</div>';
 								echo			'<div class="form-group stackingPerGraph" style="display:none;" data-graph="' . $g . ' ?>">';
 								echo				'<div class="form-group stackGraph";">';
 								echo					'<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>';
@@ -266,11 +290,12 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								echo		'</div>';
 
 								echo		'<div class="form-group">';
-								echo			'<label class="col-sm-2 control-label">{{Courbe}}</label>';
+								echo			'<label class="col-sm-1 control-label">{{Courbe}}</label>';
 								echo			'<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>';
 								echo			'<label class="col-sm-2 control-label pull-left">{{Courbe}}</label>';
 								echo			'<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>';
 								echo			'<label class="col-sm-4 control-label pull-left">{{Commande}}</label>';
+								echo			'<label class="col-sm-1 control-label pull-left">{{Unité / coef}}</label>';
 								echo		'</div>';
 
 								for ($i = 1; $i <= 10; $i++) {
