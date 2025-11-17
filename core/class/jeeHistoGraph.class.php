@@ -101,6 +101,15 @@ class jeeHistoGraph extends eqLogic {
                ->setconfiguration('color9',$color[8])
                ->setconfiguration('color10',$color[9]);
           $this->save();
+
+        $this->setConfiguration('globalGraphType', 'line');
+        for ($g = 1; $g <= 4; $g++) {
+            $this->setConfiguration("graph{$g}_type", 'inherit_graph');
+            for ($i = 1; $i <= 10; $i++) {
+                $this->setConfiguration("graph{$g}_curve{$i}_type", 'inherit_curve');
+            }
+        }
+        $this->save();
   }
   // Fonction exécutée automatiquement avant la mise à jour de l'équipement
   public function preUpdate() {
@@ -148,10 +157,10 @@ public function toHtml($_version = 'dashboard') {
 
     for ($g = 1; $g <= 4; $g++) {
         if ($g > $nbGraphs) continue;
-        $graphType = $globalGraphType;
-        if ($globalGraphType === 'perGraph') {
-            $graphType = $this->getConfiguration("graph{$g}_type", 'line');
-        }
+        // Type du graphique
+        $graphTypeOverride = $this->getConfiguration("graph{$g}_type", 'inherit_graph');
+        $graphType = ($graphTypeOverride === 'inherit_graph') ? $globalGraphType : $graphTypeOverride;
+
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
         $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
@@ -164,13 +173,6 @@ public function toHtml($_version = 'dashboard') {
         $replace['#delai_histo_graph' . $g . '#'] = $delai;
         $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
         $minTime = time() - $delai * 24 * 60 * 60;
-
-        $stacking = '';
-        if ($globalGraphType === 'perGraph') {
-            $stacking = $this->getConfiguration("stacking_graph{$g}", '');
-        } else {
-            $stacking = $this->getConfiguration('stacking', '');
-        }
 
         $bgTransparent = $this->getConfiguration("graph{$g}_bg_transparent", 1);
         $bgColor = '#ffffff'; // blanc par défaut
@@ -187,20 +189,28 @@ public function toHtml($_version = 'dashboard') {
             $cmdKey = "graph{$g}_cmdGraphe{$index}";
             $nomKey = "graph{$g}_index{$index}_nom";
             $colorKey = "graph{$g}_color{$i}";
+            $curveTypeKey = "graph{$g}_curve{$i}_type";
             $cmdGraphe = $this->getConfiguration($cmdKey);
             $indexNom = $this->getConfiguration($nomKey);
             $color = $this->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
+            $curveTypeOverride = $this->getConfiguration($curveTypeKey, 'inherit_curve');
+
             if (empty($indexNom) || empty($cmdGraphe)) continue;
 
             $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
             $listeHisto = ''; $cmdId = '';
             if (is_object($cmd)) {
+                $finalCurveType = $curveTypeOverride;
+                if ($finalCurveType === 'inherit_curve') {
+                    $finalCurveType = $graphType;
+                }
                 $unite = $cmd->getUnite() ?: '';
                 $unite = trim($unite) === '' ? '' : $unite . ' ';
                 $histo = $cmd->getHistory($startTime);
                 $lastValue = null; $n = 0;
                 foreach ($histo as $row) {
                     $ts = strtotime($row->getDatetime());
+                    log::add('jeeHistoGraph', 'debug', 'données : ' . json_encode($ts) . ' / ' . json_encode($row->getValue()));
                     if ($ts >= $minTime) {
                         $n++;
                         $value = $row->getValue();
@@ -221,6 +231,7 @@ public function toHtml($_version = 'dashboard') {
             $seriesJS .= "{
                 name: " . json_encode($indexNom) . ",
                 color: " . json_encode($color) . ",
+                type: " . json_encode($finalCurveType) . ",
                 marker: { enabled: false },
                 data: [{$listeHisto}],
                 unite: " . json_encode($unite) . "
@@ -271,18 +282,12 @@ public function toHtml($_version = 'dashboard') {
                         margin: 1
                         }';
 
-        $plotOptions = '';
-        if (in_array($graphType, ['area', 'areaspline', 'column']) && !empty($stacking)) {
-            $plotOptions = "plotOptions: { series: { stacking: '{$stacking}' }, height: '100%' },";
-        }
-
         $chartScripts .= "
         window.chart_g{$g} = Highcharts.chart('{$containerId}', {
             chart: {
                 type: '{$graphType}',
                 plotBackgroundColor: '{$chartBgColor}',
             },
-            {$plotOptions}
             title: { 
                 text: '{$titleGraph}', 
                 height: 10,

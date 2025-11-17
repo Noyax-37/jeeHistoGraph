@@ -152,28 +152,20 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
                                     <input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">{{Type de graphique (global ou individuel)}}</label>
-                                <div class="col-sm-4">
-									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graphType" id="globalGraphType">
-										<option value="perGraph">{{À paramétrer par graphique}}</option>
+
+							<div class="form-group">
+								<label class="col-sm-3 control-label">{{Type de courbe globale (par défaut)}}</label>
+								<div class="col-sm-4">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="globalGraphType" id="globalGraphType">
 										<option value="line">{{Ligne classique}}</option>
 										<option value="spline">{{Courbe lisse}}</option>
 										<option value="areaspline">{{Aire lisse}}</option>
 										<option value="area">{{Aire}}</option>
 										<option value="column">{{Colonne}}</option>
 									</select>
-                                </div>
-                            </div>							
-
-							<div class="form-group" id="globalStackingContainer">
-								<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne)}}</label>
+								</div>
 								<div class="col-sm-4">
-									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking" id="globalStacking">
-										<option value="">{{Aucun}}</option>
-										<option value="normal">{{Normal}}</option>
-										<option value="percent">{{Pourcentage}}</option>
-									</select>
+									<a class="btn btn-primary" id="bt_forceAllToGlobal"><i class="fas fa-magic"></i> Tout forcer au même type</a>
 								</div>
 							</div>
 
@@ -236,20 +228,22 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								echo					'</div>';
 								echo 					'<div class="col-sm-6"><small>{{Laisser vide = période globale (' . ($eqLogic ? $eqLogic->getConfiguration('delai_histo', 1) : 1) . ' jour(s))}}</small></div>';
 								echo 			'</div>';
-								echo			'<div class="form-group graphTypePerGraph" style="display:none;">';
-								echo				'<div class="form-group perGraph";">';
-								echo					'<label class="col-sm-3 control-label">{{Type de ligne :}}</label>';
-								echo					'<div class="col-sm-3">';
-								echo						'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_type">';
-								echo							'<option value="line">{{Ligne classique}}</option>';
-								echo							'<option value="spline">{{Courbe lisse}}</option>';
-								echo							'<option value="areaspline">{{Aire lisse}}</option>';
-								echo							'<option value="area">{{Aire}}</option>';
-								echo							'<option value="column">{{Colonne}}</option>';
-								echo						'</select>';
-								echo					'</div>';
+								echo			'<div class="form-group">';
+								echo				'<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>';
+								echo				'<div class="col-sm-3">';
+								echo					'<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph' . $g . '_type"  id="graphType' . $g . '">';
+								echo						'<option value="inherit_graph">{{Configuration globale}}</option>';
+								echo						'<option value="line">{{Ligne classique}}</option>';
+								echo						'<option value="spline">{{Courbe lisse}}</option>';
+								echo						'<option value="areaspline">{{Aire lisse}}</option>';
+								echo						'<option value="area">{{Aire}}</option>';
+								echo						'<option value="column">{{Colonne}}</option>';
+								echo					'</select>';
 								echo				'</div>';
-								echo 			'</div>';
+								echo				'<div class="col-sm-4">';
+								echo					'<a class="btn btn-primary" id="bt_forceAllToGraph' . $g . '"><i class="fas fa-magic"></i> Tout forcer au même type</a>';
+								echo				'</div>';
+								echo			'</div>';
 								echo			'<div class="form-group stackingPerGraph" style="display:none;" data-graph="' . $g . ' ?>">';
 								echo				'<div class="form-group stackGraph";">';
 								echo					'<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>';
@@ -274,8 +268,9 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								echo		'<div class="form-group">';
 								echo			'<label class="col-sm-2 control-label">{{Courbe}}</label>';
 								echo			'<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>';
+								echo			'<label class="col-sm-2 control-label pull-left">{{Courbe}}</label>';
 								echo			'<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>';
-								echo			'<label class="col-sm-6 control-label pull-left">{{Commande}}</label>';
+								echo			'<label class="col-sm-4 control-label pull-left">{{Commande}}</label>';
 								echo		'</div>';
 
 								for ($i = 1; $i <= 10; $i++) {
@@ -287,10 +282,20 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									echo			'<div class="col-sm-2">';
 									echo				'<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph' . $g . '_index' . $index . '_nom" placeholder="..."/>';
 									echo			'</div>';
+									echo			'<div class="col-sm-2">';
+									echo				'<select class="eqLogicAttr form-control curveTypeSelect curveTypeSelect' . $g . '" data-l1key="configuration" data-l2key="graph' . $g . '_curve' . $i . '_type">';
+									echo					'<option value="inherit_curve" selected>{{Config graphique}}</option>';
+									echo					'<option value="line">{{Ligne}}</option>';
+									echo					'<option value="spline">{{Courbe lisse}}</option>';
+									echo					'<option value="areaspline">{{Aire lisse}}</option>';
+									echo					'<option value="area">{{Aire}}</option>';
+									echo					'<option value="column">{{Colonne}}</option>';
+									echo				'</select>';
+									echo			'</div>';
 									echo			'<div class="col-sm-1">';
 									echo				'<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g' . $g . '_c' . $i . '" data-l1key="configuration" data-l2key="graph' . $g . '_color' . $i . '" value="#FF4500">';
 									echo			'</div>';
-									echo			'<div class="col-sm-6 input-group">';
+									echo			'<div class="col-sm-4 input-group">';
 									echo				'<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="graph' . $g . '_cmdGraphe' . $index . '"></input>';
 									echo				'<a class="btn btn-default listEquipementInfo cursor btn-sm input-group-addon" data-input="graph' . $g . '_cmdGraphe' . $index . '"><i class="fas fa-list-alt"></i></a>';
 									echo			'</div>';
@@ -374,29 +379,6 @@ $(function() {
     $('#globalGraphType').trigger('change');
 });
 
-// === Gestion du stacking selon le type de graphique ===
-function updateStackingVisibility() {
-    const isPerGraph = $('#globalGraphType').val() === 'perGraph';
-    $('#globalStackingContainer').toggle(!isPerGraph);
-    $('.stackingPerGraph').each(function() {
-        const graphNum = $(this).data('graph');
-        const $graphConfig = $(this).closest('.graphConfig');
-        const isVisible = $graphConfig.is(':visible');
-        $(this).toggle(isPerGraph && isVisible);
-    });
-}
-
-// Mettre à jour au changement de type global
-$('#globalGraphType').on('change', updateStackingVisibility);
-
-// Mettre à jour au changement du nombre de graphiques
-$('[data-l1key="configuration"][data-l2key="nbGraphs"]').on('change', updateStackingVisibility);
-
-// Initialisation
-$(function() {
-    updateStackingVisibility();
-});
-
 // Gestion de l'affichage de l'input couleur selon la case "transparent"
 $(document).on('change', '[data-l2key^="graph"][data-l2key$="_bg_transparent"]', function() {
     const $checkbox = $(this);
@@ -425,6 +407,74 @@ $('#bt_resetAllBg').on('click', function() {
 // Initialisation au chargement
 $(function() {
     $('[data-l2key^="graph"][data-l2key$="_bg_transparent"]').trigger('change');
+});
+
+// BOUTON MAGIQUE : Tout forcer au type global
+$('#bt_forceAllToGlobal').on('click', function() {
+	const globalType = $('#globalGraphType').val();
+	
+	// Tous les graphiques → inherit_graph
+	$('.graphTypeSelect').val('inherit_graph').trigger('change');
+	
+	// Toutes les courbes → inherit_curve
+	$('.curveTypeSelect').val('inherit_curve').trigger('change');
+	
+	jeedomUtils.showAlert({
+		message: 'Toutes les courbes et graphiques sont maintenant forcés au type global : ' + globalType,
+		level: 'success'
+	});
+});
+
+// BOUTON MAGIQUE : Tout forcer au type graphique 1
+$('#bt_forceAllToGraph1').on('click', function() {
+	const graphType = $('#graphType1').val();
+	
+	// Toutes les courbes → inherit_curve
+	$('.curveTypeSelect1').val('inherit_curve').trigger('change');
+	
+	jeedomUtils.showAlert({
+		message: 'Toutes les courbes du graphique 1 sont maintenant forcés au type : ' + graphType,
+		level: 'success'
+	});
+});
+
+// BOUTON MAGIQUE : Tout forcer au type graphique 2
+$('#bt_forceAllToGraph2').on('click', function() {
+	const graphType = $('#graphType2').val();
+	
+	// Toutes les courbes → inherit_curve
+	$('.curveTypeSelect2').val('inherit_curve').trigger('change');
+	
+	jeedomUtils.showAlert({
+		message: 'Toutes les courbes du graphique 2 sont maintenant forcés au type : ' + graphType,
+		level: 'success'
+	});
+});
+
+// BOUTON MAGIQUE : Tout forcer au type graphique 3
+$('#bt_forceAllToGraph3').on('click', function() {
+	const graphType = $('#graphType3').val();
+	
+	// Toutes les courbes → inherit_curve
+	$('.curveTypeSelect3').val('inherit_curve').trigger('change');
+	
+	jeedomUtils.showAlert({
+		message: 'Toutes les courbes du graphique 3 sont maintenant forcés au type : ' + graphType,
+		level: 'success'
+	});
+});
+
+// BOUTON MAGIQUE : Tout forcer au type graphique 4
+$('#bt_forceAllToGraph4').on('click', function() {
+	const graphType = $('#graphType4').val();
+	
+	// Toutes les courbes → inherit_curve
+	$('.curveTypeSelect4').val('inherit_curve').trigger('change');
+	
+	jeedomUtils.showAlert({
+		message: 'Toutes les courbes du graphique 4 sont maintenant forcés au type : ' + graphType,
+		level: 'success'
+	});
 });
 
 </script>

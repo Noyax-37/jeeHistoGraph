@@ -23,7 +23,7 @@
 
 ## Captures d’écran
 
-> *(À venir : ajoutez ici des captures de l’interface de configuration et des graphiques affichés)*
+> *(À venir)*
 
 ---
 
