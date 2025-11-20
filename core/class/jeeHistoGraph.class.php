@@ -163,6 +163,41 @@ public function toHtml($_version = 'dashboard') {
         $graphTypeOverride = $this->getConfiguration("graph{$g}_type", 'inherit_graph');
         $graphType = ($graphTypeOverride === 'inherit_graph') ? $globalGraphType : $graphTypeOverride;
 
+        // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
+        $bgTransparent = $this->getConfiguration("graph{$g}_bg_transparent", 1);
+
+        $plotBgCode = "null"; // par défaut = pas de fond (transparent)
+
+        if (!$bgTransparent) {
+            $useGradient = $this->getConfiguration("graph{$g}_bg_gradient_enabled", 0);
+
+            if ($useGradient) {
+                $start = $this->getConfiguration("graph{$g}_bg_gradient_start", '#001f3f');
+                $end   = $this->getConfiguration("graph{$g}_bg_gradient_end",   '#007bff');
+                $angle = (int)$this->getConfiguration("graph{$g}_bg_gradient_angle", 90);
+
+                // Conversion angle CSS → direction Highcharts (0 = haut, 90 = droite, etc.)
+                $angles = [
+                    0   => ['x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1],  // haut → bas
+                    45  => ['x1' => 0, 'y1' => 1, 'x2' => 1, 'y2' => 0],
+                    90  => ['x1' => 0, 'y1' => 0, 'x2' => 1, 'y2' => 0],  // gauche → droite
+                    135 => ['x1' => 1, 'y1' => 1, 'x2' => 0, 'y2' => 0],
+                    180 => ['x1' => 0, 'y1' => 1, 'x2' => 0, 'y2' => 0],  // bas → haut
+                    225 => ['x1' => 1, 'y1' => 0, 'x2' => 0, 'y2' => 1],
+                    270 => ['x1' => 1, 'y1' => 0, 'x2' => 0, 'y2' => 0],  // droite → gauche
+                    315 => ['x1' => 0, 'y1' => 0, 'x2' => 1, 'y2' => 1],
+                ];
+                $dir = $angles[$angle] ?? $angles[90];
+
+                $plotBgCode = "{ linearGradient: { x1: {$dir['x1']}, y1: {$dir['y1']}, x2: {$dir['x2']}, y2: {$dir['y2']} }, stops: [[0, '$start'], [1, '$end']] }";
+
+            } else {
+                // Couleur unie
+                $color = $this->getConfiguration("graph{$g}_bg_color", '#ffffff');
+                $plotBgCode = "'$color'";
+            }
+        }
+
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
         $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
@@ -176,52 +211,46 @@ public function toHtml($_version = 'dashboard') {
         $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
         $minTime = time() - $delai * 24 * 60 * 60;
 
-        $bgTransparent = $this->getConfiguration("graph{$g}_bg_transparent", 1);
-        $bgColor = '#ffffff'; // blanc par défaut
-        if (!$bgTransparent) {
-            $bgColor = $this->getConfiguration("graph{$g}_bg_color", '#ffffff');
-        }
-        $chartBgColor = $bgTransparent ? 'transparent' : $bgColor;
 
-$dataGrouping = '';
-$regroup = $this->getConfiguration("graph{$g}_regroup", 'aucun');
-$typeRegroup = $this->getConfiguration("graph{$g}_typeRegroup", 'aucun');
+        $dataGrouping = '';
+        $regroup = $this->getConfiguration("graph{$g}_regroup", 'aucun');
+        $typeRegroup = $this->getConfiguration("graph{$g}_typeRegroup", 'aucun');
 
-if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
-    $units = '';
-    switch ($regroup) {
-        case 'minute':
-            $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
-            break;
-        case 'hour':
-            $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
-            break;
-        case 'day':
-            $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
-            break;
-        case 'week':
-            $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
-            break;
-        case 'month':
-            $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
-            break;
-        case 'year':
-            $units = "[[ 'year', [1] ]]";
-            break;
-        default:
-            $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
-    }
+        if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+            $units = '';
+            switch ($regroup) {
+                case 'minute':
+                    $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
+                    break;
+                case 'hour':
+                    $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
+                    break;
+                case 'day':
+                    $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
+                    break;
+                case 'week':
+                    $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
+                    break;
+                case 'month':
+                    $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
+                    break;
+                case 'year':
+                    $units = "[[ 'year', [1] ]]";
+                    break;
+                default:
+                    $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
+            }
 
-    $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
+            $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
 
-    $dataGrouping = "
-    dataGrouping: {
-        enabled: true,
-        forced: true,
-        approximation: '{$approximation}',
-        units: {$units}
-    }";
-}        
+            $dataGrouping = "
+            dataGrouping: {
+                enabled: true,
+                forced: true,
+                approximation: '{$approximation}',
+                units: {$units}
+            }";
+        }        
         
         $seriesJS = '';
         $cmdUpdateJS = '';
@@ -332,10 +361,16 @@ if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
                         }';
 
         $chartScripts .= "
-        window.chart_g{$g} = Highcharts.chart('{$containerId}', {
+        window.chart_g{$g} = Highcharts.StockChart('{$containerId}', {
             chart: {
-                type: '{$graphType}',
-                plotBackgroundColor: '{$chartBgColor}',
+                type: '<?php echo $graphType; ?>',
+                backgroundColor: 'transparent',
+                plotBackgroundColor: {$plotBgCode},
+                plotBorderWidth: 0,
+                spacing: [10, 0, 10, 0]
+            },
+            exporting: {
+                enabled: true,
             },
             title: { 
                 text: '{$titleGraph}', 
@@ -358,18 +393,18 @@ if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
             rangeSelector: {$rangeSelector},
             navigator: {$navigator},
             series: [{$seriesJS}].filter(s => s.name && s.data.length > 0),
-plotOptions: {
-    series: {
-        tooltip: {
-            xDateFormat: '%d/%m/%Y %Hh%M',
-            valueDecimals: 2,
-            valueSuffix: ' {unite}'
-        },
-        dataGrouping: { enabled: false },
-        {$dataGrouping}
-    }
-},
-series: [{$seriesJS}]
+            plotOptions: {
+                series: {
+                    tooltip: {
+                        xDateFormat: '%d/%m/%Y %Hh%M',
+                        shared: true,
+                        valueDecimals: 2,
+                        valueSuffix: ' {$unite}'
+                    },
+                    {$dataGrouping}
+                }
+            },
+            series: [{$seriesJS}]
         });
         setTimeout(() => window.chart_g{$g} && window.chart_g{$g}.reflow(), 50);
         {$cmdUpdateJS}

@@ -214,13 +214,63 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								echo			'</div>';
 								echo 			'<div class="form-group">';
 								echo 				'<label class="col-sm-3 control-label">{{Fond transparent}} ' . $g . '</label>';
-								echo				'<div class="col-sm-3">';
-								echo 					'<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_transparent" checked>';
+								echo 				'<div class="col-sm-1">';
+								echo 					'<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph' . $g . '_bg_transparent" checked>';
 								echo 				'</div>';
-								echo 				'<div class="col-sm-3 bgColorInput" style="display:none;">';
-								echo 					'<input type="color" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_bg_color" value="#ffffff">';
+
+								echo 				'<div class="bgOptions" style="display:none;">';
+								echo 					'<div class="col-sm-12 bgColorInput">';
+								echo 						'<label class="col-sm-4 control-label">{{Couleur unie}}</label>';
+								echo 						'<div class="col-sm-2">';
+								echo 							'<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_color" value="#ffffff">';
+								echo 						'</div>';
+								echo 					'</div>';
+
+								echo 					'<div class="col-sm-12 form-group gradientOptions" style="margin-top:10px;display:none;">';
+								echo 						'<label class="col-sm-4 control-label">{{Utiliser un dégradé}}</label>';
+								echo 						'<div class="col-sm-4">';
+								echo 							'<input type="checkbox" class="eqLogicAttr gradientCheckbox" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_enabled">';
+								echo 						'</div>';
+								echo 					'</div>';
+
+								echo 					'<div class="gradientControls" style="display:none;margin-left:20px;">';
+								echo 						'<div class="form-group">';
+								echo 							'<label class="col-sm-2 control-label">{{Couleur début}}</label>';
+								echo 							'<div class="col-sm-1">';
+								echo 								'<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_start" value="#001f3f">';
+								echo 							'</div>';
+								echo 							'<label class="col-sm-1 control-label">{{Couleur fin}}</label>';
+								echo 							'<div class="col-sm-1">';
+								echo 								'<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_end" value="#007bff">';
+								echo 							'</div>';
+								echo 							'<label class="col-sm-1 control-label">{{Angle}}</label>';
+								echo 							'<div class="col-sm-1">';
+								echo 								'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_angle">';
+								echo 									'<option value="0">0°</option>';
+								echo  									'<option value="45">45°</option>';
+								echo  									'<option value="90" selected>90°</option>';
+								echo  									'<option value="135">135°</option>';
+								echo  									'<option value="180">180°</option>';
+								echo  									'<option value="225">225°</option>';
+								echo  									'<option value="270">270°</option>';
+								echo  									'<option value="315">315°</option>';
+								echo 								'</select>';
+								echo 							'</div>';
+								echo 						'</div>';
+								echo 						'<div class="form-group">';
+								echo 							'<label class="col-sm-2 control-label">{{Aperçu}}</label>';
+								echo 							'<div class="col-sm-1">';
+								echo 								'<div class="gradientPreview" style="width:100px;height:100px;border:2px solid #ccc;border-radius:8px;background:linear-gradient(90deg,#001f3f 0%,#007bff 100%);box-shadow:0 2px 6px rgba(0,0,0,0.2);margin:5px auto;display:flex;align-items:center;justify-content:center;">';
+								echo 									'<small style="color:rgba(255,255,255,0.8);font-weight:bold;text-shadow:1px 1px 2px #000;"></small>';
+								echo 								'</div>';
+								echo 							'</div>';
+								echo 						'</div>';
+								echo 					'</div>';
 								echo 				'</div>';
 								echo 			'</div>';
+
+								echo 			'<br/>';
+
 								echo			'<div class="form-group">';
 								echo				'<label class="col-sm-3 control-label">{{Période personnalisée (jours) :}}</label>';
 								echo					'<div class="col-sm-3">';
@@ -434,6 +484,54 @@ $('#bt_resetAllBg').on('click', function() {
         
         $checkbox.prop('checked', true).trigger('change');
         $colorInput.hide();
+    });
+});
+
+// === Gestion du fond (transparent / couleur / dégradé) ===
+$(document).on('change', '.bgTransparentCheckbox, .gradientCheckbox, [data-l2key*="_bg_gradient_"]', function() {
+    const $graphDiv = $(this).closest('.graphConfig');
+    const graphNum = $graphDiv.data('graph');
+
+    const transparent = $graphDiv.find('[data-l2key="graph' + graphNum + '_bg_transparent"]').is(':checked');
+    const $bgOptions = $graphDiv.find('.bgOptions');
+    const $gradientOptions = $graphDiv.find('.gradientOptions');
+    const $gradientControls = $graphDiv.find('.gradientControls');
+    const $preview = $graphDiv.find('.gradientPreview');
+
+    if (transparent) {
+        $bgOptions.hide();
+    } else {
+        $bgOptions.show();
+        const useGradient = $graphDiv.find('[data-l2key="graph' + graphNum + '_bg_gradient_enabled"]').is(':checked');
+        if (useGradient) {
+            $gradientOptions.show();
+            $gradientControls.show();
+            $graphDiv.find('.bgColorInput').hide();
+        } else {
+            $gradientOptions.show();
+            $gradientControls.hide();
+            $graphDiv.find('.bgColorInput').show();
+        }
+        updateGradientPreview($graphDiv);
+    }
+});
+
+function updateGradientPreview($graphDiv) {
+    const graphNum = $graphDiv.data('graph');
+    const start = $graphDiv.find('[data-l2key="graph' + graphNum + '_bg_gradient_start"]').val() || '#001f3f';
+    const end = $graphDiv.find('[data-l2key="graph' + graphNum + '_bg_gradient_end"]').val() || '#007bff';
+    const angle = $graphDiv.find('[data-l2key="graph' + graphNum + '_bg_gradient_angle"]').val() || '90';
+    const $preview = $graphDiv.find('.gradientPreview');
+
+    $preview.css({
+        'background': `linear-gradient(${angle}deg, ${start} 0%, ${end} 100%)`
+    });
+}
+
+// Initialisation au chargement
+$(function() {
+    $('.graphConfig').each(function() {
+        $(this).find('.bgTransparentCheckbox').trigger('change');
     });
 });
 

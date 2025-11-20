@@ -33,22 +33,31 @@
         #graph_containers#
     </div>
 
+    <script src="3rdparty/highstock/modules/exporting.js"></script>
+    <script src="3rdparty/highstock/modules/offline-exporting.js"></script>
+    <script src="3rdparty/highstock/modules/export-data.js"></script>
+
     <script>
-    try {
-        //Highcharts.setOptions({ time: { useUTC: false } });
+        try {
+            //Highcharts.setOptions({ time: { useUTC: false } });
 
-        const uid = '#uid#';
-        const nbGraphs = #nbGraphs#;
-        const now = Date.now();
+            const uid = '#uid#';
+            const nbGraphs = #nbGraphs#;
+            const now = Date.now();
 
-        function getInitialButtonIndex(zoom) {
-            const map = { '30min': 0, '1h': 1, '1d': 2, '1w': 3, '1M': 4, '1y': 5, 'all': 6 };
-            return map[zoom] ?? 6;
-        }
+            function getInitialButtonIndex(zoom) {
+                const map = { '30min': 0, '1h': 1, '1d': 2, '1w': 3, '1M': 4, '1y': 5, 'all': 6 };
+                return map[zoom] ?? 6;
+            }
 
-        window.charts = window.charts || {};
-        #chart_scripts#
+            window.charts = window.charts || {};
+            #chart_scripts#
 
-    } catch(e) { console.error('Erreur Highcharts:', e); }
+        } catch(e) { console.error('Erreur Highcharts:', e); }
     </script>
 </div>
+
+
+
+
+
