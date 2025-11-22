@@ -138,7 +138,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 							<div class="form-group">
 								<label class="col-sm-3 control-label">{{Nombre de graphique(s)}}</label>
 								<div class="col-sm-3">
-									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nbGraphs">
+									<select class="eqLogicAttr form-control nbgraphs" data-l1key="configuration" data-l2key="nbGraphs">
 										<option value="1">1</option>
 										<option value="2">2</option>
 										<option value="3">3</option>
@@ -146,12 +146,47 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									</select>
 								</div>
 							</div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
-                                <div class="col-sm-3">
-                                    <input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" value="1">
-                                </div>
-                            </div>
+
+							<div class="form-group">
+								<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+								<div class="col-sm-3">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="periode_histo">
+										<option value="nbJours">{{en nombre de jours}}</option>
+										<option value="deDate">{{à partir d'une date}}</option>
+										<option value="deDateAdate">{{entre 2 dates}}</option>
+									</select>
+								</div>
+							</div>
+
+							<!-- Nombre de jours -->
+							<div class="form-group periode_histo nbJours">
+								<label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
+								<div class="col-sm-2">
+									<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" placeholder="1">
+								</div>
+								<label class="col-sm-5 control-label pull-left">{{(graphique glissant sur cette période avec actualisation)}}</label>
+							</div>
+
+							<!-- De date à maintenant -->
+							<div class="form-group periode_histo deDate" style="display:none;">
+								<label class="col-sm-3 control-label">{{De date début}}</label>
+								<div class="col-sm-2">
+									<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo">
+								</div>
+								<label class="col-sm-5 control-label pull-left">{{à maintenant avec actualisation}}</label>
+							</div>
+
+							<!-- Entre deux dates -->
+							<div class="form-group periode_histo deDateAdate" style="display:none;">
+								<label class="col-sm-3 control-label">{{Date de début}}</label>
+								<div class="col-sm-2">
+									<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates">
+								</div>
+								<label class="col-sm-2 control-label">{{Date de fin}}</label>
+								<div class="col-sm-2">
+									<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates">
+								</div>
+							</div>
 
 							<div class="form-group">
 								<label class="col-sm-3 control-label">{{Type de courbe globale (par défaut)}}</label>
@@ -212,6 +247,103 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								echo					'<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
 								echo				'</div>';
 								echo			'</div>';
+
+								// Sélecteur de période
+								echo 		'<div class="form-group">';
+								echo 			'<label class="col-sm-3 control-label">{{Période d\'affichage}}</label>';
+								echo 			'<div class="col-sm-4">';
+								echo 				'<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_histo_graph' . $g . '">';
+								echo 					'<option value="global">{{Paramètre global}}</option>';
+								echo 					'<option value="nbJours">{{En nombre de jours}}</option>';
+								echo 					'<option value="deDate">{{À partir d\'une date}}</option>';
+								echo 					'<option value="deDateAdate">{{Entre 2 dates}}</option>';
+								echo 				'</select>';
+								echo 				'</div>';
+								echo 			'</div>';
+
+								// === Champ nombre de jours ===
+								echo 			'<div class="form-group periodeBlock' . $g . ' nbJours" style="display:none;">';
+								echo 				'<label class="col-sm-3 control-label">{{Période d\'affichage}}</label>';
+								echo 				'<div class="col-sm-3">';
+								echo 					'<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph' . $g . '" placeholder="{{Global}}">';
+								echo 				'</div>';
+								echo 				'<div class="col-sm-6"><small>{{Laisser vide = période globale}}</small></div>';
+								echo 			'</div>';
+
+								// === Champ "de date" ===
+								echo 			'<div class="form-group periodeBlock' . $g . ' deDate" style="display:none;">';
+								echo 				'<label class="col-sm-3 control-label">{{De date début}}</label>';
+								echo 				'<div class="col-sm-3">';
+								echo 					'<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_graph' . $g . '">';
+								echo 				'</div>';
+								echo 				'<label class="col-sm-6 control-label">{{à maintenant (actualisation auto)}}</label>';
+								echo 			'</div>';
+
+								// === Champs "entre 2 dates" ===
+								echo 			'<div class="form-group periodeBlock' . $g . ' deDateAdate" style="display:none;">';
+								echo 				'<label class="col-sm-3 control-label">{{Date de début}}</label>';
+								echo 				'<div class="col-sm-3">';
+								echo 					'<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates_graph' . $g . '">';
+								echo 				'</div>';
+								echo 				'<label class="col-sm-1 control-label">{{Date de fin}}</label>';
+								echo 				'<div class="col-sm-3">';
+								echo 					'<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph' . $g . '">';
+								echo 				'</div>';
+								echo			'</div>';
+
+								echo			'<div class="form-group">';
+								echo				'<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>';
+								echo				'<div class="col-sm-3">';
+								echo					'<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph' . $g . '_type"  id="graphType' . $g . '">';
+								echo						'<option value="inherit_graph">{{Configuration globale}}</option>';
+								echo						'<option value="line">{{Ligne classique}}</option>';
+								echo						'<option value="spline">{{Courbe lisse}}</option>';
+								echo						'<option value="areaspline">{{Aire lisse}}</option>';
+								echo						'<option value="area">{{Aire}}</option>';
+								echo						'<option value="column">{{Colonne}}</option>';
+								echo					'</select>';
+								echo				'</div>';
+								echo				'<div class="col-sm-4">';
+								echo					'<a class="btn btn-primary" id="bt_forceAllToGraph' . $g . '"><i class="fas fa-magic"></i> Tout forcer au même type</a>';
+								echo				'</div>';
+								echo			'</div>';
+								echo			'<div class="form-group">';
+								echo				'<label class="col-sm-3 control-label">{{Faire de regroupement par :}}</label>';
+								echo				'<div class="col-sm-3">';
+								echo					'<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_regroup">';
+								echo						'<option value="aucun">{{Aucun groupement}}</option>';
+								echo						'<option value="minute">{{par minute}}</option>';
+								echo						'<option value="hour">{{par heure}}</option>';
+								echo						'<option value="day">{{par jour}}</option>';
+								echo						'<option value="week">{{par semaine}}</option>';
+								echo						'<option value="month">{{par mois}}</option>';
+								echo						'<option value="year">{{par année}}</option>';
+								echo					'</select>';
+								echo				'</div>';
+								echo				'<label class="col-sm-3 control-label">{{Type de regroupement :}}</label>';
+								echo				'<div class="col-sm-3">';
+								echo					'<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_typeRegroup">';
+								echo						'<option value="aucun">{{Aucun type}}</option>';
+								echo						'<option value="avg">{{moyenne}}</option>';
+								echo						'<option value="sum">{{somme}}</option>';
+								echo						'<option value="min">{{mini}}</option>';
+								echo						'<option value="max">{{maxi}}</option>';
+								echo					'</select>';
+								echo				'</div>';
+								echo			'</div>';
+								echo			'<div class="form-group stackingPerGraph" style="display:none;" data-graph="' . $g . ' ?>">';
+								echo				'<div class="form-group stackGraph";">';
+								echo					'<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>';
+								echo					'<div class="col-sm-3">';
+								echo						'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph' . $g .'">';
+								echo							'<option value="">{{Aucun}}</option>';
+								echo							'<option value="normal">{{Normal}}</option>';
+								echo							'<option value="percent">{{Pourcentage}}</option>';
+								echo						'</select>';
+								echo					'</div>';
+								echo				'</div>';
+								echo			'</div>';
+								echo		'</div>';
 								echo 			'<div class="form-group">';
 								echo 				'<label class="col-sm-3 control-label">{{Fond transparent}} ' . $g . '</label>';
 								echo 				'<div class="col-sm-1">';
@@ -271,66 +403,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 								echo 			'<br/>';
 
-								echo			'<div class="form-group">';
-								echo				'<label class="col-sm-3 control-label">{{Période personnalisée (jours) :}}</label>';
-								echo					'<div class="col-sm-3">';
-								echo						'<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph' . $g . '" placeholder="{{Global}}" title="{{Laisser vide pour utiliser la période globale}}">';
-								echo					'</div>';
-								echo 					'<div class="col-sm-6"><small>{{Laisser vide = période globale (' . ($eqLogic ? $eqLogic->getConfiguration('delai_histo', 1) : 1) . ' jour(s))}}</small></div>';
-								echo 			'</div>';
-								echo			'<div class="form-group">';
-								echo				'<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>';
-								echo				'<div class="col-sm-3">';
-								echo					'<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph' . $g . '_type"  id="graphType' . $g . '">';
-								echo						'<option value="inherit_graph">{{Configuration globale}}</option>';
-								echo						'<option value="line">{{Ligne classique}}</option>';
-								echo						'<option value="spline">{{Courbe lisse}}</option>';
-								echo						'<option value="areaspline">{{Aire lisse}}</option>';
-								echo						'<option value="area">{{Aire}}</option>';
-								echo						'<option value="column">{{Colonne}}</option>';
-								echo					'</select>';
-								echo				'</div>';
-								echo				'<div class="col-sm-4">';
-								echo					'<a class="btn btn-primary" id="bt_forceAllToGraph' . $g . '"><i class="fas fa-magic"></i> Tout forcer au même type</a>';
-								echo				'</div>';
-								echo			'</div>';
-								echo			'<div class="form-group">';
-								echo				'<label class="col-sm-3 control-label">{{Faire de regroupement par :}}</label>';
-								echo				'<div class="col-sm-3">';
-								echo					'<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_regroup">';
-								echo						'<option value="aucun">{{Aucun groupement}}</option>';
-								echo						'<option value="minute">{{par minute}}</option>';
-								echo						'<option value="hour">{{par heure}}</option>';
-								echo						'<option value="day">{{par jour}}</option>';
-								echo						'<option value="week">{{par semaine}}</option>';
-								echo						'<option value="month">{{par mois}}</option>';
-								echo						'<option value="year">{{par année}}</option>';
-								echo					'</select>';
-								echo				'</div>';
-								echo				'<label class="col-sm-3 control-label">{{Type de regroupement :}}</label>';
-								echo				'<div class="col-sm-3">';
-								echo					'<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_typeRegroup">';
-								echo						'<option value="aucun">{{Aucun type}}</option>';
-								echo						'<option value="avg">{{moyenne}}</option>';
-								echo						'<option value="sum">{{somme}}</option>';
-								echo						'<option value="min">{{mini}}</option>';
-								echo						'<option value="max">{{maxi}}</option>';
-								echo					'</select>';
-								echo				'</div>';
-								echo			'</div>';
-								echo			'<div class="form-group stackingPerGraph" style="display:none;" data-graph="' . $g . ' ?>">';
-								echo				'<div class="form-group stackGraph";">';
-								echo					'<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>';
-								echo					'<div class="col-sm-3">';
-								echo						'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph' . $g .'">';
-								echo							'<option value="">{{Aucun}}</option>';
-								echo							'<option value="normal">{{Normal}}</option>';
-								echo							'<option value="percent">{{Pourcentage}}</option>';
-								echo						'</select>';
-								echo					'</div>';
-								echo				'</div>';
-								echo			'</div>';
-								echo		'</div>';
 
 								// Bouton RAZ couleurs
 								echo		'<div class="form-group Colors">';
@@ -607,6 +679,67 @@ $('#bt_forceAllToGraph4').on('click', function() {
 		level: 'success'
 	});
 });
+
+
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo]', function () {
+    var valeur = $(this).value();
+
+    // On cache tout d'abord
+    $('.periode_histo').hide();
+
+    // Puis on affiche uniquement la bonne section
+    if (valeur === 'nbJours') {
+        $('.periode_histo.nbJours').show();
+    } else if (valeur === 'deDate') {
+        $('.periode_histo.deDate').show();
+    } else if (valeur === 'deDateAdate') {
+        $('.periode_histo.deDateAdate').show();
+    }
+});
+
+/* Au chargement de la page (ou quand on ouvre la config d'un équipement existant) 
+   on déclenche le changement pour afficher la bonne zone selon la valeur déjà sauvegardée */
+$('.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo]').trigger('change');
+
+
+// Fonction qui gère l'affichage pour un graphique donné
+function updatePeriodeVisibility(graphNumber) {
+	console.log('Mise à jour de l\'affichage de la période pour le graphique ' + graphNumber);
+	var selectVal = $('.eqLogicAttr[data-l2key="periode_histo_graph' + graphNumber + '"]').value();
+	console.log('Valeur sélectionnée : ' + selectVal);
+
+    // On cache tout d'abord
+    $('.periodeBlock' + graphNumber).hide();
+
+    // Puis on affiche uniquement la bonne section
+    if (selectVal === 'nbJours') {
+        $('.periodeBlock' + graphNumber + '.nbJours').show();
+    } else if (selectVal === 'deDate') {
+        $('.periodeBlock' + graphNumber + '.deDate').show();
+    } else if (selectVal === 'deDateAdate') {
+        $('.periodeBlock' + graphNumber + '.deDateAdate').show();
+    }
+
+	//si global alors on laisse tout caché
+}
+
+// À chaque changement de select
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo_graph1]', function () {
+	updatePeriodeVisibility(1);
+});
+
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo_graph2]', function () {
+	updatePeriodeVisibility(2);
+});
+
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo_graph3]', function () {
+	updatePeriodeVisibility(3);
+});
+
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo_graph4]', function () {
+	updatePeriodeVisibility(4);
+});
+
 
 </script>
 
