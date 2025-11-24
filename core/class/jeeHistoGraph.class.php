@@ -93,7 +93,8 @@ class jeeHistoGraph extends eqLogic {
           $this ->setConfiguration('delai_histo',1)
                 ->setConfiguration('nbGraphs',1)
                 ->setConfiguration('periode_histo','nbJours')
-                ->setConfiguration('globalGraphType', 'line');
+                ->setConfiguration('globalGraphType', 'line')
+                ->setConfiguration('graphLayout', 'auto');
 
         for ($g = 1; $g <= 4; $g++) {
             $this   ->setConfiguration("graph{$g}_type", 'inherit_graph')
@@ -152,8 +153,12 @@ public function toHtml($_version = 'dashboard') {
     }
     $version = jeedom::versionAlias($_version);
     $nbGraphs = max(1, min(4, $this->getConfiguration('nbGraphs', 1)));
-
     $replace['#nbGraphs#'] = $nbGraphs;
+
+    $graphLayout = $this->getConfiguration('graphLayout', 'auto');
+    $replace['#graphLayout#'] = $graphLayout;
+    log::add('jeeHistoGraph', 'debug', "Rendering jeeHistoGraph (id={$this->getId()}) with layout '{$graphLayout}' and {$nbGraphs} graphs");
+
     $globalGraphType = $this->getConfiguration('graphType', 'line');
 
     $graphContainers = '';
@@ -379,7 +384,12 @@ public function toHtml($_version = 'dashboard') {
             xAxis: { type: 'datetime' },
             yAxis: {
                 opposite: true,
-                labels: { format: '{value}' },
+                labels: { 
+                        format: '{value}',
+                        align: 'left',
+                        x: 4,
+                        y: 0
+                        },
                 title: { text: '' },
             },
             credits: { enabled: false },
@@ -408,6 +418,7 @@ public function toHtml($_version = 'dashboard') {
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
+    log::add('jeeHistoGraph', 'debug', "jeeHistoGraph (id={$this->getId()}) replace: " . json_encode($replace));
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $this->postToHtml($_version, $html);
 }

@@ -105,11 +105,11 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									<select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
 										<option value="">{{Aucun}}</option>
 										<?php
-										$options = '';
-										foreach ((jeeObject::buildTree(null, false)) as $object) {
-											$options .= '<option value="' . $object->getId() . '">' . str_repeat('&nbsp;&nbsp;', $object->getConfiguration('parentNumber')) . $object->getName() . '</option>';
-										}
-										echo $options;
+											$options = '';
+											foreach ((jeeObject::buildTree(null, false)) as $object) {
+												$options .= '<option value="' . $object->getId() . '">' . str_repeat('&nbsp;&nbsp;', $object->getConfiguration('parentNumber')) . $object->getName() . '</option>';
+											}
+											echo $options;
 										?>
 									</select>
 								</div>
@@ -118,11 +118,11 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								<label class="col-sm-4 control-label">{{Catégorie}}</label>
 								<div class="col-sm-6">
 									<?php
-									foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
-										echo '<label class="checkbox-inline">';
-										echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" >' . $value['name'];
-										echo '</label>';
-									}
+										foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
+											echo '<label class="checkbox-inline">';
+											echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" >' . $value['name'];
+											echo '</label>';
+										}
 									?>
 								</div>
 							</div>
@@ -143,6 +143,23 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										<option value="2">2</option>
 										<option value="3">3</option>
 										<option value="4">4</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-3 control-label">{{Disposition des graphiques}}</label>
+								<div class="col-sm-3">
+									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graphLayout">
+										<option value="auto">{{Automatique (selon le nombre)}}</option>
+										<option value="1col">{{1 colonne (empilés verticalement)}}</option>
+										<option value="1row">{{1 ligne (côte à côte)}}</option>
+										<option value="2x2">{{Grille 2×2}}</option>
+										<option value="2col">{{2 colonnes}}</option>
+										<option value="2row">{{2 lignes}}</option>
+										<option value="1big-2small">{{1 grand en haut + 2 petits en bas}}</option>
+										<option value="2small-1big">{{2 petits en haut + 1 grand en bas}}</option>
+										<option value="3grid">{{3 graphiques → 2 en haut, 1 en bas centré}}</option>
 									</select>
 								</div>
 							</div>
@@ -228,248 +245,249 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 							<legend></i> {{ }}</legend>
 
-							<?php
-							$nbGraphs = 1;
-							if (is_object($eqLogic)) {
-								$nbGraphs = $eqLogic->getConfiguration('nbGraphs', 1);
-							}
-							$nbGraphs = max(1, min(4, $nbGraphs));
-							if ($nbGraphs < 1 || $nbGraphs > 4) $nbGraphs = 1;
+								<?php
+									$nbGraphs = 1;
+									if (is_object($eqLogic)) {
+										$nbGraphs = $eqLogic->getConfiguration('nbGraphs', 1);
+									}
+									$nbGraphs = max(1, min(4, $nbGraphs));
+									if ($nbGraphs < 1 || $nbGraphs > 4) $nbGraphs = 1;
 
-							for ($g = 1; $g <= 4; $g++) {
-								$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
-								echo	'<div class="graphConfig" data-graph="' . $g . '" ' . $display . '>';
-								echo		'<div class="form-group">';
-								echo		'<legend><i class="fas fa-chart-line"></i>{{Graphique}} ' . $g . '</legend>';
-								echo			'<div class="form-group">';
-                                echo				'<label class="col-sm-3 control-label"> {{titre graphique}} ' . $g . ' : </label>';
-								echo				'<div class="col-sm-6">';
-								echo					'<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph' . $g . '"/>';
-								echo				'</div>';
-								echo			'</div>';
+									for ($g = 1; $g <= 4; $g++) {
+										$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
+								?>
+								
+							<div class="graphConfig" data-graph="<?= $g ?>" <?= $display ?>>
+								<div class="form-group">
+									<legend><i class="fas fa-chart-line"></i>{{Graphique}} <?= $g ?></legend>
+									<div class="form-group">
+                                		<label class="col-sm-3 control-label"> {{titre graphique}} <?= $g ?> : </label>
+										<div class="col-sm-6">
+											<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph<?= $g ?>"/>
+										</div>
+									</div>
+								
+									<!-- Sélecteur de période -->
+									<div class="form-group">
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_histo_graph<?= $g ?>">
+													<option value="global">{{Paramètre global}}</option>
+													<option value="nbJours">{{En nombre de jours}}</option>
+													<option value="deDate">{{À partir d'une date}}</option>
+													<option value="deDateAdate">{{Entre 2 dates}}</option>
+												</select>
+											</div>
+										</div>
 
-								// Sélecteur de période
-								echo 		'<div class="form-group">';
-								echo 			'<label class="col-sm-3 control-label">{{Période d\'affichage}}</label>';
-								echo 			'<div class="col-sm-4">';
-								echo 				'<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_histo_graph' . $g . '">';
-								echo 					'<option value="global">{{Paramètre global}}</option>';
-								echo 					'<option value="nbJours">{{En nombre de jours}}</option>';
-								echo 					'<option value="deDate">{{À partir d\'une date}}</option>';
-								echo 					'<option value="deDateAdate">{{Entre 2 dates}}</option>';
-								echo 				'</select>';
-								echo 				'</div>';
-								echo 			'</div>';
+										<div class="col-sm-2">
 
-								// === Champ nombre de jours ===
-								echo 			'<div class="form-group periodeBlock' . $g . ' nbJours" style="display:none;">';
-								echo 				'<label class="col-sm-3 control-label">{{Période d\'affichage}}</label>';
-								echo 				'<div class="col-sm-3">';
-								echo 					'<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph' . $g . '" placeholder="{{Global}}">';
-								echo 				'</div>';
-								echo 				'<div class="col-sm-6"><small>{{Laisser vide = période globale}}</small></div>';
-								echo 			'</div>';
+										</div>
 
-								// === Champ "de date" ===
-								echo 			'<div class="form-group periodeBlock' . $g . ' deDate" style="display:none;">';
-								echo 				'<label class="col-sm-3 control-label">{{De date début}}</label>';
-								echo 				'<div class="col-sm-3">';
-								echo 					'<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_graph' . $g . '">';
-								echo 				'</div>';
-								echo 				'<label class="col-sm-6 control-label">{{à maintenant (actualisation auto)}}</label>';
-								echo 			'</div>';
+										<!-- === Champ nombre de jours === -->
+										<div class="form-group periodeBlock<?= $g ?> nbJours" style="display:none;">
+											<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+											<div class="col-sm-3">
+												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph<?= $g ?>" placeholder="{{Global}}">
+											</div>
+										</div>
 
-								// === Champs "entre 2 dates" ===
-								echo 			'<div class="form-group periodeBlock' . $g . ' deDateAdate" style="display:none;">';
-								echo 				'<label class="col-sm-3 control-label">{{Date de début}}</label>';
-								echo 				'<div class="col-sm-3">';
-								echo 					'<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates_graph' . $g . '">';
-								echo 				'</div>';
-								echo 				'<label class="col-sm-1 control-label">{{Date de fin}}</label>';
-								echo 				'<div class="col-sm-3">';
-								echo 					'<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph' . $g . '">';
-								echo 				'</div>';
-								echo			'</div>';
+										<!-- === Champ "de date" === -->
+										<div class="form-group periodeBlock<?= $g ?> deDate" style="display:none;">
+											<label class="col-sm-3 control-label">{{De date début}}</label>
+											<div class="col-sm-3">
+												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_graph<?= $g ?>">
+											</div>
+											<label class="col-sm-3 control-label">{{à maintenant (actualisation auto)}}</label>
+										</div>
 
-								echo			'<div class="form-group">';
-								echo				'<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>';
-								echo				'<div class="col-sm-3">';
-								echo					'<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph' . $g . '_type"  id="graphType' . $g . '">';
-								echo						'<option value="inherit_graph">{{Configuration globale}}</option>';
-								echo						'<option value="line">{{Ligne classique}}</option>';
-								echo						'<option value="spline">{{Courbe lisse}}</option>';
-								echo						'<option value="areaspline">{{Aire lisse}}</option>';
-								echo						'<option value="area">{{Aire}}</option>';
-								echo						'<option value="column">{{Colonne}}</option>';
-								echo					'</select>';
-								echo				'</div>';
-								echo				'<div class="col-sm-4">';
-								echo					'<a class="btn btn-primary" id="bt_forceAllToGraph' . $g . '"><i class="fas fa-magic"></i> Tout forcer au même type</a>';
-								echo				'</div>';
-								echo			'</div>';
-								echo			'<div class="form-group">';
-								echo				'<label class="col-sm-3 control-label">{{Faire de regroupement par :}}</label>';
-								echo				'<div class="col-sm-3">';
-								echo					'<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_regroup">';
-								echo						'<option value="aucun">{{Aucun groupement}}</option>';
-								echo						'<option value="minute">{{par minute}}</option>';
-								echo						'<option value="hour">{{par heure}}</option>';
-								echo						'<option value="day">{{par jour}}</option>';
-								echo						'<option value="week">{{par semaine}}</option>';
-								echo						'<option value="month">{{par mois}}</option>';
-								echo						'<option value="year">{{par année}}</option>';
-								echo					'</select>';
-								echo				'</div>';
-								echo				'<label class="col-sm-3 control-label">{{Type de regroupement :}}</label>';
-								echo				'<div class="col-sm-3">';
-								echo					'<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph' . $g . '_typeRegroup">';
-								echo						'<option value="aucun">{{Aucun type}}</option>';
-								echo						'<option value="avg">{{moyenne}}</option>';
-								echo						'<option value="sum">{{somme}}</option>';
-								echo						'<option value="min">{{mini}}</option>';
-								echo						'<option value="max">{{maxi}}</option>';
-								echo					'</select>';
-								echo				'</div>';
-								echo			'</div>';
-								echo			'<div class="form-group stackingPerGraph" style="display:none;" data-graph="' . $g . ' ?>">';
-								echo				'<div class="form-group stackGraph";">';
-								echo					'<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>';
-								echo					'<div class="col-sm-3">';
-								echo						'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph' . $g .'">';
-								echo							'<option value="">{{Aucun}}</option>';
-								echo							'<option value="normal">{{Normal}}</option>';
-								echo							'<option value="percent">{{Pourcentage}}</option>';
-								echo						'</select>';
-								echo					'</div>';
-								echo				'</div>';
-								echo			'</div>';
-								echo		'</div>';
-								echo 			'<div class="form-group">';
-								echo 				'<label class="col-sm-3 control-label">{{Fond transparent}} ' . $g . '</label>';
-								echo 				'<div class="col-sm-1">';
-								echo 					'<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph' . $g . '_bg_transparent" checked>';
-								echo 				'</div>';
+										<!-- === Champs "entre 2 dates" === -->
+										<div class="form-group periodeBlock<?= $g ?> deDateAdate" style="display:none;">
+											<label class="col-sm-2 control-label">{{Date de début}}</label>
+											<div class="col-sm-3">
+												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates_graph<?= $g ?>">
+											</div>
+											<label class="col-sm-1 control-label">{{Date de fin}}</label>
+											<div class="col-sm-3">
+												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph<?= $g ?>">
+											</div>
+										</div>
+									</div>
 
-								echo 				'<div class="bgOptions" style="display:none;">';
-								echo 					'<div class="col-sm-12 bgColorInput">';
-								echo 						'<label class="col-sm-4 control-label">{{Couleur unie}}</label>';
-								echo 						'<div class="col-sm-2">';
-								echo 							'<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_color" value="#ffffff">';
-								echo 						'</div>';
-								echo 					'</div>';
+									<div class="form-group">
+										<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>
+										<div class="col-sm-3">
+											<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type"  id="graphType<?= $g ?>">
+												<option value="inherit_graph">{{Configuration globale}}</option>
+												<option value="line">{{Ligne classique}}</option>
+												<option value="spline">{{Courbe lisse}}</option>
+												<option value="areaspline">{{Aire lisse}}</option>
+												<option value="area">{{Aire}}</option>
+												<option value="column">{{Colonne}}</option>
+											</select>
+										</div>
+										<div class="col-sm-4">
+											<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
+										</div>
+									</div>
 
-								echo 					'<div class="col-sm-12 form-group gradientOptions" style="margin-top:10px;display:none;">';
-								echo 						'<label class="col-sm-4 control-label">{{Utiliser un dégradé}}</label>';
-								echo 						'<div class="col-sm-4">';
-								echo 							'<input type="checkbox" class="eqLogicAttr gradientCheckbox" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_enabled">';
-								echo 						'</div>';
-								echo 					'</div>';
+									<div class="form-group">
+										<label class="col-sm-3 control-label">{{Faire de regroupement par :}}</label>
+										<div class="col-sm-3">
+											<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_regroup">
+												<option value="aucun">{{Aucun groupement}}</option>
+												<option value="minute">{{par minute}}</option>
+												<option value="hour">{{par heure}}</option>
+												<option value="day">{{par jour}}</option>
+												<option value="week">{{par semaine}}</option>
+												<option value="month">{{par mois}}</option>
+												<option value="year">{{par année}}</option>
+											</select>
+										</div>
+										<label class="col-sm-3 control-label">{{Type de regroupement :}}</label>
+										<div class="col-sm-3">
+											<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_typeRegroup">
+												<option value="aucun">{{Aucun type}}</option>
+												<option value="avg">{{moyenne}}</option>
+												<option value="sum">{{somme}}</option>
+												<option value="min">{{mini}}</option>
+												<option value="max">{{maxi}}</option>
+											</select>
+										</div>
+									</div>
 
-								echo 					'<div class="gradientControls" style="display:none;margin-left:20px;">';
-								echo 						'<div class="form-group">';
-								echo 							'<label class="col-sm-2 control-label">{{Couleur début}}</label>';
-								echo 							'<div class="col-sm-1">';
-								echo 								'<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_start" value="#001f3f">';
-								echo 							'</div>';
-								echo 							'<label class="col-sm-1 control-label">{{Couleur fin}}</label>';
-								echo 							'<div class="col-sm-1">';
-								echo 								'<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_end" value="#007bff">';
-								echo 							'</div>';
-								echo 							'<label class="col-sm-1 control-label">{{Angle}}</label>';
-								echo 							'<div class="col-sm-1">';
-								echo 								'<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_bg_gradient_angle">';
-								echo 									'<option value="0">0°</option>';
-								echo  									'<option value="45">45°</option>';
-								echo  									'<option value="90" selected>90°</option>';
-								echo  									'<option value="135">135°</option>';
-								echo  									'<option value="180">180°</option>';
-								echo  									'<option value="225">225°</option>';
-								echo  									'<option value="270">270°</option>';
-								echo  									'<option value="315">315°</option>';
-								echo 								'</select>';
-								echo 							'</div>';
-								echo 						'</div>';
-								echo 						'<div class="form-group">';
-								echo 							'<label class="col-sm-2 control-label">{{Aperçu}}</label>';
-								echo 							'<div class="col-sm-1">';
-								echo 								'<div class="gradientPreview" style="width:100px;height:100px;border:2px solid #ccc;border-radius:8px;background:linear-gradient(90deg,#001f3f 0%,#007bff 100%);box-shadow:0 2px 6px rgba(0,0,0,0.2);margin:5px auto;display:flex;align-items:center;justify-content:center;">';
-								echo 									'<small style="color:rgba(255,255,255,0.8);font-weight:bold;text-shadow:1px 1px 2px #000;"></small>';
-								echo 								'</div>';
-								echo 							'</div>';
-								echo 						'</div>';
-								echo 					'</div>';
-								echo 				'</div>';
-								echo 			'</div>';
+									<div class="form-group stackingPerGraph" style="display:none;" data-graph="<?= $g ?> ?>">
+										<div class="form-group stackGraph">
+											<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>">
+													<option value="">{{Aucun}}</option>
+													<option value="normal">{{Normal}}</option>
+													<option value="percent">{{Pourcentage}}</option>
+												</select>
+											</div>
+										</div>
+									</div>
+								</div>
 
-								echo 			'<br/>';
+								<div class="form-group">
+									<label class="col-sm-3 control-label">{{Fond transparent}} <?= $g ?></label>
+									<div class="col-sm-1">
+										<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_transparent" checked>
+									</div>
+
+									<div class="bgOptions" style="display:none;">
+										<div class="col-sm-12 bgColorInput">
+											<label class="col-sm-4 control-label">{{Couleur unie}}</label>
+											<div class="col-sm-2">
+												<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_color" value="#ffffff">
+											</div>
+										</div>
+
+										<div class="col-sm-12 form-group gradientOptions" style="margin-top:10px;display:none;">
+											<label class="col-sm-4 control-label">{{Utiliser un dégradé}}</label>
+											<div class="col-sm-4">
+												<input type="checkbox" class="eqLogicAttr gradientCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_enabled">
+											</div>
+										</div>
+
+										<div class="gradientControls" style="display:none;margin-left:20px;">
+											<div class="form-group">
+												<label class="col-sm-2 control-label">{{Couleur début}}</label>
+												<div class="col-sm-1">
+													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_start" value="#001f3f">
+												</div>
+												<label class="col-sm-1 control-label">{{Couleur fin}}</label>
+												<div class="col-sm-1">
+													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_end" value="#007bff">
+												</div>
+												<label class="col-sm-1 control-label">{{Angle}}</label>
+												<div class="col-sm-1">
+													<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_angle">
+														<option value="0">0°</option>
+														<option value="45">45°</option>
+														<option value="90" selected>90°</option>
+														<option value="135">135°</option>
+														<option value="180">180°</option>
+														<option value="225">225°</option>
+														<option value="270">270°</option>
+														<option value="315">315°</option>
+													</select>
+												</div>
+											</div>
+
+											<div class="form-group">
+												<label class="col-sm-2 control-label">{{Aperçu}}</label>
+												<div class="col-sm-1">
+													<div class="gradientPreview" style="width:100px;height:100px;border:2px solid #ccc;border-radius:8px;background:linear-gradient(90deg,#001f3f 0%,#007bff 100%);box-shadow:0 2px 6px rgba(0,0,0,0.2);margin:5px auto;display:flex;align-items:center;justify-content:center;">
+														<small style="color:rgba(255,255,255,0.8);font-weight:bold;text-shadow:1px 1px 2px #000;"></small>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<br/>
 
 
-								// Bouton RAZ couleurs
-								echo		'<div class="form-group Colors">';
-								echo			'<label class="col-sm-2 control-label">{{}}</label>';
-								echo			'<label class="col-sm-4 control-label">{{}}</label>';
-								echo			'<a class="btn btn-warning tooltips col-sm-2 btjeeHistoGraphRazCouleurs" data-graph="' . $g . '"><i class="fas fa-medkit"></i> {{Couleurs par défaut}}</a>';
-								echo		'</div>';
+								<!-- Bouton RAZ couleurs -->
+								<div class="form-group Colors">
+									<label class="col-sm-2 control-label">{{}}</label>
+									<label class="col-sm-4 control-label">{{}}</label>
+									<a class="btn btn-warning tooltips col-sm-2 btjeeHistoGraphRazCouleurs" data-graph="<?= $g ?>"><i class="fas fa-medkit"></i> {{Couleurs par défaut}}</a>
+								</div>
 
-								echo		'<div class="form-group">';
-								echo			'<label class="col-sm-1 control-label">{{Courbe}}</label>';
-								echo			'<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>';
-								echo			'<label class="col-sm-2 control-label pull-left">{{Courbe}}</label>';
-								echo			'<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>';
-								echo			'<label class="col-sm-4 control-label pull-left">{{Commande}}</label>';
-								echo			'<label class="col-sm-1 control-label pull-left">{{Unité / coef}}</label>';
-								echo		'</div>';
-
-								for ($i = 1; $i <= 10; $i++) {
-									$index = str_pad($i, 2, '0', STR_PAD_LEFT);
-									$colorIdx = (($g-1)*10) + $i;
-
-									echo		'<div class="form-group">';
-									echo			'<label class="col-sm-1 control-label">{{Courbe ' . $index . '}} :</label>';
-									echo			'<div class="col-sm-2">';
-									echo				'<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph' . $g . '_index' . $index . '_nom" placeholder="..."/>';
-									echo			'</div>';
-									echo			'<div class="col-sm-2">';
-									echo				'<select class="eqLogicAttr form-control curveTypeSelect' . $g . '" data-l1key="configuration" data-l2key="graph' . $g . '_curve' . $i . '_type">';
-									echo					'<option value="inherit_curve" selected>{{Config graphique}}</option>';
-									echo					'<option value="line">{{Ligne}}</option>';
-									echo					'<option value="spline">{{Courbe lisse}}</option>';
-									echo					'<option value="areaspline">{{Aire lisse}}</option>';
-									echo					'<option value="area">{{Aire}}</option>';
-									echo					'<option value="column">{{Colonne}}</option>';
-									echo				'</select>';
-									echo			'</div>';
-									echo			'<div class="col-sm-1">';
-									echo				'<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g' . $g . '_c' . $i . '" data-l1key="configuration" data-l2key="graph' . $g . '_color' . $i . '" value="#FF4500"></input>';
-									echo			'</div>';
-									echo			'<div class="col-sm-4">';
-									echo			'<div class="input-group">';
-									echo				'<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph' . $g . '_cmdGraphe' . $index . '">';
-									echo				'<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph' . $g . '_cmdGraphe' . $index . '"><i class="fas fa-list-alt"></i></a></input>';
-									echo			'</div>';
-									echo			'</div>';
-									echo			'<div class="col-sm-1">';
-									echo                '<input type="text" class="eqLogicAttr configKey" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph' . $g . '_unite' . $i . '"></input>';
-									echo			'</div>';
-									echo			'<div class="col-sm-1">';
-									echo                '<input type="text" class="eqLogicAttr configKey" placeholder="coef" title="coefficient à appliquer (ne sera appliqué que si l unité est complétée)" data-l1key="configuration" data-l2key="graph'. $g . '_coef' . $i . '"></input>';
-									echo            '</div>';
-									echo		'</div>';
-								}
-								echo	'</div>'; // .graphConfig
-								echo	'<hr/>';
-							}
-							?>
-
-							<div class="form-group">
-								</br>
-								</br>
-								</br>
-								</br>
-								<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Explications succintes}}:</label>
-								</br> </br>
-								<label class="col-sm-12 control-label pull-left">{{Si le libellé de la courbe n'est pas complété alors elle ne s'affichera pas même si la commande existe}} </label>
+								<div class="form-group">
+									<label class="col-sm-1 control-label">{{Courbe}}</label>
+									<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>
+									<label class="col-sm-2 control-label pull-left">{{Courbe}}</label>
+									<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>
+									<label class="col-sm-4 control-label pull-left">{{Commande}}</label>
+									<label class="col-sm-1 control-label pull-left">{{Unité / coef}}</label>
+								</div>
+									<?php
+										for ($i = 1; $i <= 10; $i++) {
+											$index = str_pad($i, 2, '0', STR_PAD_LEFT);
+											$colorIdx = (($g-1)*10) + $i;
+									?>
+								<div class="form-group">
+									<label class="col-sm-1 control-label">{{Courbe <?= $index ?>}} :</label>
+									<div class="col-sm-2">
+										<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/>
+									</div>
+									<div class="col-sm-2">
+										<select class="eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
+											<option value="inherit_curve" selected>{{Config graphique}}</option>
+											<option value="line">{{Ligne}}</option>
+											<option value="spline">{{Courbe lisse}}</option>
+											<option value="areaspline">{{Aire lisse}}</option>
+											<option value="area">{{Aire}}</option>
+											<option value="column">{{Colonne}}</option>
+										</select>
+									</div>
+									<div class="col-sm-1">
+										<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></input>
+									</div>
+									<div class="col-sm-4">
+									<div class="input-group">
+										<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
+										<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a></input>
+									</div>
+									</div>
+									<div class="col-sm-1">
+										<input type="text" class="eqLogicAttr configKey" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>"></input>
+									</div>
+									<div class="col-sm-1">
+										<input type="text" class="eqLogicAttr configKey" placeholder="coef" title="coefficient à appliquer (ne sera appliqué que si l unité est complétée)" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>"></input>
+									</div>
+								</div>
+								<?php } ?>
 							</div>
+							<hr/>
+								<?php } ?>
+
 						</div>
 
 						<!-- Partie droite de l'onglet "Équipement" -->
@@ -481,12 +499,20 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								<div class="col-sm-6">
 									<textarea class="form-control eqLogicAttr autogrow" data-l1key="comment"></textarea>
 								</div>
+								<div class="form-group">
+									</br>
+									</br>
+									</br>
+									</br>
+									<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Explications succintes}}:</label>
+									</br> </br>
+									<label class="col-sm-12 control-label pull-left">{{Si le libellé de la courbe n'est pas complété alors elle ne s'affichera pas même si la commande existe}} </label>
+								</div>
 							</div>
 						</div>
 					</fieldset>
 				</form>
 			</div><!-- /.tabpanel #eqlogictab-->
-
 		</div><!-- /.tab-content -->
 	</div><!-- /.eqLogic -->
 </div><!-- /.row row-overflow -->
