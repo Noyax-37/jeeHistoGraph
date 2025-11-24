@@ -122,9 +122,53 @@ class jeeHistoGraph extends eqLogic {
   }
   // Fonction exécutée automatiquement après la mise à jour de l'équipement
   public function postUpdate() {
-  }
+
+ }
   // Fonction exécutée automatiquement avant la sauvegarde (création ou mise à jour) de l'équipement
   public function preSave() {
+    $config = ["nbGraphs", "graphLayout", "periode_histo", "delai_histo", "date_debut_histo", "date_debut_histo_2dates", "date_fin_histo_2dates", "globalGraphType", "showLegend", "maxPoints"];
+    for ($g = 1; $g <= 4; $g++) {
+        $config[] = "graph{$g}_type";;
+        $config[] = "graph{$g}_regroup";;
+        $config[] = "graph{$g}_typeRegroup";;
+        $config[] = "stacking_graph{$g}";;
+        $config[] = "periode_histo_graph{$g}";;
+        $config[] = "delai_histo_graph{$g}";;
+        $config[] = "date_debut_histo_graph{$g}";;
+        $config[] = "date_debut_histo_2dates_graph{$g}";;;
+        $config[] = "date_fin_histo_2dates_graph{$g}";;
+        $config[] = "graph{$g}_bg_transparent";;
+        $config[] = "graph{$g}_bg_color";;
+        $config[] = "graph{$g}_bg_gradient_enabled";;
+        $config[] = "graph{$g}_bg_gradient_start";;
+        $config[] = "graph{$g}_bg_gradient_end";;
+        $config[] = "graph{$g}_bg_gradient_angle";;
+        $config[] = "titleGraph{$g}";;
+        for ($i = 1; $i <= 10; $i++) {
+            $index = str_pad($i, 2, '0', STR_PAD_LEFT);
+            $config[] = "graph{$g}_index{$index}_nom";;
+            $config[] = "graph{$g}_curve{$i}_type";;
+            $config[] = "graph{$g}_color{$i}";;
+            $config[] = "graph{$g}_cmdGraphe{$index}";;
+            $config[] = "graph{$g}_unite{$i}";;
+            $config[] = "graph{$g}_coef{$i}";;
+        }
+    }
+    $version = $this->getConfiguration('version', '0.0');
+    $actualVersion = '0.16';
+    if (version_compare($version, $actualVersion, '<')) {
+        $decode = $this->getConfiguration();
+        foreach ($decode as $key => $value) {
+            if (in_array($key, $config)) {
+                continue;
+            }
+            log::add('jeeHistoGraph', 'debug', "Removing obsolete configuration key: {$key} with value: " . json_encode($value));
+            $this   ->setConfiguration($key, null);
+        }
+
+        $this   ->setConfiguration('version', $actualVersion);
+        $this   ->save();
+    }        
   }
   // Fonction exécutée automatiquement après la sauvegarde (création ou mise à jour) de l'équipement
   public function postSave() {
@@ -151,15 +195,22 @@ public function toHtml($_version = 'dashboard') {
     if (!is_array($replace)) {
         return $replace;
     }
+
     $version = jeedom::versionAlias($_version);
     $nbGraphs = max(1, min(4, $this->getConfiguration('nbGraphs', 1)));
     $replace['#nbGraphs#'] = $nbGraphs;
 
     $graphLayout = $this->getConfiguration('graphLayout', 'auto');
     $replace['#graphLayout#'] = $graphLayout;
-    log::add('jeeHistoGraph', 'debug', "Rendering jeeHistoGraph (id={$this->getId()}) with layout '{$graphLayout}' and {$nbGraphs} graphs");
 
     $globalGraphType = $this->getConfiguration('graphType', 'line');
+
+    $periodeHisto = $this->getConfiguration('periode_histo', 'nbJours');
+    $delaiGraph = $this->getConfiguration("delai_histo");
+    $dateDebutGraph1date = $this->getConfiguration("date_debut_histo");
+    $dateDebutGraph2Dates = $this->getConfiguration("date_debut_histo_2dates");
+    $dateFinGraph2Dates = $this->getConfiguration("date_fin_histo_2dates");
+
 
     $graphContainers = '';
     $chartScripts = '';
@@ -170,6 +221,7 @@ public function toHtml($_version = 'dashboard') {
         // Type du graphique
         $graphTypeOverride = $this->getConfiguration("graph{$g}_type", 'inherit_graph');
         $graphType = ($graphTypeOverride === 'inherit_graph') ? $globalGraphType : $graphTypeOverride;
+        $periodeHistoGraph = $this->getConfiguration("periode_histo_graph{$g}", 'global');
         
 
         // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
@@ -212,13 +264,39 @@ public function toHtml($_version = 'dashboard') {
         $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
         $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 100%;\"></div>";
 
-        $delaiGraph = $this->getConfiguration("delai_histo_graph{$g}");
-        $delai = (!empty($delaiGraph) && is_numeric($delaiGraph) && $delaiGraph > 0) 
-            ? intval($delaiGraph) 
-            : $this->getConfiguration('delai_histo', 1);
-        $replace['#delai_histo_graph' . $g . '#'] = $delai;
-        $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
-        $minTime = time() - $delai * 24 * 60 * 60;
+        $periodeHistoGraph = $this->getConfiguration("periode_histo_graph{$g}", 'global');
+        $global = false;
+        if ($periodeHistoGraph === 'global') {
+            $periodeHistoGraph = $periodeHisto;
+            $global = true;
+        }
+        $actualisation = false;
+        $endTime = null;
+        switch ($periodeHistoGraph) {
+            case 'deDateAdate':
+                $dateDebutGraph = $this->getConfiguration("date_debut_histo_2dates_graph{$g}", date("Y-m-d H:i:s", time()));
+                $dateFinGraph = $this->getConfiguration("date_fin_histo_2dates_graph{$g}", date("Y-m-d H:i:s", time()));
+                $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
+                $endTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateFinGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateFinGraph));
+                $actualisation = false;
+                log::add('jeeHistoGraph', 'debug', "Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
+                break;
+            case 'deDate':
+                $dateDebutGraph = $this->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
+                $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
+                $actualisation = true;
+                log::add('jeeHistoGraph', 'debug', "Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now");
+                break;
+            case 'nbJours':
+            default:
+                $delai = ($global) ? $delaiGraph : intval($this->getConfiguration("delai_histo_graph{$g}"));
+                $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
+                $actualisation = true;
+                log::add('jeeHistoGraph', 'debug', "Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now");
+                break;
+        }
+
+
 
 
         $dataGrouping = '';
@@ -288,22 +366,18 @@ public function toHtml($_version = 'dashboard') {
                 if ($manualUnit !== '') {
                     $unite = $manualUnit;
                     $coef = floatval($this->getConfiguration("graph{$g}_coef{$i}", '1'));
-                    log::add('jeeHistoGraph', 'debug', "Graph {$g} Curve {$i} using manual unit '{$unite}' with coefficient {$coef}");
                 } else {
                     $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : '';
                     $coef = 1;
-                    log::add('jeeHistoGraph', 'debug', "Graph {$g} Curve {$i} unit '{$unite}' without coefficient");
                 }
                 $unite = $unite !== '' ? $unite : '';
-                $histo = $cmd->getHistory($startTime);
+                $histo = $cmd->getHistory($startTime, isset($endTime) ? $endTime : null);
                 $coef  = $manualUnit !== '' ? floatval($this->getConfiguration("graph{$g}_coef{$i}", 1)) : 1;
 
                 $listeHisto = [];
                 foreach ($histo as $record) {
                     $ts = strtotime($record->getDatetime()) * 1000;
-                    if ($ts >= $minTime) {
-                        $listeHisto[] = [$ts, $record->getValue() * $coef];
-                    }
+                    $listeHisto[] = [$ts, $record->getValue() * $coef];
                 }
                 $cmdId = str_replace('#', '', $cmdGraphe);
             }
@@ -316,7 +390,7 @@ public function toHtml($_version = 'dashboard') {
                         valueSuffix: " . json_encode(' ' .$unite) . "
                     }
             },\n";
-            if ($cmdId) {
+            if ($cmdId and $actualisation) {
                 $cmdUpdateJS .= "
                 if ('{$cmdId}' !== '') {
                     jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
@@ -418,7 +492,6 @@ public function toHtml($_version = 'dashboard') {
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
-    log::add('jeeHistoGraph', 'debug', "jeeHistoGraph (id={$this->getId()}) replace: " . json_encode($replace));
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $this->postToHtml($_version, $html);
 }

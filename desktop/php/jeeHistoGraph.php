@@ -165,43 +165,49 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 							</div>
 
 							<div class="form-group">
-								<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
-								<div class="col-sm-3">
-									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="periode_histo">
-										<option value="nbJours">{{en nombre de jours}}</option>
-										<option value="deDate">{{à partir d'une date}}</option>
-										<option value="deDateAdate">{{entre 2 dates}}</option>
-									</select>
+								<div class="form-group">
+									<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+									<div class="col-sm-3">
+										<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="periode_histo">
+											<option value="nbJours">{{en nombre de jours}}</option>
+											<option value="deDate">{{à partir d'une date}}</option>
+											<option value="deDateAdate">{{entre 2 dates}}</option>
+										</select>
+									</div>
 								</div>
-							</div>
+								
+								<div class="col-sm-2">
 
-							<!-- Nombre de jours -->
-							<div class="form-group periode_histo nbJours">
-								<label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
-								<div class="col-sm-2">
-									<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" placeholder="1">
 								</div>
-								<label class="col-sm-5 control-label pull-left">{{(graphique glissant sur cette période avec actualisation)}}</label>
-							</div>
 
-							<!-- De date à maintenant -->
-							<div class="form-group periode_histo deDate" style="display:none;">
-								<label class="col-sm-3 control-label">{{De date début}}</label>
-								<div class="col-sm-2">
-									<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo">
+								<!-- Nombre de jours -->
+								<div class="form-group periode_histo nbJours">
+									<label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
+									<div class="col-sm-3">
+										<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" placeholder="1">
+									</div>
+									<label class="col-sm-3 control-label pull-left">{{(avec actualisation auto)}}</label>
 								</div>
-								<label class="col-sm-5 control-label pull-left">{{à maintenant avec actualisation}}</label>
-							</div>
 
-							<!-- Entre deux dates -->
-							<div class="form-group periode_histo deDateAdate" style="display:none;">
-								<label class="col-sm-3 control-label">{{Date de début}}</label>
-								<div class="col-sm-2">
-									<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates">
+								<!-- De date à maintenant -->
+								<div class="form-group periode_histo deDate" style="display:none;">
+									<label class="col-sm-2 control-label">{{De date début}}</label>
+									<div class="col-sm-3">
+										<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo">
+									</div>
+									<label class="col-sm-3 control-label pull-left">{{à maintenant (actualisation auto)}}</label>
 								</div>
-								<label class="col-sm-2 control-label">{{Date de fin}}</label>
-								<div class="col-sm-2">
-									<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates">
+
+								<!-- Entre deux dates -->
+								<div class="form-group periode_histo deDateAdate" style="display:none;">
+									<label class="col-sm-2 control-label">{{Date de début}}</label>
+									<div class="col-sm-3">
+										<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates">
+									</div>
+									<label class="col-sm-1 control-label">{{Date de fin}}</label>
+									<div class="col-sm-3">
+										<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates">
+									</div>
 								</div>
 							</div>
 
@@ -287,7 +293,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 										<!-- === Champ nombre de jours === -->
 										<div class="form-group periodeBlock<?= $g ?> nbJours" style="display:none;">
-											<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+											<label class="col-sm-2 control-label">{{Période d'affichage}}</label>
 											<div class="col-sm-3">
 												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph<?= $g ?>" placeholder="{{Global}}">
 											</div>
@@ -295,11 +301,11 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 										<!-- === Champ "de date" === -->
 										<div class="form-group periodeBlock<?= $g ?> deDate" style="display:none;">
-											<label class="col-sm-3 control-label">{{De date début}}</label>
+											<label class="col-sm-2 control-label">{{De date début}}</label>
 											<div class="col-sm-3">
 												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_graph<?= $g ?>">
 											</div>
-											<label class="col-sm-3 control-label">{{à maintenant (actualisation auto)}}</label>
+											<label class="col-sm-3 control-label pull-left">{{à maintenant (actualisation auto)}}</label>
 										</div>
 
 										<!-- === Champs "entre 2 dates" === -->
