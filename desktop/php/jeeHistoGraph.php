@@ -363,6 +363,51 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										</div>
 									</div>
 
+<div class="form-group">
+    <label class="col-sm-3 control-label">{{Comparaison temporelle :}}</label>
+    <div class="col-sm-3">
+        <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_type">
+            <option value="none">{{Aucune}}</option>
+            <option value="prev_year_month">{{Même mois des années précédentes}}</option>
+            <option value="prev_year">{{Années précédentes}}</option>
+        </select>
+    </div>
+
+	<div class="col-sm-6 compareRollingMonth" style="display:none;">
+        <label class="col-sm-3 control-label"><small>{{Mois de début}}</small></label>
+        <select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
+            <option value="01">{{Janvier}}</option>
+            <option value="02">{{Février}}</option>
+            <option value="03">{{Mars}}</option>
+            <option value="04">{{Avril}}</option>
+            <option value="05">{{Mai}}</option>
+            <option value="06">{{Juin}}</option>
+            <option value="07">{{Juillet}}</option>
+            <option value="08">{{Août}}</option>
+            <option value="09">{{Septembre}}</option>
+            <option value="10">{{Octobre}}</option>
+            <option value="11">{{Novembre}}</option>
+            <option value="12">{{Décembre}}</option>
+        </select>
+    </div>
+    <div class="col-sm-3 compareMonth" style="display:none;">
+        <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
+            <option value="01">{{Janvier}}</option>
+            <option value="02">{{Février}}</option>
+            <option value="03">{{Mars}}</option>
+			<option value="04">{{Avril}}</option>
+			<option value="05">{{Mai}}</option>
+			<option value="06">{{Juin}}</option>
+			<option value="07">{{Juillet}}</option>
+			<option value="08">{{Août}}</option>
+			<option value="09">{{Septembre}}</option>
+			<option value="10">{{Octobre}}</option>
+			<option value="11">{{Novembre}}</option>
+			<option value="12">{{Décembre}}</option>
+        </select>
+    </div>
+</div>									
+
 									<div class="form-group stackingPerGraph" style="display:none;" data-graph="<?= $g ?> ?>">
 										<div class="form-group stackGraph">
 											<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>
@@ -771,6 +816,14 @@ $(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=peri
 $(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo_graph4]', function () {
 	updatePeriodeVisibility(4);
 });
+
+$(document).on('change', '[data-l2key$="_compare_type"]', function() {
+    const val = $(this).value();
+    $(this).closest('.form-group').find('.compareMonth').toggle(val === 'prev_year_month');
+    $(this).closest('.form-group').find('.compareRollingMonth').toggle(val === 'prev_year');
+});
+
+
 
 
 </script>
