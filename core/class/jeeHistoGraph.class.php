@@ -352,7 +352,7 @@ public function toHtml($_version = 'dashboard') {
             if (!$first){
                     $first = true;
             } else {
-                if ($compareType == 'prev_year'){
+                if ($compareType == 'prev_year' || $compareType == 'prev_year_month'){
                     continue;
                 }
             }
@@ -385,12 +385,13 @@ public function toHtml($_version = 'dashboard') {
                 $currentYear = (int)date('Y');
                 $monthToStart = (int)$rollingStartMonth;
                 $rolling = false;
-                $recordData = [];
+                log::add(__CLASS__, 'debug', 'ok');
+                
+                //$recordData = [];
                 foreach ($histo as $record) {
                     if ($compareType == 'none'){
                         $ts = strtotime($record->getDatetime()) * 1000;
                         $listeHisto[] = [$ts, $record->getValue() * $coef];
-                        log::add(__CLASS__, 'debug', "listehisto: " . json_encode($listeHisto));
                     } elseif ($compareType == 'prev_year') {
                         $recordDate = new DateTime($record->getDatetime());
                         $recordYear = (int)$recordDate->format('Y');
@@ -454,12 +455,6 @@ public function toHtml($_version = 'dashboard') {
                                     ]";
 
                 $xDateFormatJS = "%d/%m %Hh%M";
-
-                $navigator .=    '{ 
-                                enabled: false,
-                                margin: 1
-                                }';
-
             }
 
             if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
@@ -473,17 +468,12 @@ public function toHtml($_version = 'dashboard') {
                             }
                     },\n";
                 }
-                $buttonJS = "buttons: []";
                 $xDateFormatJS = "%d/%m %Hh%M";
                 $buttonJS = "buttons: [
                                         { type: 'day', count: 7, text: '1s' },
                                         { type: 'all', text: 'Tout' }
                                     ]";
 
-                $navigator .=    '{ 
-                                    enabled: true,
-                                    margin: 1
-                                    }';
             }
 
             if ($compareType == 'none'){
@@ -496,6 +486,7 @@ public function toHtml($_version = 'dashboard') {
                             valueSuffix: " . json_encode(' ' .$unite) . "
                         }
                 },\n";
+
                 $buttonJS = "buttons: [
                                         { type: 'minute', count: 30, text: '30m' },
                                         { type: 'hour', count: 1, text: '1h' },
@@ -506,11 +497,8 @@ public function toHtml($_version = 'dashboard') {
                                         { type: 'all', text: 'Tout' }
                                     ]";
                 $xDateFormatJS = "%d/%m/%Y %Hh%M";
+ 
 
-                $navigator .=    '{ 
-                                    enabled: true,
-                                    margin: 1
-                                    }';
             }
 
             if ($cmdId and $actualisation) {
@@ -529,6 +517,26 @@ public function toHtml($_version = 'dashboard') {
 
         }
 
+        switch ($compareType) {
+            case 'prev_year':
+                $navigator .=    '{ 
+                                    enabled: false,
+                                    margin: 1
+                                  }';
+                break;
+            case 'prev_year_month':
+                $navigator .=    '{ 
+                                    enabled: true,
+                                    margin: 1
+                                  }';
+            case 'none':
+                $navigator .=    '{ 
+                                    enabled: true,
+                                    margin: 1
+                                  }';
+                break;
+            default: 
+        }
         $showLegend = $this->getConfiguration('showLegend', 1) ? 'true' : 'false';
         $rangeSelector = "{
             enabled: true,
