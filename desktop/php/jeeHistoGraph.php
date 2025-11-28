@@ -212,29 +212,13 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 							</div>
 
 							<div class="form-group">
-								<label class="col-sm-3 control-label">{{Type de courbe globale (par défaut)}}</label>
-								<div class="col-sm-4">
-									<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="globalGraphType" id="globalGraphType">
-										<option value="line">{{Ligne classique}}</option>
-										<option value="spline">{{Courbe lisse}}</option>
-										<option value="areaspline">{{Aire lisse}}</option>
-										<option value="area">{{Aire}}</option>
-										<option value="column">{{Colonne}}</option>
-									</select>
-								</div>
-								<div class="col-sm-4">
-									<a class="btn btn-primary" id="bt_forceAllToGlobal"><i class="fas fa-magic"></i> Tout forcer au même type</a>
-								</div>
-							</div>
-
-							<div class="form-group">
                                 <label class="col-sm-3 control-label">{{Afficher la légende}}</label>
                                 <div class="col-sm-3">
                                     <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="showLegend" checked>
                                 </div>
                             </div>
 
-							<div class="form-group">
+							<div class="form-group" style="display:none">
                                 <label class="col-sm-3 control-label">{{Nb max points par courbe (500 par défaut)}}</label>
                                 <div class="col-sm-3">
                                     <input type="number" min="50" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="maxPoints" value="500">
@@ -325,7 +309,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>
 										<div class="col-sm-3">
 											<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type"  id="graphType<?= $g ?>">
-												<option value="inherit_graph">{{Configuration globale}}</option>
 												<option value="line">{{Ligne classique}}</option>
 												<option value="spline">{{Courbe lisse}}</option>
 												<option value="areaspline">{{Aire lisse}}</option>
@@ -598,18 +581,6 @@ $(function() {
     $('[data-l1key="configuration"][data-l2key="nbGraphs"]').val(nb).trigger('change');
 });
 
-// Gestion du type de graphique global
-$('#globalGraphType').on('change', function() {
-    const isPerGraph = $(this).val() === 'perGraph';
-    $('.graphTypePerGraph').each(function() {
-        $(this).closest('.graphConfig').find('.graphTypePerGraph').toggle(isPerGraph);
-    });
-});
-
-// Au chargement
-$(function() {
-    $('#globalGraphType').trigger('change');
-});
 
 // Gestion de l'affichage de l'input couleur selon la case "transparent"
 $(document).on('change', '[data-l2key^="graph"][data-l2key$="_bg_transparent"]', function() {
@@ -689,22 +660,6 @@ $(function() {
     $('[data-l2key^="graph"][data-l2key$="_bg_transparent"]').trigger('change');
 });
 
-// BOUTON MAGIQUE : Tout forcer au type global
-$('#bt_forceAllToGlobal').on('click', function() {
-	const globalType = $('#globalGraphType').val();
-	
-	// Tous les graphiques → inherit_graph
-	$('.graphTypeSelect').val('inherit_graph').trigger('change');
-	
-	// Toutes les courbes → inherit_curve
-	$('.curveTypeSelect').val('inherit_curve').trigger('change');
-	
-	jeedomUtils.showAlert({
-		message: 'Toutes les courbes et graphiques sont maintenant forcés au type global : ' + globalType,
-		level: 'success'
-	});
-});
-
 // BOUTON MAGIQUE : Tout forcer au type graphique 1
 $('#bt_forceAllToGraph1').on('click', function() {
 	const graphType = $('#graphType1').val();
@@ -713,8 +668,12 @@ $('#bt_forceAllToGraph1').on('click', function() {
 	$('.curveTypeSelect1').val('inherit_curve').trigger('change');
 	
 	jeedomUtils.showAlert({
-		message: 'Toutes les courbes du graphique 1 sont maintenant forcés au type : ' + graphType,
+		message: 'Toutes les courbes du graphique 1 sont maintenant forcées au type : ' + graphType + " n'oubliez pas de sauvegarder",
 		level: 'success'
+	});
+	jeedomUtils.showAlert({
+		message: "n'oubliez pas de sauvegarder",
+		level: 'warning'
 	});
 });
 
@@ -729,6 +688,10 @@ $('#bt_forceAllToGraph2').on('click', function() {
 		message: 'Toutes les courbes du graphique 2 sont maintenant forcés au type : ' + graphType,
 		level: 'success'
 	});
+	jeedomUtils.showAlert({
+		message: "n'oubliez pas de sauvegarder",
+		level: 'warning'
+	});
 });
 
 // BOUTON MAGIQUE : Tout forcer au type graphique 3
@@ -742,6 +705,10 @@ $('#bt_forceAllToGraph3').on('click', function() {
 		message: 'Toutes les courbes du graphique 3 sont maintenant forcés au type : ' + graphType,
 		level: 'success'
 	});
+	jeedomUtils.showAlert({
+		message: "n'oubliez pas de sauvegarder",
+		level: 'warning'
+	});
 });
 
 // BOUTON MAGIQUE : Tout forcer au type graphique 4
@@ -754,6 +721,10 @@ $('#bt_forceAllToGraph4').on('click', function() {
 	jeedomUtils.showAlert({
 		message: 'Toutes les courbes du graphique 4 sont maintenant forcés au type : ' + graphType,
 		level: 'success'
+	});
+	jeedomUtils.showAlert({
+		message: "n'oubliez pas de sauvegarder",
+		level: 'warning'
 	});
 });
 

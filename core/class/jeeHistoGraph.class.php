@@ -88,38 +88,13 @@ class jeeHistoGraph extends eqLogic {
 }
   // Fonction exécutée automatiquement après la création de l'équipement
   public function postInsert() {
-          $color = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4',
-                    '#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
-          $this ->setConfiguration('delai_histo',1)
-                ->setConfiguration('nbGraphs',1)
-                ->setConfiguration('periode_histo','nbJours')
-                ->setConfiguration('globalGraphType', 'line')
-                ->setConfiguration('graphLayout', 'auto');
-
-        for ($g = 1; $g <= 4; $g++) {
-            $this   ->setConfiguration("graph{$g}_type", 'inherit_graph')
-                    ->setConfiguration("graph{$g}_regroup", "aucun")
-                    ->setConfiguration("graph{$g}_typeRegroup", "aucun")
-                    ->setConfiguration("periode_histo_graph{$g}", "global")
-                    ->setconfiguration("graph{$g}_color1",$color[0])
-                    ->setconfiguration("graph{$g}_color2",$color[1])
-                    ->setconfiguration("graph{$g}_color3",$color[2])
-                    ->setconfiguration("graph{$g}_color4",$color[3])
-                    ->setconfiguration("graph{$g}_color5",$color[4])
-                    ->setconfiguration("graph{$g}_color6",$color[5])
-                    ->setconfiguration("graph{$g}_color7",$color[6])
-                    ->setconfiguration("graph{$g}_color8",$color[7])
-                    ->setconfiguration("graph{$g}_color9",$color[8])
-                    ->setconfiguration("graph{$g}_color10",$color[9])
-                    ->setConfiguration("graph{$g}_compare_type", "none")
-                    ->setConfiguration("graph{$g}_rolling_start_month", "01");
-                    
-            for ($i = 1; $i <= 10; $i++) {
-                $this->setConfiguration("graph{$g}_curve{$i}_type", 'inherit_curve');
-            }
-        }
-        $this->save();
+    $configs = self::config();
+    foreach ($configs as $key) {
+        $this ->setConfiguration($key[0], $key[1]);
+    }
+    $this->save();
   }
+
   // Fonction exécutée automatiquement avant la mise à jour de l'équipement
   public function preUpdate() {
   }
@@ -129,55 +104,10 @@ class jeeHistoGraph extends eqLogic {
  }
   // Fonction exécutée automatiquement avant la sauvegarde (création ou mise à jour) de l'équipement
   public function preSave() {
-    $config = ["nbGraphs", "graphLayout", "periode_histo", "delai_histo", "date_debut_histo", "date_debut_histo_2dates", 
-                "date_fin_histo_2dates", "globalGraphType", "showLegend", "maxPoints", "updatetime"];
-    for ($g = 1; $g <= 4; $g++) {
-        $config[] = "graph{$g}_type";
-        $config[] = "graph{$g}_regroup";
-        $config[] = "graph{$g}_typeRegroup";
-        $config[] = "stacking_graph{$g}";
-        $config[] = "periode_histo_graph{$g}";
-        $config[] = "delai_histo_graph{$g}";
-        $config[] = "date_debut_histo_graph{$g}";
-        $config[] = "date_debut_histo_2dates_graph{$g}";
-        $config[] = "date_fin_histo_2dates_graph{$g}";
-        $config[] = "graph{$g}_bg_transparent";
-        $config[] = "graph{$g}_bg_color";
-        $config[] = "graph{$g}_bg_gradient_enabled";
-        $config[] = "graph{$g}_bg_gradient_start";
-        $config[] = "graph{$g}_bg_gradient_end";
-        $config[] = "graph{$g}_bg_gradient_angle";
-        $config[] = "titleGraph{$g}";
-        $config[] = "graph{$g}_compare_type";
-        $config[] = "graph{$g}_compare_month";
-        $config[] = "graph{$g}_rolling_start_month";
-        for ($i = 1; $i <= 10; $i++) {
-            $index = str_pad($i, 2, '0', STR_PAD_LEFT);
-            $config[] = "graph{$g}_index{$index}_nom";
-            $config[] = "graph{$g}_curve{$i}_type";
-            $config[] = "graph{$g}_color{$i}";
-            $config[] = "graph{$g}_cmdGraphe{$index}";
-            $config[] = "graph{$g}_unite{$i}";
-            $config[] = "graph{$g}_coef{$i}";
-        }
-    }
-    $version = $this->getConfiguration('version', '0.0');
-    $actualVersion = config::byKey('version', __CLASS__, 'unknown', true);
-    log::add('jeeHistoGraph', 'debug', "Current config version: {$version}, Actual plugin version: {$actualVersion}");
-    if (version_compare($version, $actualVersion, '<')) {
-        $decode = $this->getConfiguration();
-        foreach ($decode as $key => $value) {
-            if (in_array($key, $config)) {
-                continue;
-            }
-            log::add('jeeHistoGraph', 'debug', "Removing obsolete configuration key: {$key} with value: " . json_encode($value));
-            $this   ->setConfiguration($key, null);
-        }
 
-        $this   ->setConfiguration('version', $actualVersion);
-        $this   ->save();
-    }        
   }
+
+
   // Fonction exécutée automatiquement après la sauvegarde (création ou mise à jour) de l'équipement
   public function postSave() {
   }
@@ -197,7 +127,56 @@ class jeeHistoGraph extends eqLogic {
     $this->setConfiguration('password', utils::encrypt($this->getConfiguration('password')));
   }
   */
-  // Permet de modifier l'affichage du widget (également utilisable par les commandes)
+
+public static function config() {
+    $defaultColors = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4','#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
+    // déterminer la config compléte avec les valeurs par défaut
+    $config =   [ 
+                    ["nbGraphs", 1], 
+                    ["graphLayout", "auto"], 
+                    ["periode_histo", 'nbJours'], 
+                    ["delai_histo", 1], 
+                    ["date_debut_histo", ''], 
+                    ["date_debut_histo_2dates", ''],
+                    ["date_fin_histo_2dates", ''],
+                    ["showLegend", 1], 
+                    ["maxPoints", 500]
+                ];
+    for ($g = 1; $g <= 4; $g++) {
+        $config[] = ["graph{$g}_type", 'line'];
+        $config[] = ["graph{$g}_regroup", "aucun"];
+        $config[] = ["graph{$g}_typeRegroup", "aucun"];
+        $config[] = ["stacking_graph{$g}", "aucun"];
+        $config[] = ["periode_histo_graph{$g}", "global"];
+        $config[] = ["delai_histo_graph{$g}", ''];
+        $config[] = ["date_debut_histo_graph{$g}", ''];
+        $config[] = ["date_debut_histo_2dates_graph{$g}", ""];
+        $config[] = ["date_fin_histo_2dates_graph{$g}", ''];
+        $config[] = ["graph{$g}_bg_transparent", 1];
+        $config[] = ["graph{$g}_bg_color", ""];
+        $config[] = ["graph{$g}_bg_gradient_enabled", 0];
+        $config[] = ["graph{$g}_bg_gradient_start", ""];
+        $config[] = ["graph{$g}_bg_gradient_end", ""];
+        $config[] = ["graph{$g}_bg_gradient_angle", 90];
+        $config[] = ["titleGraph{$g}", "Titre Graph {$g}"];
+        $config[] = ["graph{$g}_compare_type", 'none'];
+        $config[] = ["graph{$g}_compare_month", "01"];
+        $config[] = ["graph{$g}_rolling_start_month", "01"];
+        for ($i = 1; $i <= 10; $i++) {
+            $index = str_pad($i, 2, '0', STR_PAD_LEFT);
+            $config[] = ["graph{$g}_index{$index}_nom", ''];
+            $config[] = ["graph{$g}_curve{$i}_type", "inherit_curve"];
+            $config[] = ["graph{$g}_color{$i}", $defaultColors[$i-1]];
+            $config[] = ["graph{$g}_cmdGraphe{$index}", ""];
+            $config[] = ["graph{$g}_unite{$i}", ""];
+            $config[] = ["graph{$g}_coef{$i}", ""];
+        }
+    }
+    return $config;
+}
+
+
+// Permet de modifier l'affichage du widget (également utilisable par les commandes)
 public function toHtml($_version = 'dashboard') {
     $replace = $this->preToHtml($_version);
     if (!is_array($replace)) {
@@ -211,8 +190,6 @@ public function toHtml($_version = 'dashboard') {
     $graphLayout = $this->getConfiguration('graphLayout', 'auto');
     $replace['#graphLayout#'] = $graphLayout;
 
-    $globalGraphType = $this->getConfiguration('graphType', 'line');
-
     $periodeHisto = $this->getConfiguration('periode_histo', 'nbJours');
     $delaiGraph = $this->getConfiguration("delai_histo");
     $dateDebutGraph1date = $this->getConfiguration("date_debut_histo");
@@ -222,13 +199,13 @@ public function toHtml($_version = 'dashboard') {
 
     $graphContainers = '';
     $chartScripts = '';
-    $defaultColors = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4','#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
+    
 
     for ($g = 1; $g <= 4; $g++) {
         if ($g > $nbGraphs) continue;
         // Type du graphique
-        $graphTypeOverride = $this->getConfiguration("graph{$g}_type", 'inherit_graph');
-        $graphType = ($graphTypeOverride === 'inherit_graph') ? $globalGraphType : $graphTypeOverride;
+        $graphType = $this->getConfiguration("graph{$g}_type", 'line');
+        if ($graphType == 'inherit_graph') $graphType = 'line';
         $periodeHistoGraph = $this->getConfiguration("periode_histo_graph{$g}", 'global');
         
 
@@ -270,7 +247,7 @@ public function toHtml($_version = 'dashboard') {
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
         $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
-        $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 100%;\"></div>";
+        $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 98%; margin: 0 1% 0 1%;\"></div>";
 
         $periodeHistoGraph = $this->getConfiguration("periode_histo_graph{$g}", 'global');
         $global = false;
@@ -287,14 +264,14 @@ public function toHtml($_version = 'dashboard') {
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateFinGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateFinGraph));
                 $actualisation = false;
-                log::add('jeeHistoGraph', 'debug', "Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
                 break;
             case 'deDate':
                 $dateDebutGraph = $this->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add('jeeHistoGraph', 'debug', "Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'nbJours':
             default:
@@ -302,7 +279,7 @@ public function toHtml($_version = 'dashboard') {
                 $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add('jeeHistoGraph', 'debug', "Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now");
                 break;
         }
 
@@ -380,7 +357,7 @@ public function toHtml($_version = 'dashboard') {
                 }
             }
             
-            log::add('jeeHistoGraph', 'debug', "Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
+            log::add(__CLASS__, 'debug', "Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
 
 
             $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
@@ -408,6 +385,7 @@ public function toHtml($_version = 'dashboard') {
                 $currentYear = (int)date('Y');
                 $monthToStart = (int)$rollingStartMonth;
                 $rolling = false;
+                $recordData = [];
                 foreach ($histo as $record) {
                     if ($compareType == 'none'){
                         $ts = strtotime($record->getDatetime()) * 1000;
@@ -459,17 +437,31 @@ public function toHtml($_version = 'dashboard') {
                     },\n";
                 }
                 $xAxisJS .=  "
-                            dateTimeLabelFormats: {
-                                month: '%b',
-                                year: '%b'
-                            },
                             labels: {
                                 formatter: function() {
-                                    return Highcharts.dateFormat('%b', this.value);
+                                    return Highcharts.dateFormat('%d %b', this.value);
                                 }
                             },
                         ";
+                $buttonJS = "buttons: [
+                                        { type: 'minute', count: 30, text: '30m' },
+                                        { type: 'hour', count: 1, text: '1h' },
+                                        { type: 'day', count: 1, text: '1j' },
+                                        { type: 'day', count: 7, text: '1s' },
+                                        { type: 'day', count: 30, text: '1m' },
+                                        { type: 'day', count: 365, text: '1y' },
+                                        { type: 'all', text: 'Tout' }
+                                    ]";
+
+                $xDateFormatJS = "%d/%m %Hh%M";
+
+                $navigator .=    '{ 
+                                enabled: false,
+                                margin: 1
+                                }';
+
             }
+
             if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
                 foreach ($recordData as $year => $data) {
                     $seriesJS .= "{
@@ -481,8 +473,19 @@ public function toHtml($_version = 'dashboard') {
                             }
                     },\n";
                 }
-                
+                $buttonJS = "buttons: []";
+                $xDateFormatJS = "%d/%m %Hh%M";
+                $buttonJS = "buttons: [
+                                        { type: 'day', count: 7, text: '1s' },
+                                        { type: 'all', text: 'Tout' }
+                                    ]";
+
+                $navigator .=    '{ 
+                                    enabled: true,
+                                    margin: 1
+                                    }';
             }
+
             if ($compareType == 'none'){
                 $seriesJS .= "{
                     name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
@@ -493,6 +496,21 @@ public function toHtml($_version = 'dashboard') {
                             valueSuffix: " . json_encode(' ' .$unite) . "
                         }
                 },\n";
+                $buttonJS = "buttons: [
+                                        { type: 'minute', count: 30, text: '30m' },
+                                        { type: 'hour', count: 1, text: '1h' },
+                                        { type: 'day', count: 1, text: '1j' },
+                                        { type: 'day', count: 7, text: '1s' },
+                                        { type: 'day', count: 30, text: '1m' },
+                                        { type: 'day', count: 365, text: '1y' },
+                                        { type: 'all', text: 'Tout' }
+                                    ]";
+                $xDateFormatJS = "%d/%m/%Y %Hh%M";
+
+                $navigator .=    '{ 
+                                    enabled: true,
+                                    margin: 1
+                                    }';
             }
 
             if ($cmdId and $actualisation) {
@@ -518,15 +536,7 @@ public function toHtml($_version = 'dashboard') {
             inputEnabled: false,
             floating: true,
             allButtonsEnabled: true,
-            buttons: [
-                { type: 'minute', count: 30, text: '30m' },
-                { type: 'hour', count: 1, text: '1h' },
-                { type: 'day', count: 1, text: '1j' },
-                { type: 'day', count: 7, text: '1s' },
-                { type: 'day', count: 30, text: '1m' },
-                { type: 'day', count: 365, text: '1y' },
-                { type: 'all', text: 'Tout' }
-            ],
+            {$buttonJS},
             inputPosition: {
                 x: 0,
                 y: 0
@@ -536,11 +546,6 @@ public function toHtml($_version = 'dashboard') {
                 y: 0
             }
         }";
-
-        $navigator =    '{ 
-                        enabled: true,
-                        margin: 1
-                        }';
 
         $chartScripts .= "
         window.chart_g{$g} = Highcharts.StockChart('{$containerId}', {
@@ -567,8 +572,9 @@ public function toHtml($_version = 'dashboard') {
                 labels: { 
                         format: '{value}',
                         align: 'left',
-                        x: 4,
-                        y: 0
+                        distance: '50%',
+                        x: 10,
+                        y: -2,
                         },
                 title: { text: '' },
             },
@@ -582,10 +588,11 @@ public function toHtml($_version = 'dashboard') {
             plotOptions: {
                 series: {
                     tooltip: {
-                        xDateFormat: '%d/%m/%Y %Hh%M',
+                        xDateFormat: '{$xDateFormatJS}',
                         shared: true,
                         valueDecimals: 2,
                     },
+                    fillOpacity: 0.1,
                     {$dataGrouping}
                 }
             },
@@ -598,7 +605,7 @@ public function toHtml($_version = 'dashboard') {
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
-                    log::add('jeeHistoGraph', 'debug', "ok , replace= " . json_encode($replace));
+                    log::add(__CLASS__, 'debug', "ok , replace= " . json_encode($replace));
 
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $this->postToHtml($_version, $html);

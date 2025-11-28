@@ -34,7 +34,7 @@ function jeeHistoGraph_update() {
         $core_version = $data['pluginVersion'];
         config::save('version', $core_version, 'jeeHistoGraph');
     } catch (\Exception $e) {
-        $core_version = 'inconnue';
+        $core_version = '0.0';
         log::add('jeeHistoGraph','warning',__('Pas de version de plugin (non bloquant ici)', __FILE__));
     }
 
@@ -45,6 +45,30 @@ function jeeHistoGraph_update() {
     log::add('jeeHistoGraph','info','**********************************************************');
     log::add('jeeHistoGraph','info','**         Core version    : '. $core_version. str_repeat(" ",27-strlen($core_version)) . '**');
     log::add('jeeHistoGraph','info','**********************************************************');
+
+    message::add('jeeHistoGraph', __('Mise à jour de la configuration des équipements jeeHistoGraph en cours...', __FILE__));   
+    $configs = jeeHistoGraph::config();
+    foreach (eqLogic::byType('jeeHistoGraph') as $eqLogic) {
+        foreach ($configs as $key) {
+            $config[] = $key[0];
+        }
+        $version = $eqLogic->getConfiguration('version', '0.0');
+        $actualVersion = config::byKey('version', 'jeeHistoGraph', '0.0', true);
+        log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' current config version: {$version}, Actual plugin version: {$actualVersion}");
+        if (version_compare($version, $actualVersion, '<')) {
+            $decode = $eqLogic->getConfiguration();
+            foreach ($decode as $key => $value) {
+                if (in_array($key, $config)) {
+                    continue;
+                }
+                log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' removing obsolete configuration key: {$key} with value: " . json_encode($value));
+                $eqLogic   ->setConfiguration($key, null);
+            }
+
+            $eqLogic   ->setConfiguration('version', $actualVersion);
+            $eqLogic   ->save();
+        } 
+    }
     
 
     message::add('jeeHistoGraph', __('Mise à jour du plugin jeeHistoGraph terminée, vous êtes en version', __FILE__) . ' ' . $core_version);
