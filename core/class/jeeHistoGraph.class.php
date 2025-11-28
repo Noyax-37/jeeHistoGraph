@@ -517,20 +517,21 @@ public function toHtml($_version = 'dashboard') {
 
         }
 
+
         switch ($compareType) {
             case 'prev_year':
-                $navigator .=    '{ 
+                $navigator =    '{ 
                                     enabled: false,
                                     margin: 1
                                   }';
                 break;
             case 'prev_year_month':
-                $navigator .=    '{ 
+                $navigator =    '{ 
                                     enabled: true,
                                     margin: 1
                                   }';
             case 'none':
-                $navigator .=    '{ 
+                $navigator =    '{ 
                                     enabled: true,
                                     margin: 1
                                   }';
