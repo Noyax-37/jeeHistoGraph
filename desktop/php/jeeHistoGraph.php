@@ -164,7 +164,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<div class="form-group">
+							<div class="form-group" style="border: 1px solid black; padding: 2px;">
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
 									<div class="col-sm-3">
@@ -258,7 +258,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									</div>
 								
 									<!-- Sélecteur de période -->
-									<div class="form-group">
+									<div class="form-group" style="border: 1px solid black; padding: 2px;">
 										<div class="form-group">
 											<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
 											<div class="col-sm-3">
@@ -322,7 +322,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									</div>
 
 									<div class="form-group">
-										<label class="col-sm-3 control-label">{{Faire de regroupement par :}}</label>
+										<label class="col-sm-3 control-label">{{Faire des regroupements par :}}</label>
 										<div class="col-sm-3">
 											<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_regroup">
 												<option value="aucun">{{Aucun groupement}}</option>
@@ -346,50 +346,50 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										</div>
 									</div>
 
-<div class="form-group">
-    <label class="col-sm-3 control-label">{{Comparaison temporelle :}}</label>
-    <div class="col-sm-3">
-        <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_type">
-            <option value="none">{{Aucune}}</option>
-            <option value="prev_year_month">{{Même mois des années précédentes}}</option>
-            <option value="prev_year">{{Années précédentes}}</option>
-        </select>
-    </div>
+									<div class="form-group">
+										<label class="col-sm-3 control-label">{{Comparaison temporelle :}}</label>
+										<div class="col-sm-3">
+											<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_type">
+												<option value="none">{{Aucune}}</option>
+												<option value="prev_year_month">{{Même mois des années précédentes}}</option>
+												<option value="prev_year">{{Années précédentes}}</option>
+											</select>
+										</div>
 
-	<div class="col-sm-6 compareRollingMonth" style="display:none;">
-        <label class="col-sm-3 control-label"><small>{{Mois de début}}</small></label>
-        <select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
-            <option value="01">{{Janvier}}</option>
-            <option value="02">{{Février}}</option>
-            <option value="03">{{Mars}}</option>
-            <option value="04">{{Avril}}</option>
-            <option value="05">{{Mai}}</option>
-            <option value="06">{{Juin}}</option>
-            <option value="07">{{Juillet}}</option>
-            <option value="08">{{Août}}</option>
-            <option value="09">{{Septembre}}</option>
-            <option value="10">{{Octobre}}</option>
-            <option value="11">{{Novembre}}</option>
-            <option value="12">{{Décembre}}</option>
-        </select>
-    </div>
-    <div class="col-sm-3 compareMonth" style="display:none;">
-        <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
-            <option value="01">{{Janvier}}</option>
-            <option value="02">{{Février}}</option>
-            <option value="03">{{Mars}}</option>
-			<option value="04">{{Avril}}</option>
-			<option value="05">{{Mai}}</option>
-			<option value="06">{{Juin}}</option>
-			<option value="07">{{Juillet}}</option>
-			<option value="08">{{Août}}</option>
-			<option value="09">{{Septembre}}</option>
-			<option value="10">{{Octobre}}</option>
-			<option value="11">{{Novembre}}</option>
-			<option value="12">{{Décembre}}</option>
-        </select>
-    </div>
-</div>									
+										<div class="col-sm-6 compareRollingMonth" style="display:none;">
+											<label class="col-sm-3 control-label"><small>{{Mois de début}}</small></label>
+											<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
+												<option value="01">{{Janvier}}</option>
+												<option value="02">{{Février}}</option>
+												<option value="03">{{Mars}}</option>
+												<option value="04">{{Avril}}</option>
+												<option value="05">{{Mai}}</option>
+												<option value="06">{{Juin}}</option>
+												<option value="07">{{Juillet}}</option>
+												<option value="08">{{Août}}</option>
+												<option value="09">{{Septembre}}</option>
+												<option value="10">{{Octobre}}</option>
+												<option value="11">{{Novembre}}</option>
+												<option value="12">{{Décembre}}</option>
+											</select>
+										</div>
+										<div class="col-sm-3 compareMonth" style="display:none;">
+											<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
+												<option value="01">{{Janvier}}</option>
+												<option value="02">{{Février}}</option>
+												<option value="03">{{Mars}}</option>
+												<option value="04">{{Avril}}</option>
+												<option value="05">{{Mai}}</option>
+												<option value="06">{{Juin}}</option>
+												<option value="07">{{Juillet}}</option>
+												<option value="08">{{Août}}</option>
+												<option value="09">{{Septembre}}</option>
+												<option value="10">{{Octobre}}</option>
+												<option value="11">{{Novembre}}</option>
+												<option value="12">{{Décembre}}</option>
+											</select>
+										</div>
+									</div>									
 
 									<div class="form-group stackingPerGraph" style="display:none;" data-graph="<?= $g ?> ?>">
 										<div class="form-group stackGraph">
@@ -403,59 +403,72 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											</div>
 										</div>
 									</div>
-								</div>
 
-								<div class="form-group">
-									<label class="col-sm-3 control-label">{{Fond transparent}} <?= $g ?></label>
-									<div class="col-sm-1">
-										<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_transparent" checked>
+									<!-- Sélecteur de période -->
+									<div class="form-group">
+										<label class="col-sm-3 control-label">{{Type d'infobulle: }}</label>
+										<div class="col-sm-3">
+											<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="tooltip<?= $g ?>">
+												<option value="regroup">{{regroupé, une seule infobulle}}</option>
+												<option value="multi">{{une infobulle par courbe}}</option>
+											</select>
+										</div>
 									</div>
 
-									<div class="bgOptions" style="display:none;">
-										<div class="col-sm-12 bgColorInput">
-											<label class="col-sm-4 control-label">{{Couleur unie}}</label>
-											<div class="col-sm-2">
-												<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_color" value="#ffffff">
-											</div>
+
+									<!-- fond du graphique -->
+									<div class="form-group" style="border: 1px solid black; padding: 2px;">
+										<label class="col-sm-3 control-label">{{Fond transparent}} <?= $g ?></label>
+										<div class="col-sm-1">
+											<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_transparent" checked>
 										</div>
 
-										<div class="col-sm-12 form-group gradientOptions" style="margin-top:10px;display:none;">
-											<label class="col-sm-4 control-label">{{Utiliser un dégradé}}</label>
-											<div class="col-sm-4">
-												<input type="checkbox" class="eqLogicAttr gradientCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_enabled">
-											</div>
-										</div>
-
-										<div class="gradientControls" style="display:none;margin-left:20px;">
-											<div class="form-group">
-												<label class="col-sm-2 control-label">{{Couleur début}}</label>
-												<div class="col-sm-1">
-													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_start" value="#001f3f">
-												</div>
-												<label class="col-sm-1 control-label">{{Couleur fin}}</label>
-												<div class="col-sm-1">
-													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_end" value="#007bff">
-												</div>
-												<label class="col-sm-1 control-label">{{Angle}}</label>
-												<div class="col-sm-1">
-													<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_angle">
-														<option value="0">0°</option>
-														<option value="45">45°</option>
-														<option value="90" selected>90°</option>
-														<option value="135">135°</option>
-														<option value="180">180°</option>
-														<option value="225">225°</option>
-														<option value="270">270°</option>
-														<option value="315">315°</option>
-													</select>
+										<div class="bgOptions" style="display:none;">
+											<div class="col-sm-12 bgColorInput">
+												<label class="col-sm-4 control-label">{{Couleur unie}}</label>
+												<div class="col-sm-2">
+													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_color" value="#ffffff">
 												</div>
 											</div>
 
-											<div class="form-group">
-												<label class="col-sm-2 control-label">{{Aperçu}}</label>
-												<div class="col-sm-1">
-													<div class="gradientPreview" style="width:100px;height:100px;border:2px solid #ccc;border-radius:8px;background:linear-gradient(90deg,#001f3f 0%,#007bff 100%);box-shadow:0 2px 6px rgba(0,0,0,0.2);margin:5px auto;display:flex;align-items:center;justify-content:center;">
-														<small style="color:rgba(255,255,255,0.8);font-weight:bold;text-shadow:1px 1px 2px #000;"></small>
+											<div class="col-sm-12 form-group gradientOptions" style="margin-top:10px;display:none;">
+												<label class="col-sm-4 control-label">{{Utiliser un dégradé}}</label>
+												<div class="col-sm-4">
+													<input type="checkbox" class="eqLogicAttr gradientCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_enabled">
+												</div>
+											</div>
+
+											<div class="gradientControls" style="display:none;margin-left:20px;">
+												<div class="form-group">
+													<label class="col-sm-2 control-label">{{Couleur début}}</label>
+													<div class="col-sm-1">
+														<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_start" value="#001f3f">
+													</div>
+													<label class="col-sm-1 control-label">{{Couleur fin}}</label>
+													<div class="col-sm-1">
+														<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_end" value="#007bff">
+													</div>
+													<label class="col-sm-1 control-label">{{Angle}}</label>
+													<div class="col-sm-1">
+														<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_angle">
+															<option value="0">0°</option>
+															<option value="45">45°</option>
+															<option value="90" selected>90°</option>
+															<option value="135">135°</option>
+															<option value="180">180°</option>
+															<option value="225">225°</option>
+															<option value="270">270°</option>
+															<option value="315">315°</option>
+														</select>
+													</div>
+												</div>
+
+												<div class="form-group">
+													<label class="col-sm-2 control-label">{{Aperçu}}</label>
+													<div class="col-sm-1">
+														<div class="gradientPreview" style="width:100px;height:100px;border:2px solid #ccc;border-radius:8px;background:linear-gradient(90deg,#001f3f 0%,#007bff 100%);box-shadow:0 2px 6px rgba(0,0,0,0.2);margin:5px auto;display:flex;align-items:center;justify-content:center;">
+															<small style="color:rgba(255,255,255,0.8);font-weight:bold;text-shadow:1px 1px 2px #000;"></small>
+														</div>
 													</div>
 												</div>
 											</div>

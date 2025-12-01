@@ -162,6 +162,7 @@ public static function config() {
         $config[] = ["graph{$g}_compare_type", 'none'];
         $config[] = ["graph{$g}_compare_month", "01"];
         $config[] = ["graph{$g}_rolling_start_month", "01"];
+        $config[] = ["tooltip{$g}", 'regroup'];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_index{$index}_nom", ''];
@@ -283,10 +284,12 @@ public function toHtml($_version = 'dashboard') {
                 break;
         }
 
+        $split = $this->getConfiguration("tooltip{$g}", 'regroup');
+        $splitJS = 'false';
+        if ($split != 'regroup') $splitJS = 'true';
 
 
-
-        $dataGrouping = '';
+        $dataGroupingJS = '';
         $regroup = $this->getConfiguration("graph{$g}_regroup", 'aucun');
         $typeRegroup = $this->getConfiguration("graph{$g}_typeRegroup", 'aucun');
 
@@ -317,7 +320,7 @@ public function toHtml($_version = 'dashboard') {
 
             $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
 
-            $dataGrouping = "
+            $dataGroupingJS = "
             dataGrouping: {
                 enabled: true,
                 forced: true,
@@ -331,6 +334,7 @@ public function toHtml($_version = 'dashboard') {
         $compareType = $this->getConfiguration("graph{$g}_compare_type", 'none');
         $compareMonth = $this->getConfiguration("graph{$g}_compare_month", date('m'));
         $rollingStartMonth = $this->getConfiguration("graph{$g}_rolling_start_month", '01');
+        $recordData = [];
 
         $first = false;
 
@@ -421,6 +425,71 @@ public function toHtml($_version = 'dashboard') {
             
             $xAxisJS = "type: 'datetime',";
 
+            if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+                switch ($regroup) {
+                    case 'minute':
+                        // $headerFormatJS = '<span style="font-size: 10px;">%A %d %B %Y<br/>%H:%M</span><br/>';
+                        $buttonJS = "buttons: [
+                                            { type: 'minute', count: 30, text: '30m' },
+                                            { type: 'hour', count: 1, text: '1h' },
+                                            { type: 'day', count: 1, text: '1j' },
+                                            { type: 'day', count: 7, text: '1s' },
+                                            { type: 'day', count: 30, text: '1m' },
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        break;
+                    case 'hour':
+                        $buttonJS = "buttons: [
+                                            { type: 'day', count: 1, text: '1j' },
+                                            { type: 'day', count: 7, text: '1s' },
+                                            { type: 'day', count: 30, text: '1m' },
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        break;
+                    case 'day':
+                        $buttonJS = "buttons: [
+                                            { type: 'day', count: 7, text: '1s' },
+                                            { type: 'day', count: 30, text: '1m' },
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        break;
+                    case 'week':
+                        $buttonJS = "buttons: [
+                                            { type: 'day', count: 30, text: '1m' },
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        break;
+                    case 'month':
+                        // $headerFormatJS = '<span style="font-size: 10px;">%A %d %B %Y<br/></span><br/>';
+                        $buttonJS = "buttons: [
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        break;
+                    case 'year':
+                        $buttonJS = "buttons: [
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        break;
+                    default:
+                }
+            } else {
+                $headerFormatJS = '{point.key}';
+                $buttonJS = "buttons: [
+                            { type: 'minute', count: 30, text: '30m' },
+                            { type: 'hour', count: 1, text: '1h' },
+                            { type: 'day', count: 1, text: '1j' },
+                            { type: 'day', count: 7, text: '1s' },
+                            { type: 'day', count: 30, text: '1m' },
+                            { type: 'day', count: 365, text: '1an' },
+                            { type: 'all', text: 'Tout' }
+                        ]";
+            }
+
             if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
                 foreach ($recordData as $year => $data) {
                     if ($rolling){
@@ -429,12 +498,13 @@ public function toHtml($_version = 'dashboard') {
                         $years = $year;
                     }
                     $seriesJS .= "{
-                        name: " . json_encode($indexNom . " - {$years}" . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                        name: " . json_encode($indexNom . " - {$years}") . ",
                         type: " . json_encode($finalCurveType) . ",
                         data: ". json_encode($data) . ",
+                        valueSuffix: " . json_encode(' ' .$unite) . ",
                         tooltip: {
-                                valueSuffix: " . json_encode(' ' .$unite) . "
-                            }
+                            valueSuffix: " . json_encode(' ' .$unite) . "
+                        }
                     },\n";
                 }
                 $xAxisJS .=  "
@@ -444,28 +514,23 @@ public function toHtml($_version = 'dashboard') {
                                 }
                             },
                         ";
-                $buttonJS = "buttons: [
-                                        { type: 'minute', count: 30, text: '30m' },
-                                        { type: 'hour', count: 1, text: '1h' },
-                                        { type: 'day', count: 1, text: '1j' },
-                                        { type: 'day', count: 7, text: '1s' },
-                                        { type: 'day', count: 30, text: '1m' },
-                                        { type: 'day', count: 365, text: '1y' },
-                                        { type: 'all', text: 'Tout' }
-                                    ]";
 
                 $xDateFormatJS = "%d/%m %Hh%M";
+                $navigatorJS =    '{ 
+                    enabled: false,
+                    margin: 1
+                    }';
             }
 
             if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
                 foreach ($recordData as $year => $data) {
                     $seriesJS .= "{
-                        name: " . json_encode($indexNom . " - {$year}" . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                        name: " . json_encode($indexNom . " - {$year}") . ",
                         type: " . json_encode($finalCurveType) . ",
                         data: ". json_encode($data) . ",
                         tooltip: {
-                                valueSuffix: " . json_encode(' ' .$unite) . "
-                            }
+                            valueSuffix: " . json_encode(' ' .$unite) . "
+                        }
                     },\n";
                 }
                 $xDateFormatJS = "%d/%m %Hh%M";
@@ -473,7 +538,10 @@ public function toHtml($_version = 'dashboard') {
                                         { type: 'day', count: 7, text: '1s' },
                                         { type: 'all', text: 'Tout' }
                                     ]";
-
+                $navigatorJS =    '{ 
+                    enabled: true,
+                    margin: 1
+                    }';
             }
 
             if ($compareType == 'none'){
@@ -482,23 +550,13 @@ public function toHtml($_version = 'dashboard') {
                     color: " . json_encode($color) . ",
                     type: " . json_encode($finalCurveType) . ",
                     data: ". json_encode($listeHisto) . ",
-                    tooltip: {
-                            valueSuffix: " . json_encode(' ' .$unite) . "
-                        }
                 },\n";
 
-                $buttonJS = "buttons: [
-                                        { type: 'minute', count: 30, text: '30m' },
-                                        { type: 'hour', count: 1, text: '1h' },
-                                        { type: 'day', count: 1, text: '1j' },
-                                        { type: 'day', count: 7, text: '1s' },
-                                        { type: 'day', count: 30, text: '1m' },
-                                        { type: 'day', count: 365, text: '1y' },
-                                        { type: 'all', text: 'Tout' }
-                                    ]";
                 $xDateFormatJS = "%d/%m/%Y %Hh%M";
- 
-
+                $navigatorJS =    '{ 
+                    enabled: true,
+                    margin: 1
+                    }';
             }
 
             if ($cmdId and $actualisation) {
@@ -518,28 +576,8 @@ public function toHtml($_version = 'dashboard') {
         }
 
 
-        switch ($compareType) {
-            case 'prev_year':
-                $navigator =    '{ 
-                                    enabled: false,
-                                    margin: 1
-                                  }';
-                break;
-            case 'prev_year_month':
-                $navigator =    '{ 
-                                    enabled: true,
-                                    margin: 1
-                                  }';
-            case 'none':
-                $navigator =    '{ 
-                                    enabled: true,
-                                    margin: 1
-                                  }';
-                break;
-            default: 
-        }
         $showLegend = $this->getConfiguration('showLegend', 1) ? 'true' : 'false';
-        $rangeSelector = "{
+        $rangeSelectorJS = "{
             enabled: true,
             selected: 6,
             inputEnabled: false,
@@ -552,7 +590,7 @@ public function toHtml($_version = 'dashboard') {
             },
             buttonPosition: {
                 x: 0,
-                y: 0
+                y: 20
             }
         }";
 
@@ -568,6 +606,8 @@ public function toHtml($_version = 'dashboard') {
                 enabled: true,
             },
             title: { 
+                floating: true,
+                y: 20,
                 text: '{$titleGraph}', 
                 height: 10,
                 style: { 
@@ -591,18 +631,23 @@ public function toHtml($_version = 'dashboard') {
             legend: { 
                 enabled: {$showLegend},
             },
-            rangeSelector: {$rangeSelector},
-            navigator: {$navigator},
-            series: [{$seriesJS}].filter(s => s.name && s.data.length > 0),
+            rangeSelector: {$rangeSelectorJS},
+            navigator: {$navigatorJS},
+            scrollbar: {
+                margin: 10,
+                enabled: true
+            },
+            tooltip: {
+                headerFormat: '{$headerFormatJS}<br>',
+                xDateFormat: '{$xDateFormatJS}',
+                split: $splitJS,
+                shared: true,
+                valueDecimals: 2,
+            },
             plotOptions: {
                 series: {
-                    tooltip: {
-                        xDateFormat: '{$xDateFormatJS}',
-                        shared: true,
-                        valueDecimals: 2,
-                    },
                     fillOpacity: 0.1,
-                    {$dataGrouping}
+                    {$dataGroupingJS}
                 }
             },
             series: [{$seriesJS}]
@@ -612,9 +657,11 @@ public function toHtml($_version = 'dashboard') {
         ";
     }
 
+
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
-                    log::add(__CLASS__, 'debug', "ok , replace= " . json_encode($replace));
+    
+    log::add(__CLASS__, 'debug', "ok , replace= " . json_encode($replace));
 
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $this->postToHtml($_version, $html);

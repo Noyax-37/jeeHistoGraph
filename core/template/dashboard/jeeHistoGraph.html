@@ -1,7 +1,7 @@
 <div class="eqLogic eqLogic-widget allowResize allowReorderCmd jeeHistoGraph #custom_layout# #eqLogic_class# #class#"
     data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
     style="width: #width#;height: #height#;#style#; display: flex; flex-direction: column; overflow: hidden;">
-    <center class="widget-name" style="flex: 0 0 auto; padding: 5px 0; font-size: 0.9em;">
+    <center class="widget-name" style="flex: 0 0 auto; font-size: 0.9em;">
         <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
         <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
     </center>
@@ -65,10 +65,6 @@
             const nbGraphs = #nbGraphs#;
             const now = Date.now();
 
-            function getInitialButtonIndex(zoom) {
-                const map = { '30min': 0, '1h': 1, '1d': 2, '1w': 3, '1M': 4, '1y': 5, 'all': 6 };
-                return map[zoom] ?? 6;
-            }
 
             window.charts = window.charts || {};
             #chart_scripts#
