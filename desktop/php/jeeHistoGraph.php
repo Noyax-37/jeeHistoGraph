@@ -134,7 +134,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<legend><i class="fas fa-sliders-h"></i> {{Configuration du ou des graphique(s)}}</legend>
+							<legend><i class="fas fa-sliders-h"></i> {{Configuration commune aux graphiques}}</legend>
 							<div class="form-group">
 								<label class="col-sm-3 control-label">{{Nombre de graphique(s)}}</label>
 								<div class="col-sm-3">
@@ -256,7 +256,33 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph<?= $g ?>"/>
 										</div>
 									</div>
-								
+
+									<!-- Choix graphique spécial -->
+									<div class="form-group" style="display:none;">
+										<label class="col-sm-3 control-label">{{Graphique spécial solaire :}}</label>
+										<div class="col-sm-3">
+											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graphSolar_g<?= $g ?>">
+										</div>
+									</div>
+
+									<!-- Sélecteur de courbe -->
+									<div class="form-group">
+										<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>
+										<div class="col-sm-3">
+											<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type"  id="graphType<?= $g ?>">
+												<option value="line">{{Ligne classique}}</option>
+												<option value="spline">{{Courbe lisse}}</option>
+												<option value="areaspline">{{Aire lisse}}</option>
+												<option value="area">{{Aire}}</option>
+												<option value="column">{{Colonne}}</option>
+												<option value="bar">{{Barre}}</option>
+											</select>
+										</div>
+										<div class="col-sm-4">
+											<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
+										</div>
+									</div>
+
 									<!-- Sélecteur de période -->
 									<div class="form-group" style="border: 1px solid black; padding: 2px;">
 										<div class="form-group">
@@ -302,22 +328,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											<div class="col-sm-3">
 												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph<?= $g ?>">
 											</div>
-										</div>
-									</div>
-
-									<div class="form-group">
-										<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>
-										<div class="col-sm-3">
-											<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type"  id="graphType<?= $g ?>">
-												<option value="line">{{Ligne classique}}</option>
-												<option value="spline">{{Courbe lisse}}</option>
-												<option value="areaspline">{{Aire lisse}}</option>
-												<option value="area">{{Aire}}</option>
-												<option value="column">{{Colonne}}</option>
-											</select>
-										</div>
-										<div class="col-sm-4">
-											<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
 										</div>
 									</div>
 

@@ -285,13 +285,22 @@ public function toHtml($_version = 'dashboard') {
         }
 
         $split = $this->getConfiguration("tooltip{$g}", 'regroup');
-        $splitJS = 'false';
-        if ($split != 'regroup') $splitJS = 'true';
+        $splitJS = ($split == 'regroup') ? 'false' : 'true';
 
 
-        $dataGroupingJS = '';
+        $dataGroupingJS = 'enabled: false,';
         $regroup = $this->getConfiguration("graph{$g}_regroup", 'aucun');
         $typeRegroup = $this->getConfiguration("graph{$g}_typeRegroup", 'aucun');
+        $dataGroupingDateTimeLabelFormatsJS = "
+                                        millisecond: ['%A %e %b %Y, %H:%M:%S.%L', '%A %e %b %Y de %H:%M:%S.%L', ' à %H:%M:%S.%L'],
+                                        second: ['%A %e %b %Y, %H:%M:%S', '%A %e %b %Y de %H:%M:%S', ' à %H:%M:%S'],
+                                        minute: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                        hour: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                        day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                        week: ['Semaine du %e %b %Y', 'Du %e %b %Y', ' au %e %b %Y'],
+                                        month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                        year: ['%Y', 'De %Y', ' à %Y']
+            ";
 
         if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
             $units = '';
@@ -321,12 +330,11 @@ public function toHtml($_version = 'dashboard') {
             $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
 
             $dataGroupingJS = "
-            dataGrouping: {
                 enabled: true,
                 forced: true,
                 approximation: '{$approximation}',
-                units: {$units}
-            }";
+                units: {$units},
+            ";
         }        
         
         $seriesJS = '';
@@ -425,6 +433,16 @@ public function toHtml($_version = 'dashboard') {
             
             $xAxisJS = "type: 'datetime',";
 
+            $headerFormatJS = '<span>{point.key}</span><br>';
+            $dateTimeLabelFormats = "   millisecond: '%H:%M:%S.%L',
+                                        second: '%H:%M:%S',
+                                        minute: '%H:%M',
+                                        hour: '%H:%M',
+                                        day: '%e. %b',
+                                        week: '%e. %b',
+                                        month: '%b \'%y',
+                                        year: '%Y'
+                                            ";
             if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
                 switch ($regroup) {
                     case 'minute':
@@ -464,7 +482,6 @@ public function toHtml($_version = 'dashboard') {
                                         ]";
                         break;
                     case 'month':
-                        // $headerFormatJS = '<span style="font-size: 10px;">%A %d %B %Y<br/></span><br/>';
                         $buttonJS = "buttons: [
                                             { type: 'day', count: 365, text: '1an' },
                                             { type: 'all', text: 'Tout' }
@@ -478,7 +495,6 @@ public function toHtml($_version = 'dashboard') {
                     default:
                 }
             } else {
-                $headerFormatJS = '{point.key}';
                 $buttonJS = "buttons: [
                             { type: 'minute', count: 30, text: '30m' },
                             { type: 'hour', count: 1, text: '1h' },
@@ -515,7 +531,19 @@ public function toHtml($_version = 'dashboard') {
                             },
                         ";
 
-                $xDateFormatJS = "%d/%m %Hh%M";
+                $xDateFormatJS = "%d %B - %Hh%M";
+                $dataGroupingDateTimeLabelFormatsJS = "
+                                millisecond: [
+                                    '%A %e %b, %H:%M:%S.%L', '%A %e %b de %H:%M:%S.%L', ' à %H:%M:%S.%L'
+                                ],
+                                second: ['%A %e %b, %H:%M:%S', '%A %e %b de %H:%M:%S', ' à %H:%M:%S'],
+                                minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                day: ['%A %e %b', 'Du %A %b %e', ' au %A %b %e'],
+                                week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                                month: ['%B', 'De %B', ' à %B'],
+                                year: ['%Y', 'De %Y', ' à %Y']
+                            ";
                 $navigatorJS =    '{ 
                     enabled: false,
                     margin: 1
@@ -533,7 +561,7 @@ public function toHtml($_version = 'dashboard') {
                         }
                     },\n";
                 }
-                $xDateFormatJS = "%d/%m %Hh%M";
+                $xDateFormatJS = "%d %B - %Hh%M";
                 $buttonJS = "buttons: [
                                         { type: 'day', count: 7, text: '1s' },
                                         { type: 'all', text: 'Tout' }
@@ -550,9 +578,33 @@ public function toHtml($_version = 'dashboard') {
                     color: " . json_encode($color) . ",
                     type: " . json_encode($finalCurveType) . ",
                     data: ". json_encode($listeHisto) . ",
+                    dateTimeLabelFormats: {
+                        millisecond: [
+                            '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                        ],
+                        second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                        minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                        hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                        day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                        week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                        month: ['%B %Y', 'De %B', ' à %B %Y'],
+                        year: ['%Y', 'De %Y', ' à %Y']
+                    }
                 },\n";
 
-                $xDateFormatJS = "%d/%m/%Y %Hh%M";
+                $xDateFormatJS = "%d %B %Y - %Hh%M";
+                $dateTimeLabelFormats = "
+                        millisecond: [
+                            '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                        ],
+                        second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                        minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                        hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                        day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                        week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                        month: ['%B %Y', 'De %B', ' à %B %Y'],
+                        year: ['%Y', 'De %Y', ' à %Y']
+                                            ";
                 $navigatorJS =    '{ 
                     enabled: true,
                     margin: 1
@@ -595,7 +647,7 @@ public function toHtml($_version = 'dashboard') {
         }";
 
         $chartScripts .= "
-        window.chart_g{$g} = Highcharts.StockChart('{$containerId}', {
+        window.chart_g{$g} = Highcharts.stockChart('{$containerId}', {
             chart: {
                 type: '<?php echo $graphType; ?>',
                 backgroundColor: 'transparent',
@@ -638,8 +690,12 @@ public function toHtml($_version = 'dashboard') {
                 enabled: true
             },
             tooltip: {
-                headerFormat: '{$headerFormatJS}<br>',
                 xDateFormat: '{$xDateFormatJS}',
+                dateTimeLabelFormats: { {$dateTimeLabelFormats} },
+
+                useHTML: true,
+                headerFormat: '{$headerFormatJS}',
+                pointFormat: '<span style=\"color:{series.color}\">{series.name}</span>: <b>{point.y}</b><br/>',
                 split: $splitJS,
                 shared: true,
                 valueDecimals: 2,
@@ -647,7 +703,9 @@ public function toHtml($_version = 'dashboard') {
             plotOptions: {
                 series: {
                     fillOpacity: 0.1,
-                    {$dataGroupingJS}
+                    dataGrouping: { {$dataGroupingJS}
+                                    dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                                  },
                 }
             },
             series: [{$seriesJS}]
