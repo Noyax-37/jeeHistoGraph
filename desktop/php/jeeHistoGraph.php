@@ -522,7 +522,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 									</div>
 
-									<!-- navigator -->
+<!-- navigator -->
 									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
 										<div class="col-sm-2"> </div>
 										<span><b><i class="fas fa-glasses"></i> {{Aide navigation}}</b></span>
@@ -552,13 +552,56 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											</div>
 										</div>
 										<div class="form-group">
-											<label class="col-sm-3 control-label">{{Afficher les bouttons: }}</label>
+											<label class="col-sm-3 control-label">{{Afficher les boutons: }}</label>
 											<div class="col-sm-1">
 												<input type="checkbox" class="eqLogicAttr bgNavigator" data-l1key="configuration" data-l2key="graph<?= $g ?>_buttons" checked>
 											</div>
 										</div>
-									</div>
 
+<!-- AJOUT DE LA SECTION ILLUSTRÉE -->
+										<div class="form-group">
+											<label class="col-sm-3 control-label"></label>
+											<div class="col-sm-9">
+												<div style="background:#f5f5f5; border-radius:8px; padding:15px; margin-top:10px; border:1px solid #ddd;">
+													<p style="margin:0 0 15px 0; font-weight:bold; color:#333;">
+														<i class="fas fa-info-circle"></i> {{À quoi correspondent ces options ?}}
+													</p>
+
+													<div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
+														<!-- Navigator (mini graphique) -->
+														<div style="text-align:center; flex:1; min-width:250px;">
+															<p style="margin:5px 0;"><strong>{{Barre de navigation (navigator)}}</strong></p>
+															<img src="plugins/jeeHistoGraph/desktop/images/navigator.jpg" 
+															     style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+															<small style="color:#666; display:block; margin-top:5px;">
+																{{Vue miniature du graphique complet – permet de zoomer en glissant les poignées grises}}
+															</small>
+														</div>
+
+														<!-- Barre de défilement -->
+														<div style="text-align:center; flex:1; min-width:250px;">
+															<p style="margin:5px 0;"><strong>{{Barre de défilement}}</strong></p>
+															<img src="plugins/jeeHistoGraph/desktop/images/scrollbar.jpg" 
+															     style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+															<small style="color:#666; display:block; margin-top:5px;">
+																{{Permet de se déplacer horizontalement dans le temps}}
+															</small>
+														</div>
+
+														<!-- Boutons de période -->
+														<div style="text-align:center; flex:1; min-width:250px;">
+															<p style="margin:5px 0;"><strong>{{Boutons de période}}</strong></p>
+															<img src="plugins/jeeHistoGraph/desktop/images/range_buttons.jpg" 
+															     style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+															<small style="color:#666; display:block; margin-top:5px;">
+																{{Permet de passer rapidement à une période prédéfinie}}
+															</small>
+														</div>
+
+													</div>
+												</div>
+											</div>
+										</div>
 
 									<!-- fond du graphique -->
 								</div>
