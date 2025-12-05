@@ -164,7 +164,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<div class="form-group" style="border: 2px solid grey; padding: 2px;">
+							<div class="form-group" style="border: 1px solid grey; padding: 2px;">
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
 									<div class="col-sm-3">
@@ -218,13 +218,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<div class="form-group">
-                                <label class="col-sm-3 control-label">{{Afficher la légende}}</label>
-                                <div class="col-sm-3">
-                                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="showLegend" checked>
-                                </div>
-                            </div>
-
 							<div class="form-group" style="display:none">
                                 <label class="col-sm-3 control-label">{{Nb max points par courbe (500 par défaut)}}</label>
                                 <div class="col-sm-3">
@@ -240,8 +233,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<legend></i> {{ }}</legend>
-
+							</br>
 								<?php
 									$nbGraphs = 1;
 									if (is_object($eqLogic)) {
@@ -254,13 +246,21 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
 								?>
 								
-							<div class="graphConfig" data-graph="<?= $g ?>" <?= $display ?>>
-								<div class="form-group">
+							<div class="form-group graphConfig" style="border: 6px solid grey; border-style: double; padding: 2px;" data-graph="<?= $g ?>" <?= $display ?>>
+								<div class="col-lg-12">
 									<legend><i class="fas fa-chart-line"></i>{{Graphique}} <?= $g ?></legend>
 									<div class="form-group">
-                                		<label class="col-sm-3 control-label"> {{titre graphique}} <?= $g ?> : </label>
+                                		<label class="col-sm-3 control-label"><b> {{titre graphique}} <?= $g ?> : </b></label>
 										<div class="col-sm-6">
 											<input type="text" class="eqLogicAttr configKey" data-l1key="configuration" data-l2key="titleGraph<?= $g ?>"/>
+										</div>
+									</div>
+
+									<!-- Affichage du titre -->
+									<div class="form-group">
+										<label class="col-sm-3 control-label">{{Afficher le titre}}</label>
+										<div class="col-sm-3">
+											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_showTitle" checked>
 										</div>
 									</div>
 
@@ -277,26 +277,31 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										</div>
 									</div>
 
-									<!-- Sélecteur de courbe -->
-									<div class="form-group">
-										<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>
-										<div class="col-sm-3">
-											<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type"  id="graphType<?= $g ?>">
-												<option value="line">{{Ligne classique}}</option>
-												<option value="spline">{{Courbe lisse}}</option>
-												<option value="areaspline">{{Aire lisse}}</option>
-												<option value="area">{{Aire}}</option>
-												<option value="column">{{Colonne}}</option>
-												<option value="bar">{{Barre}}</option>
-											</select>
-										</div>
-										<div class="col-sm-4">
-											<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
-										</div>
-									</div>
+									<!-- curves -->
+									<div class="form-group" style="border: 1px solid grey;">
+										<div class="col-sm-2"> </div>
+										<span><b><i class="fas fa-chart-bar"></i> {{Paramètres des courbes}}</b></span>
 
-									<div class="form-group stackingPerGraph" data-graph="<?= $g ?> ?>">
-										<div class="form-group stackGraph">
+										<!-- Sélecteur de courbe -->
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Type de courbe par défaut :}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type"  id="graphType<?= $g ?>">
+													<option value="line">{{Ligne classique}}</option>
+													<option value="spline">{{Courbe lisse}}</option>
+													<option value="areaspline">{{Aire lisse}}</option>
+													<option value="area">{{Aire}}</option>
+													<option value="column">{{Colonne}}</option>
+													<option value="bar">{{Barre}}</option>
+												</select>
+											</div>
+											<div class="col-sm-4">
+												<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
+											</div>
+										</div>
+
+										<!-- Empilement -->
+										<div class="form-group">
 											<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>
 											<div class="col-sm-3">
 												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>">
@@ -306,150 +311,29 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 												</select>
 											</div>
 										</div>
-									</div>
 
-									<!-- Sélecteur de période -->
-									<div class="form-group" style="border: 2px solid grey; padding: 2px;">
+										<!-- Bouton RAZ couleurs -->
+										<div class="form-group Colors">
+											<label class="col-sm-3 control-label">{{RAZ couleurs courbes : }}</label>
+											<div class="col-sm-4">
+												<a class="btn btn-warning tooltips btjeeHistoGraphRazCouleurs" data-graph="<?= $g ?>"><i class="fas fa-medkit"></i> {{Remettre les couleurs par défaut}}</a>
+											</div>
+										</div>
+
+										<!-- Affichage de la légende -->
 										<div class="form-group">
-											<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+											<label class="col-sm-3 control-label">{{Afficher la légende}}</label>
 											<div class="col-sm-3">
-												<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_histo_graph<?= $g ?>">
-													<option value="global">{{Paramètre global}}</option>
-													<option value="nbJours">{{En nombre de jours}}</option>
-													<option value="deDate">{{À partir d'une date}}</option>
-													<option value="deDateAdate">{{Entre 2 dates}}</option>
-													<option disabled="disabled">_____</option>
-													<option value="dDay">{{Aujourd'hui}}</option>
-													<option value="dWeek">{{Cette semaine}}</option>
-													<option value="dMonth">{{Ce mois}}</option>
-													<option value="dYear">{{Cette année}}</option>
-													<option disabled="disabled">_____</option>
-													<option value="dAll">{{Toutes les données}}</option>
-												</select>
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_showLegend" checked>
 											</div>
 										</div>
 
-										<div class="col-sm-2">
-
-										</div>
-
-										<!-- === Champ nombre de jours === -->
-										<div class="form-group periodeBlock<?= $g ?> nbJours" style="display:none;">
-											<label class="col-sm-2 control-label">{{Période d'affichage}}</label>
-											<div class="col-sm-3">
-												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph<?= $g ?>" placeholder="{{Global}}">
+										<!-- Fond du graphique -->
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Fond transparent :}}</label>
+											<div class="col-sm-1">										
+												<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_transparent" checked>
 											</div>
-										</div>
-
-										<!-- === Champ "de date" === -->
-										<div class="form-group periodeBlock<?= $g ?> deDate" style="display:none;">
-											<label class="col-sm-2 control-label">{{De date début}}</label>
-											<div class="col-sm-3">
-												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_graph<?= $g ?>">
-											</div>
-											<label class="col-sm-3 control-label pull-left">{{à maintenant (actualisation auto)}}</label>
-										</div>
-
-										<!-- === Champs "entre 2 dates" === -->
-										<div class="form-group periodeBlock<?= $g ?> deDateAdate" style="display:none;">
-											<label class="col-sm-2 control-label">{{Date de début}}</label>
-											<div class="col-sm-3">
-												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates_graph<?= $g ?>">
-											</div>
-											<label class="col-sm-1 control-label">{{Date de fin}}</label>
-											<div class="col-sm-3">
-												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph<?= $g ?>">
-											</div>
-										</div>
-									</div>
-
-									<div class="form-group">
-										<label class="col-sm-3 control-label">{{Faire des regroupements par :}}</label>
-										<div class="col-sm-3">
-											<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_regroup">
-												<option value="aucun">{{Aucun groupement}}</option>
-												<option value="minute">{{par minute}}</option>
-												<option value="hour">{{par heure}}</option>
-												<option value="day">{{par jour}}</option>
-												<option value="week">{{par semaine}}</option>
-												<option value="month">{{par mois}}</option>
-												<option value="year">{{par année}}</option>
-											</select>
-										</div>
-										<label class="col-sm-3 control-label">{{Type de regroupement :}}</label>
-										<div class="col-sm-3">
-											<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_typeRegroup">
-												<option value="aucun">{{Aucun type}}</option>
-												<option value="avg">{{moyenne}}</option>
-												<option value="sum">{{somme}}</option>
-												<option value="min">{{mini}}</option>
-												<option value="max">{{maxi}}</option>
-											</select>
-										</div>
-									</div>
-
-									<div class="form-group">
-										<label class="col-sm-3 control-label">{{Comparaison temporelle :}}</label>
-										<div class="col-sm-3">
-											<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_type">
-												<option value="none">{{Aucune}}</option>
-												<option value="prev_year_month">{{Même mois des années précédentes}}</option>
-												<option value="prev_year">{{Années précédentes}}</option>
-											</select>
-										</div>
-
-										<div class="col-sm-6 compareRollingMonth" style="display:none;">
-											<label class="col-sm-3 control-label"><small>{{Mois de début}}</small></label>
-											<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
-												<option value="01">{{Janvier}}</option>
-												<option value="02">{{Février}}</option>
-												<option value="03">{{Mars}}</option>
-												<option value="04">{{Avril}}</option>
-												<option value="05">{{Mai}}</option>
-												<option value="06">{{Juin}}</option>
-												<option value="07">{{Juillet}}</option>
-												<option value="08">{{Août}}</option>
-												<option value="09">{{Septembre}}</option>
-												<option value="10">{{Octobre}}</option>
-												<option value="11">{{Novembre}}</option>
-												<option value="12">{{Décembre}}</option>
-											</select>
-										</div>
-										<div class="col-sm-3 compareMonth" style="display:none;">
-											<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
-												<option value="01">{{Janvier}}</option>
-												<option value="02">{{Février}}</option>
-												<option value="03">{{Mars}}</option>
-												<option value="04">{{Avril}}</option>
-												<option value="05">{{Mai}}</option>
-												<option value="06">{{Juin}}</option>
-												<option value="07">{{Juillet}}</option>
-												<option value="08">{{Août}}</option>
-												<option value="09">{{Septembre}}</option>
-												<option value="10">{{Octobre}}</option>
-												<option value="11">{{Novembre}}</option>
-												<option value="12">{{Décembre}}</option>
-											</select>
-										</div>
-									</div>									
-
-									<!-- Sélecteur de période -->
-									<div class="form-group">
-										<label class="col-sm-3 control-label">{{Type d'infobulle: }}</label>
-										<div class="col-sm-3">
-											<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="tooltip<?= $g ?>">
-												<option value="regroup">{{regroupé, une seule infobulle}}</option>
-												<option value="multi">{{une infobulle par courbe}}</option>
-											</select>
-										</div>
-									</div>
-
-
-									<!-- fond du graphique -->
-									<div class="form-group" style="border: 2px solid grey; padding: 2px;">
-										<label class="col-sm-3 control-label">{{Fond transparent}} <?= $g ?></label>
-										<div class="col-sm-1">
-											<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_transparent" checked>
 										</div>
 
 										<div class="bgOptions" style="display:none;">
@@ -503,67 +387,245 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											</div>
 										</div>
 									</div>
+
+									<!-- Sélecteur de période -->
+									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
+										<div class="col-sm-2"> </div>
+										<span><b><i class="fas fa-calendar-times"></i> {{Gestion de la période à afficher}}</b></span>
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_histo_graph<?= $g ?>">
+													<option value="global">{{Paramètre global}}</option>
+													<option value="nbJours">{{En nombre de jours}}</option>
+													<option value="deDate">{{À partir d'une date}}</option>
+													<option value="deDateAdate">{{Entre 2 dates}}</option>
+													<option disabled="disabled">_____</option>
+													<option value="dDay">{{Aujourd'hui}}</option>
+													<option value="dWeek">{{Cette semaine}}</option>
+													<option value="dMonth">{{Ce mois}}</option>
+													<option value="dYear">{{Cette année}}</option>
+													<option disabled="disabled">_____</option>
+													<option value="dAll">{{Toutes les données}}</option>
+												</select>
+											</div>
+										</div>
+
+										<div class="col-sm-2">
+
+										</div>
+
+										<!-- === Champ nombre de jours === -->
+										<div class="form-group periodeBlock<?= $g ?> nbJours" style="display:none;">
+											<label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
+											<div class="col-sm-2">
+												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph<?= $g ?>" placeholder="{{Global}}">
+											</div>
+										</div>
+
+										<!-- === Champ "de date" === -->
+										<div class="form-group periodeBlock<?= $g ?> deDate" style="display:none;">
+											<label class="col-sm-2 control-label">{{De date début}}</label>
+											<div class="col-sm-3">
+												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_graph<?= $g ?>">
+											</div>
+											<label class="col-sm-3 control-label pull-left">{{à maintenant (actualisation auto)}}</label>
+										</div>
+
+										<!-- === Champs "entre 2 dates" === -->
+										<div class="form-group periodeBlock<?= $g ?> deDateAdate" style="display:none;">
+											<label class="col-sm-2 control-label">{{Date de début}}</label>
+											<div class="col-sm-3">
+												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates_graph<?= $g ?>">
+											</div>
+											<label class="col-sm-1 control-label">{{Date de fin}}</label>
+											<div class="col-sm-3">
+												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph<?= $g ?>">
+											</div>
+										</div>
+									</div>
+
+									<!-- regroupements -->
+									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
+										<div class="col-sm-2"> </div>
+										<span><b><i class="fas fa-arrows-alt"></i> {{Gestion des regroupements / comparaisons}}</b></span>
+
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Comparaison temporelle :}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_type">
+													<option value="none">{{Aucune}}</option>
+													<option value="prev_year_month">{{Même mois des années précédentes}}</option>
+													<option value="prev_year">{{Années précédentes}}</option>
+												</select>
+											</div>
+
+											<div class="col-sm-6 compareRollingMonth" style="display:none;">
+												<label class="col-sm-3 control-label"><small>{{Mois de début}}</small></label>
+												<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
+													<option value="01">{{Janvier}}</option>
+													<option value="02">{{Février}}</option>
+													<option value="03">{{Mars}}</option>
+													<option value="04">{{Avril}}</option>
+													<option value="05">{{Mai}}</option>
+													<option value="06">{{Juin}}</option>
+													<option value="07">{{Juillet}}</option>
+													<option value="08">{{Août}}</option>
+													<option value="09">{{Septembre}}</option>
+													<option value="10">{{Octobre}}</option>
+													<option value="11">{{Novembre}}</option>
+													<option value="12">{{Décembre}}</option>
+												</select>
+											</div>
+											<div class="col-sm-3 compareMonth" style="display:none;">
+												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
+													<option value="01">{{Janvier}}</option>
+													<option value="02">{{Février}}</option>
+													<option value="03">{{Mars}}</option>
+													<option value="04">{{Avril}}</option>
+													<option value="05">{{Mai}}</option>
+													<option value="06">{{Juin}}</option>
+													<option value="07">{{Juillet}}</option>
+													<option value="08">{{Août}}</option>
+													<option value="09">{{Septembre}}</option>
+													<option value="10">{{Octobre}}</option>
+													<option value="11">{{Novembre}}</option>
+													<option value="12">{{Décembre}}</option>
+												</select>
+											</div>
+										</div>									
+
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Regrouper les données par :}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_regroup">
+													<option value="aucun">{{Aucun groupement}}</option>
+													<option value="minute">{{par minute}}</option>
+													<option value="hour">{{par heure}}</option>
+													<option value="day">{{par jour}}</option>
+													<option value="week">{{par semaine}}</option>
+													<option value="month">{{par mois}}</option>
+													<option value="year">{{par année}}</option>
+												</select>
+											</div>
+											<label class="col-sm-3 control-label">{{Intervalle de regroupement :}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_typeRegroup">
+													<option value="aucun">{{Aucun type}}</option>
+													<option value="avg">{{moyenne}}</option>
+													<option value="sum">{{somme}}</option>
+													<option value="min">{{mini}}</option>
+													<option value="max">{{maxi}}</option>
+												</select>
+											</div>
+										</div>
+
+									</div>
+
+									<!-- navigator -->
+									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
+										<div class="col-sm-2"> </div>
+										<span><b><i class="fas fa-glasses"></i> {{Aide navigation}}</b></span>
+
+										<!-- infobulle -->
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Type d'infobulle: }}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="tooltip<?= $g ?>">
+													<option value="regroup">{{regroupé, une seule infobulle}}</option>
+													<option value="multi">{{une infobulle par courbe}}</option>
+												</select>
+											</div>
+										</div>
+
+										<!-- barres et boutons -->
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Afficher la barre de navigation: }}</label>
+											<div class="col-sm-1">
+												<input type="checkbox" class="eqLogicAttr bgNavigator" data-l1key="configuration" data-l2key="graph<?= $g ?>_navigator" checked>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Afficher la barre de défilement: }}</label>
+											<div class="col-sm-1">
+												<input type="checkbox" class="eqLogicAttr bgNavigator" data-l1key="configuration" data-l2key="graph<?= $g ?>_barre" checked>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-3 control-label">{{Afficher les bouttons: }}</label>
+											<div class="col-sm-1">
+												<input type="checkbox" class="eqLogicAttr bgNavigator" data-l1key="configuration" data-l2key="graph<?= $g ?>_buttons" checked>
+											</div>
+										</div>
+									</div>
+
+
+									<!-- fond du graphique -->
 								</div>
 
 								<br/>
 
 
-								<!-- Bouton RAZ couleurs -->
-								<div class="form-group Colors">
-									<label class="col-sm-2 control-label">{{}}</label>
-									<label class="col-sm-4 control-label">{{}}</label>
-									<a class="btn btn-warning tooltips col-sm-2 btjeeHistoGraphRazCouleurs" data-graph="<?= $g ?>"><i class="fas fa-medkit"></i> {{Couleurs par défaut}}</a>
+								<!-- table paramétrage courbes -->
+
+								<div class="form-group col-sm-12">
+									<table class="table table-bordered table-condensed">
+										<thead>
+											<tr>
+												<th class="text-center" style="width: 10%;">{{Courbe}}</th>
+												<th class="text-center" style="width: 13%;">{{Libellé}}</th>
+												<th class="text-center" style="width: 16%;">{{Type de courbe}}</th>
+												<th class="text-center" style="width: 5%;">{{Couleur}}</th>
+												<th class="text-center" style="width: 40%;">{{Commande}}</th>
+												<th class="text-center" style="width: 8%;">{{Unité}}</th>
+												<th class="text-center" style="width: 8%;">{{Coef}}</th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php
+												for ($i = 1; $i <= 10; $i++) {
+													$index = str_pad($i, 2, '0', STR_PAD_LEFT);
+													$colorIdx = (($g-1)*10) + $i;
+											?>
+											<tr>
+												<td class="text-center"> {{Courbe <?= $index ?>}} </td>
+												<td><input type="text" class="col-sm-12 eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/></td>
+												<td>
+													<select class="col-sm-12 eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
+														<option value="inherit_curve" selected>{{Config graphique}}</option>
+														<option value="line">{{Ligne}}</option>
+														<option value="spline">{{Courbe lisse}}</option>
+														<option value="areaspline">{{Aire lisse}}</option>
+														<option value="area">{{Aire}}</option>
+														<option value="column">{{Colonne}}</option>
+													</select>
+												</td>
+												<td><input type="color" class="col-sm-12 eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></input></td>
+												<td>
+													<div class="col-sm-12 input-group">
+														<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
+														<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a></input>
+													</div>
+												</td>
+												<td>
+													<input type="text" class="col-sm-12 eqLogicAttr configKey" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>">
+													</input>
+												</td>
+												<td>
+													<input type="text" class="col-sm-12 eqLogicAttr configKey" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>">
+													</input>
+												</td>
+											</tr>
+											<?php } ?>
+										</tbody>
+									</table>
+
+
+
 								</div>
 
-								<div class="form-group">
-									<label class="col-sm-1 control-label">{{Courbe}}</label>
-									<label class="col-sm-2 control-label pull-left">{{Libellé}}</label>
-									<label class="col-sm-2 control-label pull-left">{{Courbe}}</label>
-									<label class="col-sm-1 control-label pull-left">{{Couleur}}</label>
-									<label class="col-sm-4 control-label pull-left">{{Commande}}</label>
-									<label class="col-sm-1 control-label pull-left">{{Unité / coef}}</label>
-								</div>
-
-								
-									<?php
-										for ($i = 1; $i <= 10; $i++) {
-											$index = str_pad($i, 2, '0', STR_PAD_LEFT);
-											$colorIdx = (($g-1)*10) + $i;
-									?>
-								<div class="form-group">
-									<label class="col-sm-1 control-label">{{Courbe <?= $index ?>}} :</label>
-									<div class="col-sm-2">
-										<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/>
-									</div>
-									<div class="col-sm-2">
-										<select class="eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
-											<option value="inherit_curve" selected>{{Config graphique}}</option>
-											<option value="line">{{Ligne}}</option>
-											<option value="spline">{{Courbe lisse}}</option>
-											<option value="areaspline">{{Aire lisse}}</option>
-											<option value="area">{{Aire}}</option>
-											<option value="column">{{Colonne}}</option>
-										</select>
-									</div>
-									<div class="col-sm-1">
-										<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></input>
-									</div>
-									<div class="col-sm-4">
-									<div class="input-group">
-										<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
-										<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a></input>
-									</div>
-									</div>
-									<div class="col-sm-1">
-										<input type="text" class="eqLogicAttr configKey" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>"></input>
-									</div>
-									<div class="col-sm-1">
-										<input type="text" class="eqLogicAttr configKey" placeholder="coef" title="coefficient à appliquer (ne sera appliqué que si l unité est complétée)" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>"></input>
-									</div>
-								</div>
-								<?php } ?>
 							</div>
-							<hr/>
+							</br>
 								<?php } ?>
 
 						</div>

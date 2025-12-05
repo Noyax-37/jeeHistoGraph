@@ -139,7 +139,6 @@ public static function config() {
                     ["date_debut_histo", ''], 
                     ["date_debut_histo_2dates", ''],
                     ["date_fin_histo_2dates", ''],
-                    ["showLegend", 1], 
                     ["maxPoints", 500]
                 ];
     for ($g = 1; $g <= 4; $g++) {
@@ -163,6 +162,11 @@ public static function config() {
         $config[] = ["graph{$g}_compare_month", "01"];
         $config[] = ["graph{$g}_rolling_start_month", "01"];
         $config[] = ["tooltip{$g}", 'regroup'];
+        $config[] = ["graph{$g}_navigator", 1];
+        $config[] = ["graph{$g}_barre", 1];
+        $config[] = ["graph{$g}_buttons", 1];
+        $config[] = ["graph{$g}_showLegend", 1];
+        $config[] = ["graph{$g}_showTitle", 1];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_index{$index}_nom", ''];
@@ -209,12 +213,21 @@ public function toHtml($_version = 'dashboard') {
         if ($graphType == 'inherit_graph') $graphType = 'line';
         $periodeHistoGraph = $this->getConfiguration("periode_histo_graph{$g}", 'global');
         $stacking = $this->getConfiguration("stacking_graph{$g}", 'aucun');
+        $showLegend = $this->getConfiguration("graph{$g}_showLegend", 1) ? 'true' : 'false';
+        $showTitle = $this->getConfiguration("graph{$g}_showTitle", 1);
+        $titleGraph = $showTitle ? $this->getConfiguration("titleGraph{$g}", "") : '';
 
         if ($stacking!== 'aucun') {
             $stackingOption = $stacking;
         } else {
             $stackingOption = 'null';
         }
+
+        $configNavigatorEnabled = $this->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
+        $configBarreEnabled = $this->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
+        $configButtonsEnabled = $this->getConfiguration("graph{$g}_buttons", 0) ? 'true' : 'false';
+
+        log::add(__CLASS__, 'debug', "Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
         
 
         // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
@@ -254,7 +267,6 @@ public function toHtml($_version = 'dashboard') {
 
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
-        $titleGraph = $this->getConfiguration("titleGraph{$g}", "");
         $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 98%; margin: 0 1% 0 1%;\"></div>";
 
         $periodeHistoGraph = $this->getConfiguration("periode_histo_graph{$g}", 'global');
@@ -393,6 +405,7 @@ public function toHtml($_version = 'dashboard') {
             $indexNom = $this->getConfiguration($nomKey);
             $color = $this->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
             $curveTypeOverride = $this->getConfiguration($curveTypeKey, 'inherit_curve');
+
 
             if (empty($indexNom) || empty($cmdGraphe)) {
                 continue;
@@ -544,6 +557,14 @@ public function toHtml($_version = 'dashboard') {
             }
 
             if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
+                $nbSeries = count($recordData);
+                if ($nbSeries > 2) {
+                    $baseSeries = 1;
+                    $navigatorEnabled = $configNavigatorEnabled;
+                } else {
+                    $navigatorEnabled = 'false';
+                    $baseSeries = 0;
+                }
                 foreach ($recordData as $year => $data) {
                     if ($rolling){
                         $years = $year . '.' . (substr($year,2,2) + 1);
@@ -581,10 +602,11 @@ public function toHtml($_version = 'dashboard') {
                                 month: ['%B', 'De %B', ' à %B'],
                                 year: ['%Y', 'De %Y', ' à %Y']
                             ";
-                $navigatorJS =    '{ 
-                    enabled: false,
+                $navigatorJS =    "{ 
+                    enabled: $navigatorEnabled,
+                    baseSeries: $baseSeries,
                     margin: 1
-                    }';
+                    }";
             }
 
             if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
@@ -603,10 +625,10 @@ public function toHtml($_version = 'dashboard') {
                                         { type: 'day', count: 7, text: '1s' },
                                         { type: 'all', text: 'Tout' }
                                     ]";
-                $navigatorJS =    '{ 
-                    enabled: true,
+                $navigatorJS =    "{ 
+                    enabled: $configNavigatorEnabled,
                     margin: 1
-                    }';
+                    }";
             }
 
             if ($compareType == 'none'){
@@ -645,10 +667,10 @@ public function toHtml($_version = 'dashboard') {
                         month: ['%B %Y', 'De %B', ' à %B %Y'],
                         year: ['%Y', 'De %Y', ' à %Y']
                                             ";
-                $navigatorJS =    '{ 
-                    enabled: true,
+                $navigatorJS =    "{ 
+                    enabled: $configNavigatorEnabled,
                     margin: 1
-                    }';
+                    }";
             }
 
             if ($cmdId and $actualisation) {
@@ -668,9 +690,8 @@ public function toHtml($_version = 'dashboard') {
         }
 
 
-        $showLegend = $this->getConfiguration('showLegend', 1) ? 'true' : 'false';
         $rangeSelectorJS = "{
-            enabled: true,
+            enabled: {$configButtonsEnabled},
             selected: 6,
             inputEnabled: false,
             floating: true,
@@ -682,7 +703,7 @@ public function toHtml($_version = 'dashboard') {
             },
             buttonPosition: {
                 x: 0,
-                y: 20
+                y: -15
             }
         }";
 
@@ -728,7 +749,8 @@ public function toHtml($_version = 'dashboard') {
             navigator: {$navigatorJS},
             scrollbar: {
                 margin: 10,
-                enabled: true
+                enabled: true,
+                enabled: {$configBarreEnabled}
             },
             tooltip: {
                 xDateFormat: '{$xDateFormatJS}',
@@ -747,6 +769,8 @@ public function toHtml($_version = 'dashboard') {
             plotOptions: {
                 series: {
                     stacking: '$stackingOption',
+                    groupPadding:0.1,
+                    pointPadding:0,
                     fillOpacity: 0.1,
                     dataGrouping: { {$dataGroupingJS}
                                     dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
