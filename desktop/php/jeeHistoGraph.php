@@ -164,7 +164,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<div class="form-group" style="border: 1px solid black; padding: 2px;">
+							<div class="form-group" style="border: 2px solid grey; padding: 2px;">
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
 									<div class="col-sm-3">
@@ -172,6 +172,13 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											<option value="nbJours">{{en nombre de jours}}</option>
 											<option value="deDate">{{à partir d'une date}}</option>
 											<option value="deDateAdate">{{entre 2 dates}}</option>
+											<option disabled="disabled">_____</option>
+											<option value="dDay">{{Aujourd'hui}}</option>
+											<option value="dWeek">{{Cette semaine}}</option>
+											<option value="dMonth">{{Ce mois}}</option>
+											<option value="dYear">{{Cette année}}</option>
+											<option disabled="disabled">_____</option>
+											<option value="dAll">{{Toutes les données}}</option>
 										</select>
 									</div>
 								</div>
@@ -258,10 +265,15 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									</div>
 
 									<!-- Choix graphique spécial -->
-									<div class="form-group" style="display:none;">
-										<label class="col-sm-3 control-label">{{Graphique spécial solaire :}}</label>
-										<div class="col-sm-3">
+									<div class="form-group" style="display: none;">
+										<label class="col-sm-3 control-label">
+											<i class="fas fa-sun" style="color:#f39c12"></i> {{Graphique spécial solaire}}
+										</label>
+										<div class="col-sm-4">
 											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graphSolar_g<?= $g ?>">
+											<small class="form-text text-muted">
+												→ {{4 courbes fixes : réseau, production, batterie, conso totale}}
+											</small>
 										</div>
 									</div>
 
@@ -283,8 +295,21 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										</div>
 									</div>
 
+									<div class="form-group stackingPerGraph" data-graph="<?= $g ?> ?>">
+										<div class="form-group stackGraph">
+											<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>
+											<div class="col-sm-3">
+												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>">
+													<option value="">{{Aucun}}</option>
+													<option value="normal">{{Normal}}</option>
+													<option value="percent">{{Pourcentage}}</option>
+												</select>
+											</div>
+										</div>
+									</div>
+
 									<!-- Sélecteur de période -->
-									<div class="form-group" style="border: 1px solid black; padding: 2px;">
+									<div class="form-group" style="border: 2px solid grey; padding: 2px;">
 										<div class="form-group">
 											<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
 											<div class="col-sm-3">
@@ -293,6 +318,13 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 													<option value="nbJours">{{En nombre de jours}}</option>
 													<option value="deDate">{{À partir d'une date}}</option>
 													<option value="deDateAdate">{{Entre 2 dates}}</option>
+													<option disabled="disabled">_____</option>
+													<option value="dDay">{{Aujourd'hui}}</option>
+													<option value="dWeek">{{Cette semaine}}</option>
+													<option value="dMonth">{{Ce mois}}</option>
+													<option value="dYear">{{Cette année}}</option>
+													<option disabled="disabled">_____</option>
+													<option value="dAll">{{Toutes les données}}</option>
 												</select>
 											</div>
 										</div>
@@ -401,19 +433,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 										</div>
 									</div>									
 
-									<div class="form-group stackingPerGraph" style="display:none;" data-graph="<?= $g ?> ?>">
-										<div class="form-group stackGraph">
-											<label class="col-sm-3 control-label">{{Empilement (si aire ou colonne) :}}</label>
-											<div class="col-sm-3">
-												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>">
-													<option value="">{{Aucun}}</option>
-													<option value="normal">{{Normal}}</option>
-													<option value="percent">{{Pourcentage}}</option>
-												</select>
-											</div>
-										</div>
-									</div>
-
 									<!-- Sélecteur de période -->
 									<div class="form-group">
 										<label class="col-sm-3 control-label">{{Type d'infobulle: }}</label>
@@ -427,7 +446,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 
 									<!-- fond du graphique -->
-									<div class="form-group" style="border: 1px solid black; padding: 2px;">
+									<div class="form-group" style="border: 2px solid grey; padding: 2px;">
 										<label class="col-sm-3 control-label">{{Fond transparent}} <?= $g ?></label>
 										<div class="col-sm-1">
 											<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_transparent" checked>
@@ -504,6 +523,8 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									<label class="col-sm-4 control-label pull-left">{{Commande}}</label>
 									<label class="col-sm-1 control-label pull-left">{{Unité / coef}}</label>
 								</div>
+
+								
 									<?php
 										for ($i = 1; $i <= 10; $i++) {
 											$index = str_pad($i, 2, '0', STR_PAD_LEFT);
@@ -816,8 +837,6 @@ $(document).on('change', '[data-l2key$="_compare_type"]', function() {
     $(this).closest('.form-group').find('.compareMonth').toggle(val === 'prev_year_month');
     $(this).closest('.form-group').find('.compareRollingMonth').toggle(val === 'prev_year');
 });
-
-
 
 
 </script>

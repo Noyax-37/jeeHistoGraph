@@ -51,6 +51,7 @@
     .jeeHistoGraph .graphs-container.layout-3grid > div:nth-child(1) { grid-area: 1 / 1 / 1 / 2; }
     .jeeHistoGraph .graphs-container.layout-3grid > div:nth-child(2) { grid-area: 1 / 3 / 1 / 4; }
     .jeeHistoGraph .graphs-container.layout-3grid > div:nth-child(3) { grid-area: 2 / 2 / 2 / 3; }
+
 </style>
 
     <div class="graphs-container layout-#graphLayout#" data-nb-graphs="#nbGraphs#" style="flex: 1; min-height: 0; overflow: hidden; display: grid; gap: 6px; padding: 0;">
@@ -62,7 +63,7 @@
             Highcharts.setOptions({ time: { useUTC: false } });
 
             const uid = '#uid#';
-            const nbGraphs = #nbGraphs#;
+            const nbGraphs = parseInt('#nbGraphs#') || 0;
             const now = Date.now();
 
 

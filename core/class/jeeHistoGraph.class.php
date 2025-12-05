@@ -208,6 +208,13 @@ public function toHtml($_version = 'dashboard') {
         $graphType = $this->getConfiguration("graph{$g}_type", 'line');
         if ($graphType == 'inherit_graph') $graphType = 'line';
         $periodeHistoGraph = $this->getConfiguration("periode_histo_graph{$g}", 'global');
+        $stacking = $this->getConfiguration("stacking_graph{$g}", 'aucun');
+
+        if ($stacking!== 'aucun') {
+            $stackingOption = $stacking;
+        } else {
+            $stackingOption = 'null';
+        }
         
 
         // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
@@ -275,13 +282,43 @@ public function toHtml($_version = 'dashboard') {
                 log::add(__CLASS__, 'debug', "Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'nbJours':
-            default:
                 $delai = ($global) ? $delaiGraph : intval($this->getConfiguration("delai_histo_graph{$g}"));
                 $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
                 log::add(__CLASS__, 'debug', "Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now");
                 break;
+            case 'dDay':
+                $startTime = date("Y-m-d 00:00:00", time());
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now");
+                break;
+            case 'dWeek':
+                $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now");
+                break;
+            case 'dMonth':
+                $startTime = date("Y-m-01 00:00:00", time());
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now");
+                break;
+            case 'dYear':
+                $startTime = date("Y-01-01 00:00:00", time());
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now");
+                break;
+            case 'dAll':
+                $startTime = date("1970-01-01 00:00:00");
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                log::add(__CLASS__, 'debug', "Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now");
+                break;
+            default:
         }
 
         $split = $this->getConfiguration("tooltip{$g}", 'regroup');
@@ -578,6 +615,9 @@ public function toHtml($_version = 'dashboard') {
                     color: " . json_encode($color) . ",
                     type: " . json_encode($finalCurveType) . ",
                     data: ". json_encode($listeHisto) . ",
+                    tooltip: {
+                        pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
+                    },
                     dateTimeLabelFormats: {
                         millisecond: [
                             '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
@@ -615,11 +655,11 @@ public function toHtml($_version = 'dashboard') {
                 $cmdUpdateJS .= "
                 if ('{$cmdId}' !== '') {
                     jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                        const dateUTC = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(),
-                            new Date().getHours(), new Date().getMinutes(), new Date().getSeconds());
+                        const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
                         const y = parseFloat(_options.display_value);
+                        
                         if (window.chart_g{$g} && window.chart_g{$g}.series[{$i}-1]) {
-                            window.chart_g{$g}.series[{$i}-1].addPoint([dateUTC, y], true, true, true);
+                            window.chart_g{$g}.series[{$i}-1].addPoint([dateLocaleMs, y], true, true, true); 
                         }
                     });
                 }\n";
@@ -658,8 +698,9 @@ public function toHtml($_version = 'dashboard') {
                 enabled: true,
             },
             title: { 
-                floating: true,
-                y: 20,
+                floating: false,
+                margin: 0,
+                y: 5,
                 text: '{$titleGraph}', 
                 height: 10,
                 style: { 
@@ -677,7 +718,7 @@ public function toHtml($_version = 'dashboard') {
                         x: 10,
                         y: -2,
                         },
-                title: { text: '' },
+                
             },
             credits: { enabled: false },
             legend: { 
@@ -692,16 +733,20 @@ public function toHtml($_version = 'dashboard') {
             tooltip: {
                 xDateFormat: '{$xDateFormatJS}',
                 dateTimeLabelFormats: { {$dateTimeLabelFormats} },
-
+                backgroundColor: 'rgb(var(--bg-color))',
                 useHTML: true,
+                shadow: true,
+                style: {
+                    color: 'rgb(var(--contrast-color))',
+                },
                 headerFormat: '{$headerFormatJS}',
-                pointFormat: '<span style=\"color:{series.color}\">{series.name}</span>: <b>{point.y}</b><br/>',
                 split: $splitJS,
-                shared: true,
+                shared: 'true',
                 valueDecimals: 2,
             },
             plotOptions: {
                 series: {
+                    stacking: '$stackingOption',
                     fillOpacity: 0.1,
                     dataGrouping: { {$dataGroupingJS}
                                     dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
