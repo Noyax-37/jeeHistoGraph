@@ -681,7 +681,7 @@ public function toHtml($_version = 'dashboard') {
                         const y = parseFloat(_options.display_value);
                         
                         if (window.chart_g{$g} && window.chart_g{$g}.series[{$i}-1]) {
-                            window.chart_g{$g}.series[{$i}-1].addPoint([dateLocaleMs, y], true, true, true); 
+                            window.chart_g{$g}.series[{$i}-1].addPoint([dateLocaleMs, y], true, false, true); 
                         }
                     });
                 }\n";

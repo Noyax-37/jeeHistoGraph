@@ -164,7 +164,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 								</div>
 							</div>
 
-							<div class="form-group" style="border: 1px solid grey; padding: 2px;">
+							<div class="form-group col-sm-12" style="border: 1px solid grey; padding: 2px;">
 								<div class="form-group">
 									<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
 									<div class="col-sm-3">
@@ -189,7 +189,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 								<!-- Nombre de jours -->
 								<div class="form-group periode_histo nbJours">
-									<label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
+									<label class="col-sm-3 control-label">{{Période affichée en jour(s)}}</label>
 									<div class="col-sm-3">
 										<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo" placeholder="1">
 									</div>
@@ -245,9 +245,9 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 									for ($g = 1; $g <= 4; $g++) {
 										$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
 								?>
-								
-							<div class="form-group graphConfig" style="border: 6px solid grey; border-style: double; padding: 2px;" data-graph="<?= $g ?>" <?= $display ?>>
-								<div class="col-lg-12">
+							
+							<div class="graphConfig" data-graph="<?= $g ?>" <?= $display ?>>
+								<div class="form-group col-sm-12" style="border: 6px solid grey; border-style: double; padding: 2px;">
 									<legend><i class="fas fa-chart-line"></i>{{Graphique}} <?= $g ?></legend>
 									<div class="form-group">
                                 		<label class="col-sm-3 control-label"><b> {{titre graphique}} <?= $g ?> : </b></label>
@@ -279,7 +279,8 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 									<!-- curves -->
 									<div class="form-group" style="border: 1px solid grey;">
-										<div class="col-sm-2"> </div>
+										<div class="col-sm-2"> 
+										</div>
 										<span><b><i class="fas fa-chart-bar"></i> {{Paramètres des courbes}}</b></span>
 
 										<!-- Sélecteur de courbe -->
@@ -417,7 +418,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 										<!-- === Champ nombre de jours === -->
 										<div class="form-group periodeBlock<?= $g ?> nbJours" style="display:none;">
-											<label class="col-sm-3 control-label">{{Période affichée en jour(s) (par défaut 1 jour)}}</label>
+											<label class="col-sm-3 control-label">{{Période affichée en jour(s)}}</label>
 											<div class="col-sm-2">
 												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="delai_histo_graph<?= $g ?>" placeholder="{{Global}}">
 											</div>
@@ -522,7 +523,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 									</div>
 
-<!-- navigator -->
+									<!-- navigator -->
 									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
 										<div class="col-sm-2"> </div>
 										<span><b><i class="fas fa-glasses"></i> {{Aide navigation}}</b></span>
@@ -558,7 +559,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											</div>
 										</div>
 
-<!-- AJOUT DE LA SECTION ILLUSTRÉE -->
+										<!-- AJOUT DE LA SECTION ILLUSTRÉE -->
 										<div class="form-group">
 											<label class="col-sm-3 control-label"></label>
 											<div class="col-sm-9">
@@ -603,72 +604,73 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 											</div>
 										</div>
 
-									<!-- fond du graphique -->
-								</div>
+										<!-- fond du graphique -->
+									</div>
 
-								<br/>
-
-
-								<!-- table paramétrage courbes -->
-
-								<div class="form-group col-sm-12">
-									<table class="table table-bordered table-condensed">
-										<thead>
-											<tr>
-												<th class="text-center" style="width: 10%;">{{Courbe}}</th>
-												<th class="text-center" style="width: 13%;">{{Libellé}}</th>
-												<th class="text-center" style="width: 16%;">{{Type de courbe}}</th>
-												<th class="text-center" style="width: 5%;">{{Couleur}}</th>
-												<th class="text-center" style="width: 40%;">{{Commande}}</th>
-												<th class="text-center" style="width: 8%;">{{Unité}}</th>
-												<th class="text-center" style="width: 8%;">{{Coef}}</th>
-											</tr>
-										</thead>
-										<tbody>
-											<?php
-												for ($i = 1; $i <= 10; $i++) {
-													$index = str_pad($i, 2, '0', STR_PAD_LEFT);
-													$colorIdx = (($g-1)*10) + $i;
-											?>
-											<tr>
-												<td class="text-center"> {{Courbe <?= $index ?>}} </td>
-												<td><input type="text" class="col-sm-12 eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/></td>
-												<td>
-													<select class="col-sm-12 eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
-														<option value="inherit_curve" selected>{{Config graphique}}</option>
-														<option value="line">{{Ligne}}</option>
-														<option value="spline">{{Courbe lisse}}</option>
-														<option value="areaspline">{{Aire lisse}}</option>
-														<option value="area">{{Aire}}</option>
-														<option value="column">{{Colonne}}</option>
-													</select>
-												</td>
-												<td><input type="color" class="col-sm-12 eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></input></td>
-												<td>
-													<div class="col-sm-12 input-group">
-														<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
-														<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a></input>
-													</div>
-												</td>
-												<td>
-													<input type="text" class="col-sm-12 eqLogicAttr configKey" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>">
-													</input>
-												</td>
-												<td>
-													<input type="text" class="col-sm-12 eqLogicAttr configKey" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>">
-													</input>
-												</td>
-											</tr>
-											<?php } ?>
-										</tbody>
-									</table>
+									<br />
 
 
+									<!-- table paramétrage courbes -->
 
+									<div class="form-group col-sm-12">
+										<table class="table table-bordered table-condensed">
+											<thead>
+												<tr>
+													<th class="text-center" style="width: 10%;">{{Courbe}}</th>
+													<th class="text-center" style="width: 13%;">{{Libellé}}</th>
+													<th class="text-center" style="width: 16%;">{{Type de courbe}}</th>
+													<th class="text-center" style="width: 5%;">{{Couleur}}</th>
+													<th class="text-center" style="width: 40%;">{{Commande}}</th>
+													<th class="text-center" style="width: 8%;">{{Unité}}</th>
+													<th class="text-center" style="width: 8%;">{{Coef}}</th>
+												</tr>
+											</thead>
+											<tbody>
+												<?php
+													for ($i = 1; $i <= 10; $i++) {
+														$index = str_pad($i, 2, '0', STR_PAD_LEFT);
+														$colorIdx = (($g-1)*10) + $i;
+												?>
+												<tr>
+													<td class="text-center"> {{Courbe <?= $index ?>}} </td>
+													<td><input type="text" class="col-sm-12 eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/></td>
+													<td>
+														<select class="col-sm-12 eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
+															<option value="inherit_curve" selected>{{Config graphique}}</option>
+															<option value="line">{{Ligne}}</option>
+															<option value="spline">{{Courbe lisse}}</option>
+															<option value="areaspline">{{Aire lisse}}</option>
+															<option value="area">{{Aire}}</option>
+															<option value="column">{{Colonne}}</option>
+														</select>
+													</td>
+													<td><input type="color" class="col-sm-12 eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></input></td>
+													<td>
+														<div class="col-sm-12 input-group">
+															<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
+															<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a></input>
+														</div>
+													</td>
+													<td>
+														<input type="text" class="col-sm-12 eqLogicAttr configKey" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>">
+														</input>
+													</td>
+													<td>
+														<input type="text" class="col-sm-12 eqLogicAttr configKey" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>">
+														</input>
+													</td>
+												</tr>
+												<?php } ?>
+											</tbody>
+										</table>
+
+
+
+									</div>
 								</div>
 
 							</div>
-							</br>
+							<br />
 								<?php } ?>
 
 						</div>
