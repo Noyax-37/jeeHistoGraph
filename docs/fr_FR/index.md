@@ -2,89 +2,123 @@
 
 ## Présentation
 
-`jeeHistoGraph` est un plugin Jeedom permettant d'afficher **jusqu'à 4 graphiques** sur un même équipement, chacun pouvant contenir **jusqu'à 10 courbes**.  
-Idéal pour regrouper des données hétérogènes (températures, consommations, capteurs, etc.) dans un seul widget clair et interactif.
+Le plugin **jeeHistoGraph** permet de créer des graphiques historiques très personnalisés directement dans Jeedom, sans passer par les scénarios ou les widgets complexes.
+
+Un seul équipement peut afficher **jusqu’à 4 graphiques**, chacun contenant **jusqu’à 10 courbes**, avec une configuration fine de l’apparence, du comportement et de la période affichée.
 
 ---
 
-## Fonctionnalités principales
+## Création d’un équipement
 
-| Fonctionnalité | Description |
-|----------------|-----------|
-| **Multi-graphiques** | 1 à 4 graphiques indépendants |
-| **Multi-courbes** | Jusqu’à 10 courbes par graphique |
-| **Zoom interactif** | 30 min, 1h, 1j, 1sem, 1mois, 1an, ou tout |
-| **Défilement temporel** | Curseur pour naviguer dans la période |
-| **Mise à jour temps réel** | Les nouvelles valeurs s’ajoutent automatiquement |
-| **Personnalisation** | Couleurs, titres, légende, empilement |
-| **Responsive** | S’adapte à toutes les tailles de widget |
+1. Allez dans **Plugins → Monitoring → jeeHistoGraph**
+2. Cliquez sur **Ajouter**
+3. Donnez un nom à votre équipement (ex: "Conso Maison", "Production Solaire", etc.)
 
 ---
 
-## Configuration de l’équipement
+## Configuration générale
 
-### Onglet "Équipement"
+### Nombre de graphiques
+Choisissez entre 1 et 4 graphiques à afficher.
 
-#### Paramètres généraux
-- **Nom de l’équipement** : nom affiché
-- **Objet parent** : emplacement dans l’arborescence
-- **Catégorie** : pour le filtrage
-- **Activer / Visible** : état du widget
+### Disposition des graphiques
+- **Automatique** : adapte selon le nombre
+- **1 colonne** / **1 ligne** / **2×2** / **2 colonnes** / **2 lignes**
+- Dispositions spéciales :
+  - `1 grand en haut + 2 petits en bas`
+  - `2 petits en haut + 1 grand en bas`
+  - `3 graphiques → 2 en haut, 1 centré en bas`
 
-#### Configuration des graphiques
-| Champ | Description |
-|------|-------------|
-| **Nombre de graphique(s)** | 1 à 4 |
-| **Période affichée (jours)** | Charge les X derniers jours d’historique |
-| **Période de zoom par défaut** | Zoom affiché au chargement |
-| **Afficher la légende** | Active/désactive la légende |
-| **Empilement** | Aucun / Normal / Pourcentage (uniquement en aire) |
-| **Nb max points par courbe** | 500 par défaut – à réduire si ralentissements |
-
----
-
-### Configuration d’un graphique (1 à 4)
-
-Pour chaque graphique :
-1. **Titre du graphique** : affiché en haut
-2. **Bouton "Couleurs par défaut"** : réinitialise les couleurs
-3. **Courbes (1 à 10)** :
-   - **Libellé** : **obligatoire** pour afficher la courbe
-   - **Couleur** : personnalisable via le sélecteur
-   - **Commande** : cliquez sur l’icône pour sélectionner une commande numérique avec historique
-
-> **Attention** : Si le libellé est vide, la courbe **n’apparaît pas**, même si la commande est valide.
+### Période d’affichage globale
+Définit la période par défaut pour tous les graphiques (peut être surchargée par graphique) :
+- Nombre de jours (avec rafraîchissement automatique)
+- À partir d’une date précise
+- Entre deux dates
+- Aujourd’hui / Cette semaine / Ce mois / Cette année / Toutes les données
 
 ---
 
-## Affichage sur le dashboard
+## Configuration par graphique
 
-Le widget affiche :
-- Un **sélecteur de zoom** en haut
-- Un **curseur temporel** pour naviguer dans la période
-- La **plage horaire actuelle** (ex: `14/11/2025 10:30 → 14/11/2025 11:30`)
-- Les **graphiques** en grille responsive :
-  - 1 graphique → pleine largeur
-  - 2 graphiques → empilés
-  - 3 graphiques → 2 en haut, 1 en bas
-  - 4 graphiques → grille 2×2
+Chaque graphique (1 à 4) possède ses propres paramètres :
+
+### Titre et affichage
+- Titre personnalisé
+- Afficher/masquer le titre et la légende
+
+### Type de courbe par défaut
+- Ligne, courbe lisse, aire, colonne, etc.
+- Bouton : **"Tout forcer au même type"**
+
+### Empilement (stacking)
+- Aucun / Normal / Pourcentage (utile pour les aires ou colonnes)
+
+### Fond du graphique
+- Transparent (par défaut)
+- Couleur unie
+- Dégradé linéaire (couleur début/fin + angle)
+
+### Période spécifique
+Possibilité de surcharger la période globale pour ce graphique uniquement.
+
+### Comparaison temporelle
+- Aucune
+- Même mois des années précédentes
+- Années précédentes (avec année glissante si mois de début défini)
+
+### Regroupement des données
+Permet d’afficher des moyennes/sommes sur de longues périodes :
+- Par minute, heure, jour, semaine, mois, année
+- Type : moyenne, somme, min, max
+
+### Navigation
+- Barre de navigation (navigator)
+- Barre de défilement (scrollbar)
+- Boutons de période (30min, 1h, 1j, 1sem, 1mois, 1an, Tout)
 
 ---
 
-## Conseils d’optimisation
+## Configuration des courbes (10 par graphique)
 
-- **Réduisez `Nb max points par courbe`** si le widget est lent
-- **Limitez la période affichée** si vous avez beaucoup de données
-- **Utilisez des commandes avec historique activé**
-- **Évitez les commandes à très haute fréquence** sur de longues périodes
+Pour chaque courbe :
+
+| Champ               | Description |
+|---------------------|-----------|
+| Libellé             | Si vide → la courbe n’est **pas affichée** |
+| Type de courbe      | Hérite du graphique ou forcé (ligne, aire, colonne…) |
+| Couleur             | Choix libre |
+| Commande            | Sélectionner une commande historisée (info numérique) |
+| Unité               | Forcer une unité (ex: kWh au lieu de Wh) |
+| Coefficient         | Multiplier la valeur (ex: ×0.001 pour passer de Wh → kWh) |
+
+> Astuce : Bouton **"Remettre les couleurs par défaut"** par graphique
 
 ---
 
-## Support
+## Conseils d’utilisation
 
-- **Forum Jeedom** : [Recherche "jeeHistoGraph"](https://community.jeedom.com)
-- **GitHub** : [github.com/votre-nom/jeeHistoGraph](https://github.com/votre-nom/jeeHistoGraph)
+- Pour une conso/production solaire : utilisez 4 graphiques (réseau, PV, batterie, conso)
+- Si besoin d'inverser les valeurs (négatives / positives) : utilisez un coefficient négatif (ex: -1)
+- Pour comparer les années : activez la comparaison "années précédentes"
+- Pour éviter les ralentissements sur de longues périodes : activez le **regroupement par jour/mois**
 
 ---
 
-**Plugin développé pour la communauté Jeedom**
+## Mise à jour en temps réel
+
+Les courbes qui ne comportent pas de date de fin se mettent à jour automatiquement dès qu’une commande sélectionnée reçoit une nouvelle valeur (ex: teleinfo, onduleur, etc.).
+
+---
+
+## Dépannage
+
+- Le graphique reste vide ? → Vérifiez que le **libellé de la courbe** est renseigné
+- Trop de points → Activez un **regroupement** ou limitez la période
+- Fond blanc bizarre ? → Cochez "Fond transparent" (recommandé sur thème sombre)
+
+---
+
+Plugin développé par @Noyax-37  
+Merci tout particulièrement à @Franck_jeedom et @jpty pour leurs retours et suggestions.
+
+Toute la communauté Jeedom vous remercie !

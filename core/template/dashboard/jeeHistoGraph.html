@@ -4,6 +4,9 @@
     <center class="widget-name" style="flex: 0 0 auto; font-size: 0.9em;">
         <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
         <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+        <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#" style="display:none;">
+            <i class="fas fa-sync"></i>
+        </span>
     </center>
 
 <style>
@@ -71,6 +74,15 @@
             #chart_scripts#
 
         } catch(e) { console.error('Erreur Highcharts:', e); }
+
+        if ('#refresh_id#' != '') {
+            $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+                jeedom.cmd.execute({ id: '#refresh_id#' });
+            });
+        } else {
+            $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove();
+        }
+
     </script>
 </div>
 

@@ -1,91 +1,71 @@
-# jeeHistoGraph - Graphiques multi-courbes personnalisables pour Jeedom
+# jeeHistoGraph - Graphiques historiques avancés pour Jeedom
 
-*Plugin Jeedom permettant d'afficher jusqu'à **4 graphiques indépendants**, chacun avec **jusqu'à 10 courbes**, avec zoom, déplacement temporel et mise à jour en temps réel.*
+**jeeHistoGraph** est un plugin Jeedom permettant d'afficher jusqu’à **4 graphiques indépendants** sur un seul équipement, avec **jusqu’à 10 courbes par graphique**.  
+Il est basé sur **Highcharts Stock** et offre une configuration dans l’interface Jeedom.
 
----
+Idéal pour :
+- Suivi de consommation/production solaire
+- Comparaison d’historiques (années précédentes, même mois, etc.)
+- Affichage multi-graphiques sur une seule tuile
 
-## Fonctionnalités
-
-- **4 graphiques** maximum par équipement
-- **10 courbes** maximum par graphique
-- **Jusqu'à 40 courbes** au total
-- **Zoom prédéfini** : 30 min, 1h, 1j, 1sem, 1mois, 1an, ou tout
-- **Défilement temporel** avec curseur
-- **Mise à jour en temps réel** des courbes
-- **Couleurs personnalisables** + bouton de réinitialisation
-- **Titre par graphique**
-- **Légende activable/désactivable**
-- **Empilement** (normal ou pourcentage) pour les graphiques en aire
-- **Limitation du nombre de points** (évite les ralentissements)
-- **Responsive** : s’adapte à la taille du widget
+![](https://raw.githubusercontent.com/ton-pseudo/jeeHistoGraph/main/resources/screenshot_dashboard.png)
+*(exemple d’affichage avec 4 graphiques en grille 2×2)*
 
 ---
 
-## Captures d’écran
+### Fonctionnalités principales
 
-> *(À venir)*
+- Jusqu’à **4 graphiques** sur un même équipement
+- Jusqu’à **10 courbes** par graphique
+- Choix du **type de courbe** par graphique ou par courbe (ligne, spline, aire, colonne…)
+- **Empilement** (stacking) normal ou en pourcentage
+- **Comparaison temporelle** :
+  - Même mois des années précédentes
+  - Toutes les années précédentes (avec rolling year)
+- **Regroupement des données** (moyenne, somme, min, max) par minute/heure/jour/semaine/mois/année
+- Période d’affichage configurable **globalement ou par graphique** :
+  - Derniers X jours
+  - Depuis une date
+  - Entre deux dates
+  - Aujourd’hui / Cette semaine / Ce mois / Cette année / Toutes les données
+- **Fond personnalisable** pour chaque graphique : transparent, couleur unie ou dégradé
+- **Disposition des graphiques** flexible (auto, 1 ligne, 1 colonne, 2×2, 1 grand + 2 petits, etc.)
+- Barre de navigation, scrollbar et boutons de période (comme dans les graphiques Jeedom natifs)
+- Mise à jour en temps réel des courbes (quand les commandes sont actualisées)
+- Compatible dashboard, vues, mobile
 
 ---
 
-## Installation
+### Captures d’écran
 
-1. Téléchargez le plugin via le **Market Jeedom**
+| Configuration | Dashboard |
+|---------------|---------|
+| ![Configuration](https://raw.githubusercontent.com/ton-pseudo/jeeHistoGraph/main/resources/screenshot_config.png) | ![Dashboard](https://raw.githubusercontent.com/ton-pseudo/jeeHistoGraph/main/resources/screenshot_dashboard.png) |
 
-Activez le plugin dans Jeedom → Plugins → Gestion des plugins
-Cliquez sur "Ajouter" pour créer un nouvel équipement
+---
 
+### Installation
 
-Configuration
-1. Paramètres généraux
+1. Depuis le Market Jeedom ou via GitHub
+2. Activer le plugin
+3. Créer un équipement **jeeHistoGraph**
+4. Configurer vos courbes et graphiques
+5. Définir l'affichage sur un dashboard
 
-Nombre de graphiques : 1 à 4
-Période affichée (jours) : données chargées (ex: 7 jours)
-Zoom par défaut : période initiale affichée
-Afficher la légende : oui/non
-Empilement : aucun, normal, pourcentage (uniquement en aire)
-Nb max points par courbe : 500 par défaut (ajustez pour les performances)
+---
 
-2. Configuration des graphiques
-Pour chaque graphique (1 à 4) :
+### Support & Contributions
 
-Titre du graphique
-10 courbes possibles :
-Libellé : obligatoire pour afficher la courbe
-Couleur : personnalisable (clic sur le sélecteur)
-Commande : sélectionnez une commande numérique avec historique
+- Forum Jeedom : [lien à venir]
+- Issues GitHub : https://github.com/Noyax-37/jeeHistoGraph/issues
 
-Bouton "Couleurs par défaut" : réinitialise les 10 couleurs du graphique
+Contributions bienvenues (améliorations, traductions, correctifs) !
 
-Note : Une courbe sans libellé ne s’affiche pas, même si la commande est valide.
+Merci plus particulièrement à @Franck_jeedom et @jpty pour leurs retours et suggestions.
+---
 
-Affichage sur le dashboard
+### Licence
 
-Le widget s’adapte automatiquement à la taille
-Contrôles en haut :
-Sélecteur de zoom
-Curseur temporel (défilement dans la période)
-Plage horaire affichée
+**GPL v3** – Comme Jeedom
 
-
-
-Performances & Bonnes pratiques
-
-Limitez le nombre de points si vous avez plus de 10 courbes ou une longue période
-Utilisez des commandes avec historique activé
-Évitez les commandes à haute fréquence (>1 point/seconde) sur de longues périodes
-
-
-Support & Contribution
-
-Forum Jeedom : Recherche "jeeHistoGraph"
-GitHub Issues : [github.com](https://github.com/Noyax-37/jeeHistoGraph/issues)
-
-
-[Changelog]/docs/fr_FR/changelog.md
-
-
-Version initiale
-4 graphiques × 10 courbes
-Zoom + déplacement temporel
-Mise à jour en temps réel
-Couleurs personnalisables
+> Développé pour la communauté Jeedom

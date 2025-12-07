@@ -49,6 +49,19 @@ function jeeHistoGraph_update() {
     message::add('jeeHistoGraph', __('Mise à jour de la configuration des équipements jeeHistoGraph en cours...', __FILE__));   
     $configs = jeeHistoGraph::config();
     foreach (eqLogic::byType('jeeHistoGraph') as $eqLogic) {
+
+        $refresh = $eqLogic->getCmd('refresh');
+        if (!is_object($refresh)) {
+            $refresh = new jeeHistoGraphCmd();
+            $refresh->setName(__('Rafraichir', __FILE__));
+            }
+        $refresh->setEqLogic_id($eqLogic->getId());
+        $refresh->setLogicalId('refresh');
+        $refresh->setType('action');
+        $refresh->setSubType('other');
+        $refresh->save();
+
+
         foreach ($configs as $key) {
             $config[] = $key[0];
         }
