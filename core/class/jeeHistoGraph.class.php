@@ -537,7 +537,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         if (!empty($unite)) {
                             $label .= ' ' . $unite;
                         }
-                        
+                        if (empty($previousLabel)) {
+                            $previousLabel = 'Début data';
+                        } elseif ($previousLabel === $label) {
+                            continue; // éviter les doublons
+                        }
 
                         $listeHisto[] = [
                             'x' => $ts,
@@ -940,7 +944,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
     if (isset($message)) {
-        $replace['#message#'] = ' Message: ' . $message;
+        $replace['#message#'] = '. Message: ' . $message;
     } else {
         $replace['#message#'] = '';
     }
@@ -979,7 +983,7 @@ class jeeHistoGraphCmd extends cmd {
   public function execute($_options = array()) {
     $eqLogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
-      case 'refresh': // LogicalId de la commande rafraîchir que l’on a créé dans la méthode Postsave
+      case 'refresh': // LogicalId de la commande rafraîchir
         jeeHistoGraph::rfresh($eqLogic);
       break;
       default:

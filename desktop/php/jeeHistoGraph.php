@@ -29,7 +29,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
         transition: all 0.3s ease;
     }
 
-    /* Onglet actif → orange Jeedom (comme sur ta capture) */
+    /* Onglet actif → vert */
     .nav-tabs.graph-tabs > li.active > a,
     .nav-tabs.graph-tabs > li.active > a:hover,
     .nav-tabs.graph-tabs > li.active > a:focus {
@@ -734,57 +734,57 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 		</div><!-- /.tab-content -->
 	</div><!-- /.eqLogic -->
 
-<!-- Modale d'aide pour le navigator / scrollbar / boutons -->
-<div class="modal fade" id="md_navigatorHelp" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title">
-                    <i class="fas fa-info-circle"></i> {{À quoi correspondent ces options de navigation ?}}
-                </h4>
-            </div>
-            <div class="modal-body">
-                <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
-                    <!-- Navigator -->
-                    <div style="text-align:center; flex:1; min-width:250px;">
-                        <p style="margin:5px 0;"><strong>{{Barre de navigation (navigator)}}</strong></p>
-                        <img src="plugins/jeeHistoGraph/desktop/images/navigator.jpg" 
-                             style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-                        <small style="color:#666; display:block; margin-top:5px;">
-                            {{Vue miniature du graphique complet – permet de zoomer en glissant les poignées grises}}
-                        </small>
-                    </div>
+	<!-- Modale d'aide pour le navigator / scrollbar / boutons -->
+	<div class="modal fade" id="md_navigatorHelp" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title">
+						<i class="fas fa-info-circle"></i> {{À quoi correspondent ces options de navigation ?}}
+					</h4>
+				</div>
+				<div class="modal-body">
+					<div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
+						<!-- Navigator -->
+						<div style="text-align:center; flex:1; min-width:250px;">
+							<p style="margin:5px 0;"><strong>{{Barre de navigation (navigator)}}</strong></p>
+							<img src="plugins/jeeHistoGraph/desktop/images/navigator.jpg" 
+								style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+							<small style="color:#666; display:block; margin-top:5px;">
+								{{Vue miniature du graphique complet – permet de zoomer en glissant les poignées grises}}
+							</small>
+						</div>
 
-                    <!-- Scrollbar -->
-                    <div style="text-align:center; flex:1; min-width:250px;">
-                        <p style="margin:5px 0;"><strong>{{Barre de défilement}}</strong></p>
-                        <img src="plugins/jeeHistoGraph/desktop/images/scrollbar.jpg" 
-                             style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-                        <small style="color:#666; display:block; margin-top:5px;">
-                            {{Permet de se déplacer horizontalement dans le temps}}
-                        </small>
-                    </div>
+						<!-- Scrollbar -->
+						<div style="text-align:center; flex:1; min-width:250px;">
+							<p style="margin:5px 0;"><strong>{{Barre de défilement}}</strong></p>
+							<img src="plugins/jeeHistoGraph/desktop/images/scrollbar.jpg" 
+								style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+							<small style="color:#666; display:block; margin-top:5px;">
+								{{Permet de se déplacer horizontalement dans le temps}}
+							</small>
+						</div>
 
-                    <!-- Boutons -->
-                    <div style="text-align:center; flex:1; min-width:250px;">
-                        <p style="margin:5px 0;"><strong>{{Boutons de période}}</strong></p>
-                        <img src="plugins/jeeHistoGraph/desktop/images/range_buttons.jpg" 
-                             style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-                        <small style="color:#666; display:block; margin-top:5px;">
-                            {{Permet de passer rapidement à une période prédéfinie (1j, 1s, 1m…)}}
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">{{Fermer}}</button>
-            </div>
-        </div>
-    </div>
-</div>
+						<!-- Boutons -->
+						<div style="text-align:center; flex:1; min-width:250px;">
+							<p style="margin:5px 0;"><strong>{{Boutons de période}}</strong></p>
+							<img src="plugins/jeeHistoGraph/desktop/images/range_buttons.jpg" 
+								style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+							<small style="color:#666; display:block; margin-top:5px;">
+								{{Permet de passer rapidement à une période prédéfinie (1j, 1s, 1m…)}}
+							</small>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{Fermer}}</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
 </div><!-- /.row row-overflow -->
 
@@ -988,8 +988,7 @@ $(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=peri
     }
 });
 
-/* Au chargement de la page (ou quand on ouvre la config d'un équipement existant) 
-   on déclenche le changement pour afficher la bonne zone selon la valeur déjà sauvegardée */
+/* Au chargement de la page (ou quand on ouvre la config d'un équipement existant) */
 $('.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo]').trigger('change');
 
 
