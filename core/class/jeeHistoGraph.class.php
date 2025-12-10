@@ -195,6 +195,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $version = jeedom::versionAlias($_version);
     $nbGraphs = max(1, min(4, $eqLogic->getConfiguration('nbGraphs', 1)));
     $replace['#nbGraphs#'] = $nbGraphs;
+    $nameEqpmnt = $eqLogic->getName();
 
     $graphLayout = $eqLogic->getConfiguration('graphLayout', 'auto');
     $replace['#graphLayout#'] = $graphLayout;
@@ -226,7 +227,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
         $configButtonsEnabled = $eqLogic->getConfiguration("graph{$g}_buttons", 0) ? 'true' : 'false';
 
-        log::add(__CLASS__, 'debug', "Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
+        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
         
 
         // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
@@ -283,51 +284,51 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateFinGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateFinGraph));
                 $actualisation = false;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
                 break;
             case 'deDate':
                 $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'nbJours':
                 $delai = ($global) ? $delaiGraph : intval($eqLogic->getConfiguration("delai_histo_graph{$g}"));
                 $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'dDay':
                 $startTime = date("Y-m-d 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'dWeek':
                 $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'dMonth':
                 $startTime = date("Y-m-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'dYear':
                 $startTime = date("Y-01-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now");
                 break;
             case 'dAll':
                 $startTime = date("1970-01-01 00:00:00");
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now");
                 break;
             default:
         }
@@ -441,7 +442,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $showYAxis = $eqLogic->getConfiguration("graph{$g}_show_yAxis", 1);
         $yAxisJS = 'yAxis: [';
         foreach ($uniqueUnits as $idx => $u) {
-            $offset = $idx * 40;
+            $offset = $idx * 20;
             $visible = $showYAxis ? 'true' : 'false';
             $yAxisJS .= "{
                 visible: {$visible},
@@ -458,11 +459,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         return '<div style=\"transform: rotate(-45deg); transform-origin: left center; margin-top: 15px; white-space: nowrap;\">' + this.value + ' {$u}</div>';
                     }" : "") . "
                 },
-                crosshair: {
+                crosshair: [{
                     width: " . ($showYAxis ? '1' : '0') . ",
                     dashStyle: 'Dash',
                     zIndex: 5
-                }                
+                }]                
             },";
         }
         $yAxisJS .= '],';
@@ -493,7 +494,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 }
             }
             
-            log::add(__CLASS__, 'debug', "Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
+            log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
 
 
             $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
@@ -504,6 +505,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 if ($finalCurveType === 'inherit_curve') {
                     $finalCurveType = $graphType;
                 }
+
+                if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
+                    $finalCurveType = 'timeline';
+                }
+
                 $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
                 if ($manualUnit !== '') {
                     $unite = $manualUnit;
@@ -518,40 +524,71 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $currentYear = (int)date('Y');
                 $monthToStart = (int)$rollingStartMonth;
                 $rolling = false;
+
                 
-                //$recordData = [];
-                foreach ($histo as $record) {
-                    if ($compareType == 'none'){
+                // Si la courbe est de type timeline → on transforme les données
+                if ($finalCurveType === 'timeline') {
+                    foreach ($histo as $record) {
                         $ts = strtotime($record->getDatetime()) * 1000;
-                        $listeHisto[] = [$ts, $record->getValue() * $coef];
-                    } elseif ($compareType == 'prev_year') {
-                        $recordDate = new DateTime($record->getDatetime());
-                        $recordYear = (int)$recordDate->format('Y');
-                        $recordMonth = (int)$recordDate->format('m');
-                        if ($recordMonth < $monthToStart) {
-                            $recordYear = $recordYear - 1;
-                            $rolling = true;
+                        $value = $record->getValue();
+
+                        $previousLabel = $label ?? '';  
+                        $label = (is_numeric($value)) ? round($value * $coef, 2) : $value;
+                        if (!empty($unite)) {
+                            $label .= ' ' . $unite;
                         }
-                        $yearsDiff = $currentYear - $recordYear;
-                        $adjustedDate = $recordDate->modify("+{$yearsDiff} years");
-                        $ts = $adjustedDate->getTimestamp() * 1000;
-                        $recordData[$recordYear][] = [$ts, $record->getValue() * $coef];
-                    } elseif ($compareType == 'prev_year_month') {
-                        $recordDate = new DateTime($record->getDatetime());
-                        $recordYear = (int)$recordDate->format('Y');
-                        $recordMonth = (int)$recordDate->format('m');
-                        if ($recordMonth == $compareMonth) {
+                        
+
+                        $listeHisto[] = [
+                            'x' => $ts,
+                            'name' => $indexNom,           // nom de la série (ou de l'événement)
+                            'label' => $label,             // texte principal sur la timeline
+                            'description' => $previousLabel . ' → ' . $label . ' le ' . date('d/m/Y à H:i:s', $ts/1000)
+                        ];
+                    }
+                    if (count($listeHisto) > 300) {
+                        $listeHisto = array_slice($listeHisto, -300);
+                        $message = "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à 300 points pour la courbe '{$indexNom}'.";
+                    }
+                } else {
+
+                    //$recordData = [];
+                    foreach ($histo as $record) {
+                        if ($compareType == 'none'){
+                            $ts = strtotime($record->getDatetime()) * 1000;
+                            $listeHisto[] = [$ts, $record->getValue() * $coef];
+                        } elseif ($compareType == 'prev_year') {
+                            $recordDate = new DateTime($record->getDatetime());
+                            $recordYear = (int)$recordDate->format('Y');
+                            $recordMonth = (int)$recordDate->format('m');
+                            if ($recordMonth < $monthToStart) {
+                                $recordYear = $recordYear - 1;
+                                $rolling = true;
+                            }
                             $yearsDiff = $currentYear - $recordYear;
                             $adjustedDate = $recordDate->modify("+{$yearsDiff} years");
                             $ts = $adjustedDate->getTimestamp() * 1000;
                             $recordData[$recordYear][] = [$ts, $record->getValue() * $coef];
+                        } elseif ($compareType == 'prev_year_month') {
+                            $recordDate = new DateTime($record->getDatetime());
+                            $recordYear = (int)$recordDate->format('Y');
+                            $recordMonth = (int)$recordDate->format('m');
+                            if ($recordMonth == $compareMonth) {
+                                $yearsDiff = $currentYear - $recordYear;
+                                $adjustedDate = $recordDate->modify("+{$yearsDiff} years");
+                                $ts = $adjustedDate->getTimestamp() * 1000;
+                                $recordData[$recordYear][] = [$ts, $record->getValue() * $coef];
+                            }
                         }
                     }
+
                 }
+
                 $cmdId = str_replace('#', '', $cmdGraphe);
             }
             
-            $xAxisJS = "type: 'datetime',";
+            $xAxisJS = "type: 'datetime',
+                        ordinal: false,";
 
             $headerFormatJS = '<span>{point.key}</span><br>';
             $dateTimeLabelFormats = "   millisecond: '%H:%M:%S.%L',
@@ -627,128 +664,146 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
 
             $axisIndex = $unitToAxis[$unite] ?? 0;
-            log::add(__CLASS__, 'debug', "Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
+            log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
 
-            if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
-                $nbSeries = count($recordData);
-                if ($nbSeries > 2) {
-                    $baseSeries = 1;
-                    $navigatorEnabled = $configNavigatorEnabled;
-                } else {
-                    $navigatorEnabled = 'false';
-                    $baseSeries = 0;
-                }
-                foreach ($recordData as $year => $data) {
-                    if ($rolling){
-                        $years = $year . '.' . (substr($year,2,2) + 1);
-                    } else {
-                        $years = $year;
-                    }
-                    $seriesJS .= "{
-                        name: " . json_encode($indexNom . " - {$years}") . ",
-                        type: " . json_encode($finalCurveType) . ",
-                        data: ". json_encode($data) . ",
-                        valueSuffix: " . json_encode(' ' .$unite) . ",
-                        tooltip: {
-                            valueSuffix: " . json_encode(' ' .$unite) . "
-                        },
-                        yAxis: {$axisIndex}
-                    },\n";
-                }
-                $xAxisJS .=  "
-                            labels: {
-                                formatter: function() {
-                                    return Highcharts.dateFormat('%d %b', this.value);
-                                }
-                            },
-                        ";
-
-                $xDateFormatJS = "%d %B - %Hh%M";
-                $dataGroupingDateTimeLabelFormatsJS = "
-                                millisecond: [
-                                    '%A %e %b, %H:%M:%S.%L', '%A %e %b de %H:%M:%S.%L', ' à %H:%M:%S.%L'
-                                ],
-                                second: ['%A %e %b, %H:%M:%S', '%A %e %b de %H:%M:%S', ' à %H:%M:%S'],
-                                minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                                hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                                day: ['%A %e %b', 'Du %A %b %e', ' au %A %b %e'],
-                                week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                                month: ['%B', 'De %B', ' à %B'],
-                                year: ['%Y', 'De %Y', ' à %Y']
-                            ";
-                $navigatorJS =    "{ 
-                    enabled: $navigatorEnabled,
-                    baseSeries: $baseSeries,
-                    margin: 1
-                    }";
-            }
-
-            if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
-                foreach ($recordData as $year => $data) {
-                    $seriesJS .= "{
-                        name: " . json_encode($indexNom . " - {$year}") . ",
-                        type: " . json_encode($finalCurveType) . ",
-                        data: ". json_encode($data) . ",
-                        tooltip: {
-                            valueSuffix: " . json_encode(' ' .$unite) . "
-                        },
-                        yAxis: {$axisIndex}
-                    },\n";
-                }
-                $xDateFormatJS = "%d %B - %Hh%M";
-                $buttonJS = "buttons: [
-                                        { type: 'day', count: 7, text: '1s' },
-                                        { type: 'all', text: 'Tout' }
-                                    ]";
-                $navigatorJS =    "{ 
-                    enabled: $configNavigatorEnabled,
-                    margin: 1
-                    }";
-            }
-
-            if ($compareType == 'none'){
+            if ($finalCurveType === 'timeline') {
                 $seriesJS .= "{
-                    name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
-                    color: " . json_encode($color) . ",
-                    type: " . json_encode($finalCurveType) . ",
-                    data: ". json_encode($listeHisto) . ",
-                    tooltip: {
-                        pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
-                    },
-                    dateTimeLabelFormats: {
-                        millisecond: [
-                            '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
-                        ],
-                        second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
-                        minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                        hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                        day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                        week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                        month: ['%B %Y', 'De %B', ' à %B %Y'],
-                        year: ['%Y', 'De %Y', ' à %Y']
-                    },
-                    yAxis: {$axisIndex}
-                },\n";
+                        name: " . json_encode($indexNom) . ",
+                        type: 'timeline',
+                        data: " . json_encode($listeHisto) . ",
+                        marker: { symbol: 'circle' },
+                        dataLabels: {
+                            allowOverlap: false,
+                            format: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/>{point.x:%d-%m-%y %H:%M:%S}<br/>{point.label}',
+                            width: 200,
+                        },
+                        tooltip: {
+                            pointFormat: '<span style=\"color:{point.color}\">● </span><b>{point.label}</b><br/>{point.description}'
+                        }
+                    },\n";
+            } else {
+                if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
+                    $nbSeries = count($recordData);
+                    if ($nbSeries > 2) {
+                        $baseSeries = 1;
+                        $navigatorEnabled = $configNavigatorEnabled;
+                    } else {
+                        $navigatorEnabled = 'false';
+                        $baseSeries = 0;
+                    }
+                    foreach ($recordData as $year => $data) {
+                        if ($rolling){
+                            $years = $year . '.' . (substr($year,2,2) + 1);
+                        } else {
+                            $years = $year;
+                        }
+                        $seriesJS .= "{
+                            name: " . json_encode($indexNom . " - {$years}") . ",
+                            type: " . json_encode($finalCurveType) . ",
+                            data: ". json_encode($data) . ",
+                            valueSuffix: " . json_encode(' ' .$unite) . ",
+                            tooltip: {
+                                valueSuffix: " . json_encode(' ' .$unite) . "
+                            },
+                            yAxis: {$axisIndex}
+                        },\n";
+                    }
+                    $xAxisJS .=  "
+                                labels: {
+                                    formatter: function() {
+                                        return Highcharts.dateFormat('%d %b', this.value);
+                                    }
+                                },
+                            ";
 
-                $xDateFormatJS = "%d %B %Y - %Hh%M";
-                $dateTimeLabelFormats = "
-                        millisecond: [
-                            '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
-                        ],
-                        second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
-                        minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                        hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                        day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                        week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                        month: ['%B %Y', 'De %B', ' à %B %Y'],
-                        year: ['%Y', 'De %Y', ' à %Y']
-                                            ";
-                $navigatorJS =    "{ 
-                    enabled: $configNavigatorEnabled,
-                    margin: 1
-                    }";
+                    $xDateFormatJS = "%d %B - %Hh%M";
+                    $dataGroupingDateTimeLabelFormatsJS = "
+                                    millisecond: [
+                                        '%A %e %b, %H:%M:%S.%L', '%A %e %b de %H:%M:%S.%L', ' à %H:%M:%S.%L'
+                                    ],
+                                    second: ['%A %e %b, %H:%M:%S', '%A %e %b de %H:%M:%S', ' à %H:%M:%S'],
+                                    minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                    hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                    day: ['%A %e %b', 'Du %A %b %e', ' au %A %b %e'],
+                                    week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                                    month: ['%B', 'De %B', ' à %B'],
+                                    year: ['%Y', 'De %Y', ' à %Y']
+                                ";
+                    $navigatorJS =    "{ 
+                        enabled: $navigatorEnabled,
+                        baseSeries: $baseSeries,
+                        margin: 1
+                        }";
+                }
+
+                if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
+                    foreach ($recordData as $year => $data) {
+                        $seriesJS .= "{
+                            name: " . json_encode($indexNom . " - {$year}") . ",
+                            type: " . json_encode($finalCurveType) . ",
+                            data: ". json_encode($data) . ",
+                            tooltip: {
+                                valueSuffix: " . json_encode(' ' .$unite) . "
+                            },
+                            yAxis: {$axisIndex}
+                        },\n";
+                    }
+                    $xDateFormatJS = "%d %B - %Hh%M";
+                    $buttonJS = "buttons: [
+                                            { type: 'day', count: 7, text: '1s' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                    $navigatorJS =    "{ 
+                        enabled: $configNavigatorEnabled,
+                        margin: 1
+                        }";
+                }
+
+                if ($compareType == 'none'){
+                    $seriesJS .= "{
+                        name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                        color: " . json_encode($color) . ",
+                        type: " . json_encode($finalCurveType) . ",
+                        data: ". json_encode($listeHisto) . ",
+                        tooltip: {
+                            pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
+                        },
+                        dateTimeLabelFormats: {
+                            millisecond: [
+                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                            ],
+                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                            month: ['%B %Y', 'De %B', ' à %B %Y'],
+                            year: ['%Y', 'De %Y', ' à %Y']
+                        },
+                        yAxis: {$axisIndex}
+                    },\n";
+
+                    $xDateFormatJS = "%d %B %Y - %Hh%M";
+                    $dateTimeLabelFormats = "
+                            millisecond: [
+                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                            ],
+                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                            month: ['%B %Y', 'De %B', ' à %B %Y'],
+                            year: ['%Y', 'De %Y', ' à %Y']
+                                                ";
+                    $navigatorJS =    "{ 
+                        enabled: $configNavigatorEnabled,
+                        margin: 1
+                        }";
+                }
+
             }
-
+            
             if ($cmdId and $actualisation) {
                 $cmdUpdateJS .= "
                 if ('{$cmdId}' !== '') {
@@ -783,8 +838,38 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
         }";
 
+        // === DÉTECTION TIMELINE ET FORCAGE DU TYPE ===
+        $isTimeline = false;
+        for ($i = 1; $i <= 10; $i++) {
+            $curveTypeKey = "graph{$g}_curve{$i}_type";
+            $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
+            if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
+                $isTimeline = true;
+                break;
+            }
+        }
+        if ($isTimeline) {
+            $graphType = 'timeline';
+            $configNavigatorEnabled = 'false';
+            $configBarreEnabled = 'false';
+            $configButtonsEnabled = 'false';
+            $dataGroupingJS = 'enabled: false,';
+            $stackingOption = null;
+            $navigatorJS =    "{ 
+                                enabled: false,
+                                }";
+            $yAxisJS = "    yAxis: {
+                                    gridLineWidth: 1,
+                                    title: null,
+                                    labels: {
+                                        enabled: false
+                                    }
+                                },";
+        }
+
+
         $chartScripts .= "
-        window.chart_g{$g} = Highcharts.stockChart('{$containerId}', {
+        window.chart_g{$g} = Highcharts.chart('{$containerId}', {
             chart: {
                 type: '<?php echo $graphType; ?>',
                 backgroundColor: 'transparent',
@@ -854,8 +939,14 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
+    if (isset($message)) {
+        $replace['#message#'] = ' Message: ' . $message;
+    } else {
+        $replace['#message#'] = '';
+    }
+    $replace['#coreVersion#'] = config::byKey('version',__CLASS__);
     
-    log::add(__CLASS__, 'debug', "replace= " . json_encode($replace));
+    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' replace= " . json_encode($replace));
 
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $eqLogic->postToHtml($_version, $html);

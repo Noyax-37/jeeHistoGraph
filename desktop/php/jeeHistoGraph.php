@@ -17,6 +17,36 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 }
 ?>
 
+<style>
+    /* Onglets graphiques – fond gris par défaut */
+    .nav-tabs.graph-tabs > li > a {
+        background-color: #555 !important;
+        color: #ddd !important;
+        border: 1px solid #444 !important;
+        border-radius: 4px 4px 0 0;
+        margin-right: 4px;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+    }
+
+    /* Onglet actif → orange Jeedom (comme sur ta capture) */
+    .nav-tabs.graph-tabs > li.active > a,
+    .nav-tabs.graph-tabs > li.active > a:hover,
+    .nav-tabs.graph-tabs > li.active > a:focus {
+        background-color: #2ea955ff !important;
+        color: white !important;
+        font-weight: bold;
+        border: 1px solid #15e457ff !important;
+        border-bottom-color: transparent !important;
+    }
+
+    /* Hover sur onglet inactif */
+    .nav-tabs.graph-tabs > li > a:hover {
+        background-color: #777 !important;
+        color: white !important;
+    }
+</style>
+
 <div class="row row-overflow">
 	<!-- Page d'accueil du plugin -->
 	<div class="col-xs-12 eqLogicThumbnailDisplay">
@@ -82,7 +112,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 		<ul class="nav nav-tabs" role="tablist">
 			<li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
-			<li role="presentation"><a href="#commandtab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li>
+			<!-- <li role="presentation"><a href="#commandtab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li> -->
 		</ul>
 		<div class="tab-content">
 			<!-- Onglet de configuration de l'équipement -->
@@ -305,6 +335,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 															<option value="area">{{Aire}}</option>
 															<option value="column">{{Colonne}}</option>
 															<option value="bar">{{Barre}}</option>
+															<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
 														</select>
 													</div>
 													<div class="col-sm-4">
@@ -516,10 +547,10 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 												</div>									
 
 												<div class="form-group">
-													<label class="col-sm-3 control-label">{{Regrouper les données par :}}</label>
+													<label class="col-sm-3 control-label">{{Affichage des données :}}</label>
 													<div class="col-sm-3">
 														<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_regroup">
-															<option value="aucun">{{Aucun groupement}}</option>
+															<option value="aucun">{{Toutes}}</option>
 															<option value="minute">{{par minute}}</option>
 															<option value="hour">{{par heure}}</option>
 															<option value="day">{{par jour}}</option>
@@ -528,14 +559,14 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 															<option value="year">{{par année}}</option>
 														</select>
 													</div>
-													<label class="col-sm-3 control-label">{{Intervalle de regroupement :}}</label>
+													<label class="col-sm-3 control-label">{{Valeur à afficher :}} <sup><i class="fas fa-question-circle tooltips" title="{{N'a aucun effet si l'affichage des données est sur 'Toutes'}}"></i></sup></label>
 													<div class="col-sm-3">
 														<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_typeRegroup">
-															<option value="aucun">{{Aucun type}}</option>
-															<option value="avg">{{moyenne}}</option>
+															<option value="aucun">{{Pas d'opération}}</option>
+															<option value="average">{{moyenne}}</option>
 															<option value="sum">{{somme}}</option>
-															<option value="min">{{mini}}</option>
-															<option value="max">{{maxi}}</option>
+															<option value="low">{{mini}}</option>
+															<option value="high">{{maxi}}</option>
 														</select>
 													</div>
 												</div>
@@ -570,6 +601,12 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 													<div class="col-sm-1">
 														<input type="checkbox" class="eqLogicAttr bgNavigator" data-l1key="configuration" data-l2key="graph<?= $g ?>_barre" checked>
 													</div>
+													<label class="col-sm-1 control-label"></label>
+													<div class="col-sm-4">
+														<a class="btn btn-info btn-sm" id="bt_openNavigatorHelp">
+															<i class="fas fa-info-circle"></i> {{À quoi correspondent les options de navigation ?}}
+														</a>
+													</div>
 												</div>
 												<div class="form-group">
 													<label class="col-sm-3 control-label">{{Afficher les boutons: }}</label>
@@ -578,50 +615,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 													</div>
 												</div>
 
-												<!-- AJOUT DE LA SECTION ILLUSTRÉE -->
-												<div class="form-group">
-													<label class="col-sm-3 control-label"></label>
-													<div class="col-sm-9">
-														<div style="background:#f5f5f5; border-radius:8px; padding:15px; margin-top:10px; border:1px solid #ddd;">
-															<p style="margin:0 0 15px 0; font-weight:bold; color:#333;">
-																<i class="fas fa-info-circle"></i> {{À quoi correspondent ces options ?}}
-															</p>
-
-															<div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
-																<!-- Navigator (mini graphique) -->
-																<div style="text-align:center; flex:1; min-width:250px;">
-																	<p style="margin:5px 0;"><strong>{{Barre de navigation (navigator)}}</strong></p>
-																	<img src="plugins/jeeHistoGraph/desktop/images/navigator.jpg" 
-																		style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-																	<small style="color:#666; display:block; margin-top:5px;">
-																		{{Vue miniature du graphique complet – permet de zoomer en glissant les poignées grises}}
-																	</small>
-																</div>
-
-																<!-- Barre de défilement -->
-																<div style="text-align:center; flex:1; min-width:250px;">
-																	<p style="margin:5px 0;"><strong>{{Barre de défilement}}</strong></p>
-																	<img src="plugins/jeeHistoGraph/desktop/images/scrollbar.jpg" 
-																		style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-																	<small style="color:#666; display:block; margin-top:5px;">
-																		{{Permet de se déplacer horizontalement dans le temps}}
-																	</small>
-																</div>
-
-																<!-- Boutons de période -->
-																<div style="text-align:center; flex:1; min-width:250px;">
-																	<p style="margin:5px 0;"><strong>{{Boutons de période}}</strong></p>
-																	<img src="plugins/jeeHistoGraph/desktop/images/range_buttons.jpg" 
-																		style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
-																	<small style="color:#666; display:block; margin-top:5px;">
-																		{{Permet de passer rapidement à une période prédéfinie}}
-																	</small>
-																</div>
-
-															</div>
-														</div>
-													</div>
-												</div>
 											</div>
 											<br />
 
@@ -740,6 +733,59 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 		</div><!-- /.tab-content -->
 	</div><!-- /.eqLogic -->
+
+<!-- Modale d'aide pour le navigator / scrollbar / boutons -->
+<div class="modal fade" id="md_navigatorHelp" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">
+                    <i class="fas fa-info-circle"></i> {{À quoi correspondent ces options de navigation ?}}
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
+                    <!-- Navigator -->
+                    <div style="text-align:center; flex:1; min-width:250px;">
+                        <p style="margin:5px 0;"><strong>{{Barre de navigation (navigator)}}</strong></p>
+                        <img src="plugins/jeeHistoGraph/desktop/images/navigator.jpg" 
+                             style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+                        <small style="color:#666; display:block; margin-top:5px;">
+                            {{Vue miniature du graphique complet – permet de zoomer en glissant les poignées grises}}
+                        </small>
+                    </div>
+
+                    <!-- Scrollbar -->
+                    <div style="text-align:center; flex:1; min-width:250px;">
+                        <p style="margin:5px 0;"><strong>{{Barre de défilement}}</strong></p>
+                        <img src="plugins/jeeHistoGraph/desktop/images/scrollbar.jpg" 
+                             style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+                        <small style="color:#666; display:block; margin-top:5px;">
+                            {{Permet de se déplacer horizontalement dans le temps}}
+                        </small>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div style="text-align:center; flex:1; min-width:250px;">
+                        <p style="margin:5px 0;"><strong>{{Boutons de période}}</strong></p>
+                        <img src="plugins/jeeHistoGraph/desktop/images/range_buttons.jpg" 
+                             style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+                        <small style="color:#666; display:block; margin-top:5px;">
+                            {{Permet de passer rapidement à une période prédéfinie (1j, 1s, 1m…)}}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{Fermer}}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div><!-- /.row row-overflow -->
 
 
@@ -991,8 +1037,14 @@ $(document).on('change', '[data-l2key$="_compare_type"]', function() {
     $(this).closest('.form-group').find('.compareRollingMonth').toggle(val === 'prev_year');
 });
 
+// affichage de la modale d'aide navigator
+$(document).on('click', '#bt_openNavigatorHelp', function() {
+    $('#md_navigatorHelp').modal('show');
+});
 
 </script>
+
+
 
 <!-- Inclusion du fichier javascript du plugin (dossier, nom_du_fichier, extension_du_fichier, id_du_plugin) -->
 <?php include_file('desktop', 'jeeHistoGraph', 'js', 'jeeHistoGraph'); ?>

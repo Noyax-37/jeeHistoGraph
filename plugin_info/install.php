@@ -72,6 +72,26 @@ function jeeHistoGraph_update() {
             $decode = $eqLogic->getConfiguration();
             foreach ($decode as $key => $value) {
                 if (in_array($key, $config)) {
+                    if ($key == "graph1_typeRegroup" || $key == "graph2_typeRegroup" || $key == "graph3_typeRegroup" || $key == "graph4_typeRegroup") {
+                        // Migration des anciennes valeurs de typeRegroup
+                        switch ($value) {
+                            case 'avg':
+                                $newValue = 'average';
+                                break;
+                            case 'min':
+                                $newValue = 'low';
+                                break;
+                            case 'max':
+                                $newValue = 'high';
+                                break;
+                            default:
+                                $newValue = $value;
+                        }
+                        if ($newValue != $value) {
+                            log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} from value: {$value} to new value: {$newValue}");
+                            $eqLogic   ->setConfiguration($key, $newValue);
+                        }
+                    }
                     continue;
                 }
                 log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' removing obsolete configuration key: {$key} with value: " . json_encode($value));
