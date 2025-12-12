@@ -21,10 +21,36 @@ if (!isConnect()) {
   include_file('desktop', '404', 'php');
   die();
 }
+
+$plugin = 'jeeHistoGraph';
+
+sendVarToJS('version', config::byKey('version', $plugin, 'unknown', true));
+include_file('desktop', 'jeeHistoGraph.config', 'js', $plugin);
+
+
+$core_version = '1.1.1';
+
+if (!file_exists(dirname(__FILE__) . '/info.json')) {
+  log::add($plugin,'warning',__('Pas de fichier info.json', __FILE__));
+}
+$data = json_decode(file_get_contents(dirname(__FILE__) . '/info.json'), true);
+if (!is_array($data)) {
+  log::add($plugin,'warning',__('Impossible de décoder le fichier info.json', __FILE__));
+}
+try {
+  $core_version = $data['pluginVersion'];
+} catch (\Exception $e) {
+  log::add($plugin,'warning',__('Impossible de récupérer la version.', __FILE__));
+}
+
+
 ?>
 <form class="form-horizontal">
   <fieldset>
+    <legend><i class="icon loisir-pacman1"></i> {{Version}}</legend>
     <div class="form-group">
+        <label class="col-lg-4 control-label">Version du plugin <?php echo $plugin; ?> : </label>
+        <span style="top:6px;" class="col-lg-4"><?php echo $core_version; ?></span>
     </div>
   </fieldset>
 </form>
