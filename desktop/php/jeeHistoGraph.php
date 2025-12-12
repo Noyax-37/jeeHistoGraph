@@ -336,10 +336,25 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 															<option value="column">{{Colonne}}</option>
 															<option value="bar">{{Barre}}</option>
 															<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
+															<option value="flags" style="display:none;">{{Ligne de temps version 2}}</option>
 														</select>
 													</div>
 													<div class="col-sm-4">
 														<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
+													</div>
+												</div>
+												<div class="col-sm-2">
+
+												</div>
+
+												<div class="col-sm-10 form-group graph<?= $g ?>_nbPointsTimeLine">
+													<label class="col-sm-3 control-label">{{Nombre max de datas: }} <sup><i class="fas fa-question-circle tooltips" title="{{Nombre de datas limité à 300 mais peut être descendu si ralentissements}}"></i></sup></label>
+													<div class="col-sm-1">
+														<input type="number" max="300" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_nbPointsTimeLine" placeholder="300">
+													</div>
+													<label class="col-sm-5 control-label">{{Référence à la valeur précédente dans l'infobulle}} <sup><i class="fas fa-question-circle tooltips" title="{{ si coché va apparaitre 'valeur précédente' → 'valeur du point' + date sinon uniquement la date}}"></i></sup></label>
+													<div class="col-sm-3">
+														<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_refPrec" checked>
 													</div>
 												</div>
 
@@ -627,6 +642,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 															<th class="text-center" style="width: 10%;">{{Courbe}}</th>
 															<th class="text-center" style="width: 13%;">{{Libellé}}</th>
 															<th class="text-center" style="width: 16%;">{{Type de courbe}}</th>
+															<th class="text-center" style="width: 2%;">{{E}}<sup><i class="fas fa-question-circle tooltips" title="{{Courbe en escalier, ne fonctionne pas avec tous les types de courbe}}"></i></sup></th>
 															<th class="text-center" style="width: 5%;">{{Couleur}}</th>
 															<th class="text-center" style="width: 40%;">{{Commande}}</th>
 															<th class="text-center" style="width: 8%;">{{Unité}}</th>
@@ -650,7 +666,12 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 																	<option value="areaspline">{{Aire lisse}}</option>
 																	<option value="area">{{Aire}}</option>
 																	<option value="column">{{Colonne}}</option>
+																	<option value="bar">{{Barre}}</option>
+																	<option value="flags">{{Ligne de temps version 2}}</option>
 																</select>
+															</td>
+															<td class="text-center">
+																<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_stairStep">
 															</td>
 															<td><input type="color" class="col-sm-12 eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></input></td>
 															<td>
@@ -988,15 +1009,66 @@ $(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=peri
     }
 });
 
+// affichage nbPointsTimeLine si timeLine sélectionnée
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=graph1_type]', function () {
+    var valeur = $(this).value();
+
+	console.log("Changement de type de graphique : " + valeur);
+    // On cache tout d'abord
+    $('.graph1_nbPointsTimeLine').hide();
+
+    // Puis on affiche uniquement la bonne section
+    if (valeur === 'timeline') {
+        $('.graph1_nbPointsTimeLine').show();
+    }
+});
+
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=graph2_type]', function () {
+    var valeur = $(this).value();
+
+	console.log("Changement de type de graphique : " + valeur);
+    // On cache tout d'abord
+    $('.graph2_nbPointsTimeLine').hide();
+
+    // Puis on affiche uniquement la bonne section
+    if (valeur === 'timeline') {
+        $('.graph2_nbPointsTimeLine').show();
+    }
+});
+
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=graph3_type]', function () {
+    var valeur = $(this).value();
+
+	console.log("Changement de type de graphique : " + valeur);
+    // On cache tout d'abord
+    $('.graph3_nbPointsTimeLine').hide();
+
+    // Puis on affiche uniquement la bonne section
+    if (valeur === 'timeline') {
+        $('.graph3_nbPointsTimeLine').show();
+    }
+});
+
+$(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=graph4_type]', function () {
+    var valeur = $(this).value();
+
+	console.log("Changement de type de graphique : " + valeur);
+    // On cache tout d'abord
+    $('.graph4_nbPointsTimeLine').hide();
+
+    // Puis on affiche uniquement la bonne section
+    if (valeur === 'timeline') {
+        $('.graph4_nbPointsTimeLine').show();
+    }
+});
+
 /* Au chargement de la page (ou quand on ouvre la config d'un équipement existant) */
 $('.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo]').trigger('change');
 
 
 // Fonction qui gère l'affichage pour un graphique donné
 function updatePeriodeVisibility(graphNumber) {
-	console.log('Mise à jour de l\'affichage de la période pour le graphique ' + graphNumber);
 	var selectVal = $('.eqLogicAttr[data-l2key="periode_histo_graph' + graphNumber + '"]').value();
-	console.log('Valeur sélectionnée : ' + selectVal);
 
     // On cache tout d'abord
     $('.periodeBlock' + graphNumber).hide();

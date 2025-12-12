@@ -167,6 +167,8 @@ public static function config() {
         $config[] = ["graph{$g}_showLegend", 1];
         $config[] = ["graph{$g}_showTitle", 1];
         $config[] = ["graph{$g}_show_yAxis", 1];
+        $config[] = ["graph{$g}_nbPointsTimeLine", 300];
+        $config[] = ["graph{$g}_show_refPrec", 1];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_index{$index}_nom", ''];
@@ -175,6 +177,7 @@ public static function config() {
             $config[] = ["graph{$g}_cmdGraphe{$index}", ""];
             $config[] = ["graph{$g}_unite{$i}", ""];
             $config[] = ["graph{$g}_coef{$i}", ""];
+            $config[] = ["graph{$g}_curve{$i}_stairStep", 0];
         }
     }
     return $config;
@@ -196,6 +199,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $nbGraphs = max(1, min(4, $eqLogic->getConfiguration('nbGraphs', 1)));
     $replace['#nbGraphs#'] = $nbGraphs;
     $nameEqpmnt = $eqLogic->getName();
+    $message = '';
 
     $graphLayout = $eqLogic->getConfiguration('graphLayout', 'auto');
     $replace['#graphLayout#'] = $graphLayout;
@@ -215,13 +219,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         if ($g > $nbGraphs) continue;
         // Type du graphique
         $graphType = $eqLogic->getConfiguration("graph{$g}_type", 'line');
-        if ($graphType == 'inherit_graph') $graphType = 'line';
         $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
         $stackingOption = $eqLogic->getConfiguration("stacking_graph{$g}", 'null');
         $stackingOption = ($stackingOption == 'null') ? null : $stackingOption;
         $showLegend = $eqLogic->getConfiguration("graph{$g}_showLegend", 1) ? 'true' : 'false';
         $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
+        $chartOrStock = 'StockChart';
 
         $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
@@ -403,7 +407,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $nomKey = "graph{$g}_index{$index}_nom";
             $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
             $indexNom = $eqLogic->getConfiguration($nomKey);
-
+            
             if (empty($indexNom) || empty($cmdGraphe)) {
                 continue;
             }
@@ -480,6 +484,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $indexNom = $eqLogic->getConfiguration($nomKey);
             $color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
             $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
+            $flags = false;
+            $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
 
 
             if (empty($indexNom) || empty($cmdGraphe)) {
@@ -508,6 +514,17 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                 if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
                     $finalCurveType = 'timeline';
+                    $chartOrStock = 'chart';
+                    $refPrec = $eqLogic->getConfiguration("graph{$g}_show_refPrec", 1) ? true : false;
+                    $limitHisto = intval($eqLogic->getConfiguration("graph{$g}_nbPointsTimeLine", 300));
+                    if ($limitHisto <= 0 || $limitHisto > 300) {
+                        $limitHisto = 300;
+                    }
+                }
+
+                if ($finalCurveType === 'flags') {
+                    //$finalCurveType = 'line';
+                    $flags = true;
                 }
 
                 $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
@@ -543,16 +560,22 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             continue; // éviter les doublons
                         }
 
+                        if ($refPrec) {
+                            $description = $previousLabel . ' → ' . $label . ' le ' . date('d/m/Y à H:i:s', $ts/1000);
+                        } else {
+                            $description = 'Le ' . date('d/m/Y à H:i:s', $ts/1000);
+                        }
+
                         $listeHisto[] = [
                             'x' => $ts,
                             'name' => $indexNom,           // nom de la série (ou de l'événement)
                             'label' => $label,             // texte principal sur la timeline
-                            'description' => $previousLabel . ' → ' . $label . ' le ' . date('d/m/Y à H:i:s', $ts/1000)
+                            'description' => $description, // texte détaillé dans le popup
                         ];
                     }
-                    if (count($listeHisto) > 300) {
-                        $listeHisto = array_slice($listeHisto, -300);
-                        $message = "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à 300 points pour la courbe '{$indexNom}'.";
+                    if (count($listeHisto) > $limitHisto) {
+                        $listeHisto = array_slice($listeHisto, -$limitHisto);
+                        $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la courbe '{$indexNom}'.";
                     }
                 } else {
 
@@ -560,7 +583,26 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     foreach ($histo as $record) {
                         if ($compareType == 'none'){
                             $ts = strtotime($record->getDatetime()) * 1000;
-                            $listeHisto[] = [$ts, $record->getValue() * $coef];
+                            if ($flags) {
+                                if ($record->getValue()) {
+                                    $previousFlag = $text ?? '';
+                                    $text = (is_numeric($record->getValue()) ? round($record->getValue() * $coef, 2) : $record->getValue()) . (!empty($unite) ? ' ' . $unite : '');
+                                    if(empty($previousFlag)) {
+                                        $previousFlag = 'début data';
+                                    } elseif ($previousFlag === $text) {
+                                        continue; // éviter les doublons
+                                    }
+                                    $listeHisto[] = [$ts, 0]; // ajouter un point invisible pour le bon affichage de l'axe X
+                                    $listeFlags[] = [
+                                        'x' => $ts,
+                                        'title' => $indexNom . ': ' . $text,
+                                        'text' => $previousFlag . ' → ' . $text . ' le ' . date('d/m/Y à H:i:s', $ts/1000),
+                                    ];
+                                }
+                                //$listeHisto = 
+                            } else {
+                                $listeHisto[] = [$ts, $record->getValue() * $coef];
+                            }
                         } elseif ($compareType == 'prev_year') {
                             $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
@@ -703,6 +745,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$years}") . ",
+                            borderColor: " . json_encode($color) . ",
+                            step: {$stairStepKey},
                             type: " . json_encode($finalCurveType) . ",
                             data: ". json_encode($data) . ",
                             valueSuffix: " . json_encode(' ' .$unite) . ",
@@ -744,6 +788,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     foreach ($recordData as $year => $data) {
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
+                            borderColor: " . json_encode($color) . ",
+                            step: {$stairStepKey},
                             type: " . json_encode($finalCurveType) . ",
                             data: ". json_encode($data) . ",
                             tooltip: {
@@ -764,28 +810,52 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 }
 
                 if ($compareType == 'none'){
-                    $seriesJS .= "{
-                        name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
-                        color: " . json_encode($color) . ",
-                        type: " . json_encode($finalCurveType) . ",
-                        data: ". json_encode($listeHisto) . ",
-                        tooltip: {
-                            pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
-                        },
-                        dateTimeLabelFormats: {
-                            millisecond: [
-                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
-                            ],
-                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
-                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                            month: ['%B %Y', 'De %B', ' à %B %Y'],
-                            year: ['%Y', 'De %Y', ' à %Y']
-                        },
-                        yAxis: {$axisIndex}
-                    },\n";
+                    $message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
+                    if ($flags) {
+                        // Ajouter la série des flags
+                        $seriesJS .= "{
+                            name: " . json_encode($indexNom . " - Timeline") . ",
+                            color: " . json_encode($color) . ",
+                            type: 'flags',
+                            data: ". json_encode($listeFlags) . ",
+                            lineWidth: 2,
+                            lineColor: '#b41111ff',
+                            style: { 
+                                color: " . json_encode($color) . ", 
+                                fontWeight: 'bold' 
+                            },
+                            shape: 'squarepin',
+                            useHTML: false,
+                            y: -60,     
+                            zIndex: 10,                   
+                        },\n";
+                    } else {
+                        $seriesJS .= "{
+                            name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                            borderColor: " . json_encode($color) . ",
+                            step: {$stairStepKey},
+                            color: " . json_encode($color) . ",
+                            type: " . json_encode($finalCurveType) . ",
+                            id: " . json_encode("graph_{$g}_curve_{$i}") . ",
+                            data: ". json_encode($listeHisto) . ",
+                            tooltip: {
+                                pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
+                            },
+                            dateTimeLabelFormats: {
+                                millisecond: [
+                                    '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                                ],
+                                second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                                minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                                month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                year: ['%Y', 'De %Y', ' à %Y']
+                            },
+                            yAxis: {$axisIndex}
+                        },\n";
+                    }
 
                     $xDateFormatJS = "%d %B %Y - %Hh%M";
                     $dateTimeLabelFormats = "
@@ -854,13 +924,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
         if ($isTimeline) {
             $graphType = 'timeline';
-            $configNavigatorEnabled = 'false';
-            $configBarreEnabled = 'false';
+            $configNavigatorEnabled = $configNavigatorEnabled;
+            $configBarreEnabled = $configBarreEnabled;
             $configButtonsEnabled = 'false';
             $dataGroupingJS = 'enabled: false,';
             $stackingOption = null;
             $navigatorJS =    "{ 
-                                enabled: false,
+                                enabled: true,
                                 }";
             $yAxisJS = "    yAxis: {
                                     gridLineWidth: 1,
@@ -873,9 +943,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
 
         $chartScripts .= "
-        window.chart_g{$g} = Highcharts.chart('{$containerId}', {
+        window.chart_g{$g} = Highcharts.{$chartOrStock}('{$containerId}', {
             chart: {
-                type: '<?php echo $graphType; ?>',
+                type: '$graphType',
                 backgroundColor: 'transparent',
                 plotBackgroundColor: {$plotBgCode},
                 spacing: [10, 0, 10, 0]
@@ -931,6 +1001,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     dataGrouping: { {$dataGroupingJS}
                                     dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
                                   },
+                },
+                flags: {
+                    accessibility: {
+                        exposeAsGroupOnly: true,
+                        description: 'Flagged events.'
+                    },
                 }
             },
             series: [{$seriesJS}]
@@ -943,7 +1019,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
-    if (isset($message)) {
+    if (!empty($message)) {
         $replace['#message#'] = '. Message: ' . $message;
     } else {
         $replace['#message#'] = '';
