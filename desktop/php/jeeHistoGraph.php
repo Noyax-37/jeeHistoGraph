@@ -336,24 +336,24 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 															<option value="column">{{Colonne}}</option>
 															<option value="bar">{{Barre}}</option>
 															<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
-															<option value="flags" style="display:none;">{{Ligne de temps version 2}}</option>
+															<option value="flags" style="display: none;">{{Ligne de temps version 2}}</option>
 														</select>
 													</div>
 													<div class="col-sm-4">
 														<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
 													</div>
 												</div>
-												<div class="col-sm-2">
 
-												</div>
+												<div class="form-group graph<?= $g ?>_nbPointsTimeLine">
+													<div class="col-sm-1">
+													</div>
 
-												<div class="col-sm-10 form-group graph<?= $g ?>_nbPointsTimeLine">
 													<label class="col-sm-3 control-label">{{Nombre max de datas: }} <sup><i class="fas fa-question-circle tooltips" title="{{Nombre de datas limité à 300 mais peut être descendu si ralentissements}}"></i></sup></label>
 													<div class="col-sm-1">
 														<input type="number" max="300" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_nbPointsTimeLine" placeholder="300">
 													</div>
-													<label class="col-sm-5 control-label">{{Référence à la valeur précédente dans l'infobulle}} <sup><i class="fas fa-question-circle tooltips" title="{{ si coché va apparaitre 'valeur précédente' → 'valeur du point' + date sinon uniquement la date}}"></i></sup></label>
-													<div class="col-sm-3">
+													<label class="col-sm-4 control-label">{{Référence à la valeur précédente dans l'infobulle}} <sup><i class="fas fa-question-circle tooltips" title="{{ si coché va apparaitre 'valeur précédente' → 'valeur du point' + date sinon uniquement la date}}"></i></sup></label>
+													<div class="col-sm-1">
 														<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_refPrec" checked>
 													</div>
 												</div>

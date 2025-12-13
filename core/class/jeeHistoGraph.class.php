@@ -810,13 +810,14 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 }
 
                 if ($compareType == 'none'){
-                    $message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
+                    //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
                     if ($flags) {
                         // Ajouter la série des flags
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - Timeline") . ",
                             color: " . json_encode($color) . ",
                             type: 'flags',
+                            onSeries: undefined,
                             data: ". json_encode($listeFlags) . ",
                             lineWidth: 2,
                             lineColor: '#b41111ff',
@@ -1060,6 +1061,7 @@ class jeeHistoGraphCmd extends cmd {
     $eqLogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
       case 'refresh': // LogicalId de la commande rafraîchir
+        log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
         jeeHistoGraph::rfresh($eqLogic);
       break;
       default:
