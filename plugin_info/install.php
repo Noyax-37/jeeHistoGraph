@@ -50,11 +50,11 @@ function jeeHistoGraph_update() {
     $configs = jeeHistoGraph::config();
     foreach (eqLogic::byType('jeeHistoGraph') as $eqLogic) {
 
-        $refresh = $eqLogic->getCmd('refresh');
+        $refresh = $eqLogic->getCmd('action', 'refresh');
         if (!is_object($refresh)) {
             $refresh = new jeeHistoGraphCmd();
             $refresh->setName(__('Rafraichir', __FILE__));
-            }
+        }
         $refresh->setEqLogic_id($eqLogic->getId());
         $refresh->setLogicalId('refresh');
         $refresh->setType('action');
