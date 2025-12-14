@@ -169,6 +169,9 @@ public static function config() {
         $config[] = ["graph{$g}_show_yAxis", 1];
         $config[] = ["graph{$g}_nbPointsTimeLine", 300];
         $config[] = ["graph{$g}_show_refPrec", 1];
+        $config[] = ["graph{$g}_inverted", 1];
+        $config[] = ["graph{$g}_tooltip_enabled", 1];
+        $config[] = ["graph{$g}_dataLabels_overlaps"];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_index{$index}_nom", ''];
@@ -186,7 +189,7 @@ public static function config() {
 
 // Permet de modifier l'affichage du widget (également utilisable par les commandes)
 public function toHtml($_version = 'dashboard', $eqLogic = null) {
-
+    //log::add(__CLASS__, 'debug', "toHtml called for version: {$_version} and for eqlogic: " . ($eqLogic ? $eqLogic->getName() : 'self'));
     if (!is_object($eqLogic)) {
         $eqLogic = $this;
     }
@@ -226,12 +229,14 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
         $chartOrStock = 'StockChart';
+        $inverted = 'false';
+        $tooltipEnabled = 'true';
 
         $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
         $configButtonsEnabled = $eqLogic->getConfiguration("graph{$g}_buttons", 0) ? 'true' : 'false';
 
-        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
+        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
         
 
         // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
@@ -484,7 +489,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $indexNom = $eqLogic->getConfiguration($nomKey);
             $color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
             $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
-            $flags = false;
             $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
 
 
@@ -516,15 +520,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $finalCurveType = 'timeline';
                     $chartOrStock = 'chart';
                     $refPrec = $eqLogic->getConfiguration("graph{$g}_show_refPrec", 1) ? true : false;
+                    $inverted = $eqLogic->getConfiguration("graph{$g}_inverted", 1) ? 'true' : 'false';
+                    $tooltipEnabled = $eqLogic->getConfiguration("graph{$g}_tooltip_enabled", 1) ? 'true' : 'false';
                     $limitHisto = intval($eqLogic->getConfiguration("graph{$g}_nbPointsTimeLine", 300));
                     if ($limitHisto <= 0 || $limitHisto > 300) {
                         $limitHisto = 300;
                     }
-                }
-
-                if ($finalCurveType === 'flags') {
-                    //$finalCurveType = 'line';
-                    $flags = true;
                 }
 
                 $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
@@ -541,6 +542,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $currentYear = (int)date('Y');
                 $monthToStart = (int)$rollingStartMonth;
                 $rolling = false;
+                $label = '';
+                $text = '';
+                $description = '';
 
                 
                 // Si la courbe est de type timeline → on transforme les données
@@ -577,32 +581,14 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $listeHisto = array_slice($listeHisto, -$limitHisto);
                         $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la courbe '{$indexNom}'.";
                     }
+                    $yAxisJS .= "yAxis: {visible: false},";
                 } else {
 
                     //$recordData = [];
                     foreach ($histo as $record) {
                         if ($compareType == 'none'){
                             $ts = strtotime($record->getDatetime()) * 1000;
-                            if ($flags) {
-                                if ($record->getValue()) {
-                                    $previousFlag = $text ?? '';
-                                    $text = (is_numeric($record->getValue()) ? round($record->getValue() * $coef, 2) : $record->getValue()) . (!empty($unite) ? ' ' . $unite : '');
-                                    if(empty($previousFlag)) {
-                                        $previousFlag = 'début data';
-                                    } elseif ($previousFlag === $text) {
-                                        continue; // éviter les doublons
-                                    }
-                                    $listeHisto[] = [$ts, 0]; // ajouter un point invisible pour le bon affichage de l'axe X
-                                    $listeFlags[] = [
-                                        'x' => $ts,
-                                        'title' => $indexNom . ': ' . $text,
-                                        'text' => $previousFlag . ' → ' . $text . ' le ' . date('d/m/Y à H:i:s', $ts/1000),
-                                    ];
-                                }
-                                //$listeHisto = 
-                            } else {
-                                $listeHisto[] = [$ts, $record->getValue() * $coef];
-                            }
+                            $listeHisto[] = [$ts, $record->getValue() * $coef];
                         } elseif ($compareType == 'prev_year') {
                             $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
@@ -713,18 +699,20 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
 
             if ($finalCurveType === 'timeline') {
+                $dataLabelsOverlap = $eqLogic->getConfiguration("graph{$g}_dataLabels_overlaps", 0) ? 'true' : 'false';
                 $seriesJS .= "{
                         name: " . json_encode($indexNom) . ",
                         type: 'timeline',
-                        data: " . json_encode($listeHisto) . ",
+                        data: " . json_encode($listeHisto) . ", 
+                        legendIndex: {$i},
                         marker: { symbol: 'circle' },
                         dataLabels: {
-                            allowOverlap: false,
+                            allowOverlap: {$dataLabelsOverlap},
                             format: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/>{point.x:%d-%m-%y %H:%M:%S}<br/>{point.label}',
                             width: 200,
                         },
                         tooltip: {
-                            pointFormat: '<span style=\"color:{point.color}\">● </span><b>{point.label}</b><br/>{point.description}'
+                            pointFormat: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/></span><b>{point.label}</b><br/>{point.description}<br/>',
                         }
                     },\n";
             } else {
@@ -811,52 +799,31 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                 if ($compareType == 'none'){
                     //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
-                    if ($flags) {
-                        // Ajouter la série des flags
-                        $seriesJS .= "{
-                            name: " . json_encode($indexNom . " - Timeline") . ",
-                            color: " . json_encode($color) . ",
-                            type: 'flags',
-                            onSeries: undefined,
-                            data: ". json_encode($listeFlags) . ",
-                            lineWidth: 2,
-                            lineColor: '#b41111ff',
-                            style: { 
-                                color: " . json_encode($color) . ", 
-                                fontWeight: 'bold' 
-                            },
-                            shape: 'squarepin',
-                            useHTML: false,
-                            y: -60,     
-                            zIndex: 10,                   
-                        },\n";
-                    } else {
-                        $seriesJS .= "{
-                            name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
-                            borderColor: " . json_encode($color) . ",
-                            step: {$stairStepKey},
-                            color: " . json_encode($color) . ",
-                            type: " . json_encode($finalCurveType) . ",
-                            id: " . json_encode("graph_{$g}_curve_{$i}") . ",
-                            data: ". json_encode($listeHisto) . ",
-                            tooltip: {
-                                pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
-                            },
-                            dateTimeLabelFormats: {
-                                millisecond: [
-                                    '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
-                                ],
-                                second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
-                                minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                                hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                                week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                                month: ['%B %Y', 'De %B', ' à %B %Y'],
-                                year: ['%Y', 'De %Y', ' à %Y']
-                            },
-                            yAxis: {$axisIndex}
-                        },\n";
-                    }
+                    $seriesJS .= "{
+                        name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                        borderColor: " . json_encode($color) . ",
+                        step: {$stairStepKey},
+                        color: " . json_encode($color) . ",
+                        type: " . json_encode($finalCurveType) . ",
+                        id: " . json_encode("graph_{$g}_curve_{$i}") . ",
+                        data: ". json_encode($listeHisto) . ",
+                        tooltip: {
+                            pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
+                        },
+                        dateTimeLabelFormats: {
+                            millisecond: [
+                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                            ],
+                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                            month: ['%B %Y', 'De %B', ' à %B %Y'],
+                            year: ['%Y', 'De %Y', ' à %Y']
+                        },
+                        yAxis: {$axisIndex}
+                    },\n";
 
                     $xDateFormatJS = "%d %B %Y - %Hh%M";
                     $dateTimeLabelFormats = "
@@ -920,26 +887,15 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
             if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
                 $isTimeline = true;
-                break;
             }
         }
         if ($isTimeline) {
+            $headerFormatJS = ''; // pas de header pour les timelines
             $graphType = 'timeline';
-            $configNavigatorEnabled = $configNavigatorEnabled;
-            $configBarreEnabled = $configBarreEnabled;
-            $configButtonsEnabled = 'false';
-            $dataGroupingJS = 'enabled: false,';
-            $stackingOption = null;
             $navigatorJS =    "{ 
-                                enabled: true,
-                                }";
-            $yAxisJS = "    yAxis: {
-                                    gridLineWidth: 1,
-                                    title: null,
-                                    labels: {
-                                        enabled: false
-                                    }
-                                },";
+                enabled: $configNavigatorEnabled,
+                margin: 1
+                }";
         }
 
 
@@ -949,7 +905,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 type: '$graphType',
                 backgroundColor: 'transparent',
                 plotBackgroundColor: {$plotBgCode},
-                spacing: [10, 0, 10, 0]
+                spacing: [10, 0, 10, 0],
+                inverted: {$inverted}
             },
             exporting: {
                 enabled: true,
@@ -975,10 +932,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             navigator: {$navigatorJS},
             scrollbar: {
                 margin: 10,
-                enabled: true,
                 enabled: {$configBarreEnabled}
             },
             tooltip: {
+                enabled: $tooltipEnabled,
                 xDateFormat: '{$xDateFormatJS}',
                 dateTimeLabelFormats: { {$dateTimeLabelFormats} },
                 backgroundColor: 'rgb(var(--bg-color))',
@@ -1003,12 +960,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                     dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
                                   },
                 },
-                flags: {
-                    accessibility: {
-                        exposeAsGroupOnly: true,
-                        description: 'Flagged events.'
-                    },
-                }
             },
             series: [{$seriesJS}]
         });
@@ -1027,7 +978,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     }
     $replace['#coreVersion#'] = config::byKey('version',__CLASS__);
     
-    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' replace= " . json_encode($replace));
+    //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' chartScripts= " . json_encode($chartScripts));
 
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $eqLogic->postToHtml($_version, $html);
@@ -1036,7 +987,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
   
     // Rafraîchissement du graphique sur le dashboard
     public static function rfresh($eqLogic) {
-        jeeHistoGraph::toHtml( 'dashboard' , $eqLogic);
+        $eqLogic->toHtml( 'dashboard' , $eqLogic);
     }
 
 }
@@ -1061,7 +1012,7 @@ class jeeHistoGraphCmd extends cmd {
     $eqLogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
       case 'refresh': // LogicalId de la commande rafraîchir
-        log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
+        //log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
         jeeHistoGraph::rfresh($eqLogic);
       break;
       default:

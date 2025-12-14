@@ -198,7 +198,11 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 								<div class="col-sm-12" style="border: 1px solid grey; padding: 2px;">
 									<div class="form-group">
-										<label class="col-sm-3 control-label">{{Période d'affichage}}</label>
+										<label class="col-sm-3 control-label">{{Période d'affichage}}
+											<sup>
+												<i class="fas fa-question-circle tooltips" title="{{Définit la période affichée par défaut sur les graphiques. Peut être modifiée dynamiquement via le menu de chaque graphique.}}"></i>
+											</sup>
+										</label>
 										<div class="col-sm-3">
 											<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="periode_histo">
 												<option value="nbJours">{{en nombre de jours}}</option>
@@ -336,7 +340,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 															<option value="column">{{Colonne}}</option>
 															<option value="bar">{{Barre}}</option>
 															<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
-															<option value="flags" style="display: none;">{{Ligne de temps version 2}}</option>
 														</select>
 													</div>
 													<div class="col-sm-4">
@@ -345,16 +348,58 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 												</div>
 
 												<div class="form-group graph<?= $g ?>_nbPointsTimeLine">
-													<div class="col-sm-1">
+													<div class="col-sm-2">
+													</div>
+													<div class="form-group">
+														<label class="col-sm-4 control-label">{{Nombre max de datas: }} <sup><i class="fas fa-question-circle tooltips" title="{{Nombre de datas limité à 300 mais peut être descendu si ralentissements}}"></i></sup></label>
+														<div class="col-sm-1">
+															<input type="number" max="300" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_nbPointsTimeLine" placeholder="300">
+														</div>
 													</div>
 
-													<label class="col-sm-3 control-label">{{Nombre max de datas: }} <sup><i class="fas fa-question-circle tooltips" title="{{Nombre de datas limité à 300 mais peut être descendu si ralentissements}}"></i></sup></label>
-													<div class="col-sm-1">
-														<input type="number" max="300" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_nbPointsTimeLine" placeholder="300">
+													<div class="col-sm-2">
 													</div>
-													<label class="col-sm-4 control-label">{{Référence à la valeur précédente dans l'infobulle}} <sup><i class="fas fa-question-circle tooltips" title="{{ si coché va apparaitre 'valeur précédente' → 'valeur du point' + date sinon uniquement la date}}"></i></sup></label>
-													<div class="col-sm-1">
-														<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_refPrec" checked>
+													<div class="form-group">
+														<label class="col-sm-4 control-label">{{Affichage vertical}} <sup><i class="fas fa-question-circle tooltips" title="{{ si coché la ligne de temps sera affichée verticalement}}"></i></sup></label>
+														<div class="col-sm-1">
+															<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_inverted" checked>
+														</div>
+													</div>
+													<div class="col-sm-2">
+													</div>
+													<div class="form-group">
+														<label class="col-sm-4 control-label">{{Affichage de tous les labels}} 
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Si décoché seuls les labels qui ne se chevauchent pas seront affichés et si coché alors tous les labels apparaitront et se chevaucheront si manque de place}}"></i>
+															</sup>
+														</label>
+														<div class="col-sm-1">
+															<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_dataLabels_overlaps" checked>
+														</div>
+													</div>
+													<div class="col-sm-2">
+													</div>
+													<div class="form-group">
+														<label class="col-sm-4 control-label">{{Affichage de l'infobulle}} 
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Si décoché l'infobulle n'apparaitra plus au survol d'un point}}"></i>
+															</sup>
+														</label>
+														<div class="col-sm-1">
+															<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_tooltip_enabled" checked>
+														</div>
+													</div>
+													<div class="col-sm-2">
+													</div>
+													<div class="form-group">
+														<label class="col-sm-4 control-label">{{Référence à la valeur précédente dans l'infobulle}} 
+															<sup>
+																<a id="bt_openRefPrecHelp"><i class="fas fa-question-circle tooltips" title="{{Plus d'infos}}"></i></a>
+															</sup>
+														</label>
+														<div class="col-sm-1">
+															<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_refPrec" checked>
+														</div>
 													</div>
 												</div>
 
@@ -380,7 +425,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 												<!-- Affichage de l'axe y -->
 												<div class="form-group">
-													<label class="col-sm-3 control-label">{{Afficher l'axe Y (valeurs)'}}</label>
+													<label class="col-sm-3 control-label">{{Afficher l'axe Y (valeurs) : }}</label>
 													<div class="col-sm-3">
 														<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_yAxis" checked>
 													</div>
@@ -388,7 +433,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 												<!-- Affichage de la légende -->
 												<div class="form-group">
-													<label class="col-sm-3 control-label">{{Afficher la légende}}</label>
+													<label class="col-sm-3 control-label">{{Afficher la légende : }}</label>
 													<div class="col-sm-3">
 														<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_showLegend" checked>
 													</div>
@@ -396,7 +441,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 
 												<!-- Fond du graphique -->
 												<div class="form-group">
-													<label class="col-sm-3 control-label">{{Fond transparent :}}</label>
+													<label class="col-sm-3 control-label">{{Fond transparent : }}</label>
 													<div class="col-sm-1">										
 														<input type="checkbox" class="eqLogicAttr bgTransparentCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_transparent" checked>
 													</div>
@@ -667,7 +712,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 																	<option value="area">{{Aire}}</option>
 																	<option value="column">{{Colonne}}</option>
 																	<option value="bar">{{Barre}}</option>
-																	<option value="flags">{{Ligne de temps version 2}}</option>
 																</select>
 															</td>
 															<td class="text-center">
@@ -797,6 +841,42 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 							<small style="color:#666; display:block; margin-top:5px;">
 								{{Permet de passer rapidement à une période prédéfinie (1j, 1s, 1m…)}}
 							</small>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{Fermer}}</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modale d'aide pour le référence précédente -->
+	<div class="modal fade" id="md_refPrecHelp" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title">
+						<i class="fas fa-info-circle"></i> {{Si coché alors va apparaitre dans l'infobulle: 'valeur précédente' → 'valeur du point' + date sinon uniquement la date}}
+					</h4>
+				</div>
+				<div class="modal-body">
+					<div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; align-items:flex-start;">
+						<!-- Checked -->
+						<div style="text-align:center; flex:1; min-width:250px;">
+							<p style="margin:5px 0;"><strong>{{Exemple, si coché :}}</strong></p>
+							<img src="plugins/jeeHistoGraph/desktop/images/refPrecChecked.png" 
+								style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
+						</div>
+
+						<!-- Unchecked -->
+						<div style="text-align:center; flex:1; min-width:250px;">
+							<p style="margin:5px 0;"><strong>{{Exemple, si décoché :}}</strong></p>
+							<img src="plugins/jeeHistoGraph/desktop/images/refPrecUnChecked.png" 
+								style="max-width:100%; height:auto; border:2px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);" />
 						</div>
 					</div>
 				</div>
@@ -1110,7 +1190,14 @@ $(document).on('change', '[data-l2key$="_compare_type"]', function() {
 
 // affichage de la modale d'aide navigator
 $(document).on('click', '#bt_openNavigatorHelp', function() {
+	console.log("Ouverture modale aide navigator");
     $('#md_navigatorHelp').modal('show');
+});
+
+// affichage de la modale d'aide référence précédente
+$(document).on('click', '#bt_openRefPrecHelp', function() {
+	console.log("Ouverture modale aide référence précédente");
+    $('#md_refPrecHelp').modal('show');
 });
 
 </script>
