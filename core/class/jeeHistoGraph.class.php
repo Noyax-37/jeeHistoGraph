@@ -892,10 +892,25 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         if ($isTimeline) {
             $headerFormatJS = ''; // pas de header pour les timelines
             $graphType = 'timeline';
+            $xAxisJS = "type: 'datetime',
+                ordinal: false,
+                labels: {
+                    formatter: function() {
+                        return Highcharts.dateFormat('%d-%b-%y', this.value);
+                    }
+                },
+            ";
             $navigatorJS =    "{ 
                 enabled: $configNavigatorEnabled,
-                margin: 1
-                }";
+                margin: 1,
+                xAxis: {
+                    labels: {
+                        formatter: function () {
+                            return Highcharts.dateFormat('%d/%o', this.value);
+                            }
+                        }
+                }
+            }";
         }
 
 
