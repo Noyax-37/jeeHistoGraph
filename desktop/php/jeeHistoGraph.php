@@ -309,16 +309,11 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 												</div>
 											</div>
 
-											<!-- Choix graphique spécial -->
-											<div class="form-group" style="display: none;">
-												<label class="col-sm-3 control-label">
-													<i class="fas fa-sun" style="color:#f39c12"></i> {{Graphique spécial solaire}}
-												</label>
-												<div class="col-sm-4">
-													<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graphSolar_g<?= $g ?>">
-													<small class="form-text text-muted">
-														→ {{4 courbes fixes : réseau, production, batterie, conso totale}}
-													</small>
+											<!-- Affichage de la légende -->
+											<div class="form-group">
+												<label class="col-sm-3 control-label">{{Afficher la légende : }}</label>
+												<div class="col-sm-3">
+													<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_showLegend" checked>
 												</div>
 											</div>
 
@@ -394,7 +389,7 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 													<div class="form-group">
 														<label class="col-sm-4 control-label">{{Référence à la valeur précédente dans l'infobulle}} 
 															<sup>
-																<a id="bt_openRefPrecHelp"><i class="fas fa-question-circle tooltips" title="{{Plus d'infos}}"></i></a>
+																<a id="bt_openRefPrecHelp"><i class="fas fa-question-circle tooltips" title="{{Cliquer pour plus d'infos}}"></i></a>
 															</sup>
 														</label>
 														<div class="col-sm-1">
@@ -428,14 +423,6 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 													<label class="col-sm-3 control-label">{{Afficher l'axe Y (valeurs) : }}</label>
 													<div class="col-sm-3">
 														<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_yAxis" checked>
-													</div>
-												</div>
-
-												<!-- Affichage de la légende -->
-												<div class="form-group">
-													<label class="col-sm-3 control-label">{{Afficher la légende : }}</label>
-													<div class="col-sm-3">
-														<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_showLegend" checked>
 													</div>
 												</div>
 
@@ -643,8 +630,10 @@ if (!is_object($eqLogic) || $eqLogic->getEqType_name() != $plugin->getId()) {
 													<label class="col-sm-3 control-label">{{Type d'infobulle: }}</label>
 													<div class="col-sm-3">
 														<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="tooltip<?= $g ?>">
-															<option value="regroup">{{regroupé, une seule infobulle}}</option>
-															<option value="multi">{{une infobulle par courbe}}</option>
+															<option value="sans">{{aucune infobulle}}</option>
+															<option value="normal">{{une infobulle par point}}</option>
+															<option value="regroup">{{une seule infobulle par date commune}}</option>
+															<option value="multi">{{une infobulle par courbe par date commune}}</option>
 														</select>
 													</div>
 												</div>

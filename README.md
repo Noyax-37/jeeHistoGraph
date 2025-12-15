@@ -7,8 +7,12 @@ Idéal pour :
 - Suivi de consommation/production solaire
 - Comparaison d’historiques (années précédentes, même mois, etc.)
 - Affichage multi-graphiques sur une seule tuile
+          </br>
+          <a href="docs/fr_FR/images/exemple2x2.jpg">
+            <img src="docs/fr_FR/images/exemple2x2.jpg" alt="timeline" style="width:400px;"/>
+          </a>
+          </br>    
 
-![](https://raw.githubusercontent.com/ton-pseudo/jeeHistoGraph/main/resources/screenshot_dashboard.png)
 *(exemple d’affichage avec 4 graphiques en grille 2×2)*
 
 ---
@@ -36,14 +40,6 @@ Idéal pour :
 
 ---
 
-### Captures d’écran
-
-| Configuration | Dashboard |
-|---------------|---------|
-| ![Configuration](https://raw.githubusercontent.com/ton-pseudo/jeeHistoGraph/main/resources/screenshot_config.png) | ![Dashboard](https://raw.githubusercontent.com/ton-pseudo/jeeHistoGraph/main/resources/screenshot_dashboard.png) |
-
----
-
 ### Installation
 
 1. Depuis le Market Jeedom ou via GitHub
@@ -56,16 +52,12 @@ Idéal pour :
 
 ### Support & Contributions
 
-- Forum Jeedom : [lien à venir]
+- Forum Jeedom : https://community.jeedom.com/tag/plugin-jeehistograph
 - Issues GitHub : https://github.com/Noyax-37/jeeHistoGraph/issues
 
 Contributions bienvenues (améliorations, traductions, correctifs) !
 
 Merci plus particulièrement à @Franck_jeedom et @jpty pour leurs retours et suggestions.
 ---
-
-### Licence
-
-**GPL v3** – Comme Jeedom
 
 > Développé pour la communauté Jeedom
