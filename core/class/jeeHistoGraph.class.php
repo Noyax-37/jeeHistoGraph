@@ -343,7 +343,23 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
 
         $split = $eqLogic->getConfiguration("tooltip{$g}", 'regroup');
-        $splitJS = ($split == 'regroup') ? 'false' : 'true';
+        $splitJS = 'false';
+        $sharedJS = 'false';
+
+        if ($graphType != 'timeLine'){
+            if ($split == 'sans') {
+                $tooltipEnabled = 'false';
+            } elseif ($split == 'normal') {
+                $splitJS = 'false';
+                $sharedJS = 'false';
+            } elseif ($split == 'regroup') {
+                $splitJS = 'false';
+                $sharedJS = 'true';
+            } else {
+                $splitJS = 'true';
+                $sharedJS = 'true';
+            }
+        }
 
 
         $dataGroupingJS = 'enabled: false,';
@@ -478,6 +494,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $yAxisJS .= '],';
 
         $first = false; // Reset for second loop
+        $nbSeries = 0;
 
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
@@ -495,7 +512,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             if (empty($indexNom) || empty($cmdGraphe)) {
                 continue;
             }
-            
+
             if (!$first){
                     $first = true;
             } else {
@@ -503,6 +520,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     continue;
                 }
             }
+
+            $nbSeries += 1;
             
             log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
 
@@ -540,6 +559,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $listeHisto = [];
                 $recordYear = null;
                 $currentYear = (int)date('Y');
+                $currentMonth = (int)date('m');
                 $monthToStart = (int)$rollingStartMonth;
                 $rolling = false;
                 $label = '';
@@ -717,6 +737,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     },\n";
             } else {
                 if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
+                    $cmdUpdateJS = '';
                     $nbSeries = count($recordData);
                     if ($nbSeries > 2) {
                         $baseSeries = 1;
@@ -725,7 +746,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $navigatorEnabled = 'false';
                         $baseSeries = 0;
                     }
+                    $actualisation = false;
                     foreach ($recordData as $year => $data) {
+                        if ($year == $currentYear) $actualisation = true; // ne pas mettre à jour si pas l'année courante
+                        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         if ($rolling){
                             $years = $year . '.' . (substr($year,2,2) + 1);
                         } else {
@@ -773,7 +797,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 }
 
                 if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
+                    $actualisation = false;
+                    $cmdUpdateJS = '';
+                    $nbSeries = count($recordData);
                     foreach ($recordData as $year => $data) {
+                        if ($compareMonth == $currentMonth && $year == $currentYear) $actualisation = true; // ne pas mettre à jour si pas le mois courant de l'année courante
+                        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
                             borderColor: " . json_encode($color) . ",
@@ -846,23 +875,105 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
             }
             
+            log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} cmdId= {$cmdId} actualisation= " . ($actualisation ? 'true' : 'false'));
             if ($cmdId and $actualisation) {
-                $cmdUpdateJS .= "
-                if ('{$cmdId}' !== '') {
-                    jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                        const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
-                        const y = parseFloat(_options.display_value);
-                        
-                        if (window.chart_g{$g} && window.chart_g{$g}.series[{$i}-1]) {
-                            window.chart_g{$g}.series[{$i}-1].addPoint([dateLocaleMs, y], true, false, true); 
-                        }
-                    });
-                }\n";
+                //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} graphtype= {$graphType}");
+                //log::add(__CLASS__, 'debug', "{$graphType} data: " . json_encode($listeHisto));
+                if ($graphType == 'timeline') {
+                    if ($refPrec){
+                        $cmdUpdateJS .= "
+                        if ('{$cmdId}' !== '') {
+                            jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                                const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
+                                const y = parseFloat(_options.display_value);
+                                
+                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                                    const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
+                                    const dateObj = new Date(dateLocaleMs);
+                                    const valeur = y + ' {$unite}';
+                                    
+                                    // Récupérer le label du dernier point existant (si il y en a un)
+                                    let previousLabel = '';
+                                    const points = series.points;
+                                    if (points.length > 0) {
+                                        const lastPoint = points[points.length - 1];
+                                        previousLabel = lastPoint.label || ''; // 'label' est ce qu'on a mis précédemment
+                                    }
+
+                                    const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
+                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                            ' à ' + 
+                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+
+                                    series.addPoint({
+                                        x: dateLocaleMs,
+                                        name: '{$indexNom}',
+                                        label: valeur,
+                                        description: dateFormatee 
+                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                    console.log('Points nouveaux :', series.points);
+                                };
+                            });
+                        }\n";
+                    } else {
+                        $cmdUpdateJS .= "
+                        if ('{$cmdId}' !== '') {
+                            jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                                const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
+                                const y = parseFloat(_options.display_value);
+                                
+                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                                    const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
+                                    const dateObj = new Date(dateLocaleMs);
+                                    const valeur = y + ' {$unite}';
+                                    
+                                    const dateFormatee = 'Le ' + 
+                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                            ' à ' + 
+                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+
+                                    series.addPoint({
+                                        x: dateLocaleMs,
+                                        name: '{$indexNom}',
+                                        label: valeur,
+                                        description: dateFormatee 
+                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                    console.log('Points nouveaux :', series.points);
+                                };
+                            });
+                        }\n";
+                    }
+                    //log::add(__CLASS__, 'debug', "graph{$g} nbseries: {$nbSeries}");
+                } else {
+                    log::add(__CLASS__, 'debug', "pas timeline");
+                    $cmdUpdateJS .= "
+                    if ('{$cmdId}' !== '') {
+                        jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                            const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
+                            const y = parseFloat(_options.display_value);
+                            
+                            if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                                window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1].addPoint([dateLocaleMs, y], true, false, true); 
+                            }
+                        });
+                    }\n";
+                }
             }
 
         }
+/*                          'x' => $ts,
+                            'name' => $indexNom,           // nom de la série (ou de l'événement)
+                            'label' => $label,             // texte principal sur la timeline
+                            'description' => $description, // texte détaillé dans le popup
 
+                        if ($refPrec) {
+                            $description = $previousLabel . ' → ' . $label . ' le ' . date('d/m/Y à H:i:s', $ts/1000);
+                        } else {
+                            $description = 'Le ' . date('d/m/Y à H:i:s', $ts/1000);
+                        }
 
+                        {"x":1765778404000,"name":"time","label":"0.99 kW","description":"1 kW \u2192 0.99 kW le 15\/12\/2025 \u00e0 07:00:04"}
+*/
         $rangeSelectorJS = "{
             enabled: {$configButtonsEnabled},
             selected: 6,
@@ -892,30 +1003,25 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         if ($isTimeline) {
             $headerFormatJS = ''; // pas de header pour les timelines
             $graphType = 'timeline';
-            $xAxisJS = "type: 'datetime',
-                ordinal: false,
-                labels: {
-                    formatter: function() {
-                        return Highcharts.dateFormat('%d-%b-%y', this.value);
-                    }
-                },
-            ";
-            $navigatorJS =    "{ 
-                enabled: $configNavigatorEnabled,
-                margin: 1,
-                xAxis: {
+            if ($inverted == 'true') {
+                $xAxisNavigatorJS = "xAxis: {
                     labels: {
                         formatter: function () {
                             return Highcharts.dateFormat('%d/%o', this.value);
                             }
                         }
-                }
+                    },";
+            }
+            $navigatorJS =    "{ 
+                enabled: $configNavigatorEnabled,
+                margin: 20,
+                {$xAxisNavigatorJS}
             }";
         }
 
 
         $chartScripts .= "
-        window.chart_g{$g} = Highcharts.{$chartOrStock}('{$containerId}', {
+        window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
             chart: {
                 type: '$graphType',
                 backgroundColor: 'transparent',
@@ -962,7 +1068,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 },
                 headerFormat: '{$headerFormatJS}',
                 split: $splitJS,
-                shared: 'true',
+                shared: $sharedJS,
                 valueDecimals: 2,
             },
             plotOptions: {
