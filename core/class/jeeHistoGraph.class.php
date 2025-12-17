@@ -231,6 +231,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $chartOrStock = 'StockChart';
         $inverted = 'false';
         $tooltipEnabled = 'true';
+        $xRangeSelectorButtonPosition = 0;
 
         $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
@@ -540,6 +541,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $chartOrStock = 'chart';
                     $refPrec = $eqLogic->getConfiguration("graph{$g}_show_refPrec", 1) ? true : false;
                     $inverted = $eqLogic->getConfiguration("graph{$g}_inverted", 1) ? 'true' : 'false';
+                    if ($inverted== 'true') $xRangeSelectorButtonPosition = -60;
                     $tooltipEnabled = $eqLogic->getConfiguration("graph{$g}_tooltip_enabled", 1) ? 'true' : 'false';
                     $limitHisto = intval($eqLogic->getConfiguration("graph{$g}_nbPointsTimeLine", 300));
                     if ($limitHisto <= 0 || $limitHisto > 300) {
@@ -641,6 +643,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             
             $xAxisJS = "type: 'datetime',
                         ordinal: false,";
+            $$xAxisDateTimeLabelFormatJS = '';
 
             $headerFormatJS = '<span>{point.key}</span><br>';
             $dateTimeLabelFormats = "   millisecond: '%H:%M:%S.%L',
@@ -732,6 +735,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             width: 200,
                         },
                         tooltip: {
+                            outside: false,
                             pointFormat: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/></span><b>{point.label}</b><br/>{point.description}<br/>',
                         }
                     },\n";
@@ -897,7 +901,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                     const points = series.points;
                                     if (points.length > 0) {
                                         const lastPoint = points[points.length - 1];
-                                        previousLabel = lastPoint.label || ''; // 'label' est ce qu'on a mis précédemment
+                                        previousLabel = lastPoint.label || '';
                                     }
 
                                     const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
@@ -945,7 +949,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     }
                     //log::add(__CLASS__, 'debug', "graph{$g} nbseries: {$nbSeries}");
                 } else {
-                    log::add(__CLASS__, 'debug', "pas timeline");
                     $cmdUpdateJS .= "
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
@@ -961,33 +964,19 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
 
         }
-/*                          'x' => $ts,
-                            'name' => $indexNom,           // nom de la série (ou de l'événement)
-                            'label' => $label,             // texte principal sur la timeline
-                            'description' => $description, // texte détaillé dans le popup
 
-                        if ($refPrec) {
-                            $description = $previousLabel . ' → ' . $label . ' le ' . date('d/m/Y à H:i:s', $ts/1000);
-                        } else {
-                            $description = 'Le ' . date('d/m/Y à H:i:s', $ts/1000);
-                        }
-
-                        {"x":1765778404000,"name":"time","label":"0.99 kW","description":"1 kW \u2192 0.99 kW le 15\/12\/2025 \u00e0 07:00:04"}
-*/
+        
         $rangeSelectorJS = "{
             enabled: {$configButtonsEnabled},
             selected: 6,
             inputEnabled: false,
             floating: true,
             allButtonsEnabled: true,
+            dropdown: 'always',
             {$buttonJS},
-            inputPosition: {
-                x: 0,
-                y: 0
-            },
             buttonPosition: {
-                x: 0,
-                y: -15
+                x: {$xRangeSelectorButtonPosition},
+                y: -30
             }
         }";
 
@@ -1004,6 +993,17 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $headerFormatJS = ''; // pas de header pour les timelines
             $graphType = 'timeline';
             if ($inverted == 'true') {
+                $xAxisJS .=  "
+                    dateTimeLabelFormats: {
+                        millisecond: '%H:%M:%S.%L',
+                        second: '%H:%M:%S',
+                        minute: '%H:%M',
+                        hour: '%H:%M',
+                        day: '%e/%m/%y',
+                        week: '%e/%m/%y',
+                        month: '%m/%y',
+                        year: '%Y'
+                    },";
                 $xAxisNavigatorJS = "xAxis: {
                     labels: {
                         formatter: function () {
@@ -1027,7 +1027,14 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 backgroundColor: 'transparent',
                 plotBackgroundColor: {$plotBgCode},
                 spacing: [10, 0, 10, 0],
-                inverted: {$inverted}
+                inverted: {$inverted},
+                options3d: {
+                    enabled: false,
+                    alpha: 15,
+                    beta: 15,
+                    depth: 50,
+                    viewDistance: 25
+                }                
             },
             exporting: {
                 enabled: true,
