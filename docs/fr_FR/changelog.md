@@ -11,6 +11,10 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v1.10
+- modification du positionnement des onglets
+- quelques modifications esthétiques
+
 # v1.01
 
 - mise à jour de la documentation

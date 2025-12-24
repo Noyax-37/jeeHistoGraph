@@ -50,26 +50,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
         background-color: #777 !important;
         color: white !important;
     }
-
-        /* Style commun pour tous les tableaux */
-        .table-jeeHistoGraph {
-            width: 100%;
-            height: 70px; /* Hauteur fixe pour que tous les tableaux aient la même taille */
-            border: 4px double #000; /* Double trait extérieur */
-            border-collapse: collapse;
-            table-layout: fixed; /* Pour une répartition égale des colonnes */
-            margin: 0 auto;
-        }
-        .table-jeeHistoGraph td {
-            border: 1px solid #000; /* Trait simple intérieur */
-            text-align: center;
-            vertical-align: middle;
-            font-weight: bold;
-            font-size: 0.8rem;
-            padding: 0px 4px;
-			box-sizing: border-box;
-			overflow: hidden;
-        }
 </style>
 
 <div class="row row-overflow">
@@ -296,111 +276,16 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<br><br>
 								<label class="col-sm-12 control-label pull-left">{{Nombre de graphique(s): }}{{choisir le nombre de graphique voulu à afficher, de 1 à 4 }}</label>
 								<br><br>
-								<label class="col-sm-12 control-label pull-left">{{Disposition des graphiques: choisir la disposition des grphiques en fonction du nombre }}</label>
+								<label class="col-sm-12 control-label pull-left">{{Disposition des graphiques: }}{{choisir la disposition des grphiques en fonction du nombre }}</label>
 								<label class="col-sm-12 control-label pull-left">{{- **Automatique** : s'adapte selon le nombre. Tout l'espace pour 1 graphique, l'un au dessus de l'autre pour 2, 2 petits en haut 1 qui prend l'espace en bas si 3 et 2x2 pour 4.}}</label>
-								<div class="container my-5">
-									<div class="row">
-										<!-- Tableau 1 : 1 seule cellule -->
-										<div class="col-sm-3 mb-4">
-											<table class="table-jeeHistoGraph">
-												<tr>
-													<td>Gr 1</td>
-												</tr>
-											</table>
-										</div>
-
-										<!-- Tableau 2 : 2 cellules l'une sous l'autre -->
-										<div class="col-sm-3 mb-4">
-											<table class="table-jeeHistoGraph">
-												<tr><td>Gr 1</td></tr>
-												<tr><td>Gr 2</td></tr>
-											</table>
-										</div>
-
-										<!-- Tableau 3 : 2 en haut, 1 fusionnée en bas -->
-										<div class="col-sm-3 mb-4">
-											<table class="table-jeeHistoGraph">
-												<tr>
-													<td>Gr 1</td>
-													<td>Gr 2</td>
-												</tr>
-												<tr>
-													<td colspan="2">Gr 3</td>
-												</tr>
-											</table>
-										</div>
-
-										<!-- Tableau 4 : 2x2 -->
-										<div class="col-sm-3 mb-4">
-											<table class="table-jeeHistoGraph">
-												<tr>
-													<td>Gr 1</td>
-													<td>Gr 2</td>
-												</tr>
-												<tr>
-													<td>Gr 3</td>
-													<td>Gr 4</td>
-												</tr>
-											</table>
-										</div>
-									</div>
-								</div>
 								<label class="col-sm-12 control-label pull-left">{{- **1 colonne** / **1 ligne** / **2×2** / **2 colonnes** / **2 lignes**}}</label>
 								<label class="col-sm-12 control-label pull-left">{{- Dispositions spéciales :}}</label>
 								<label class="col-sm-12 control-label pull-left">{{- `1 grand en haut + 2 petits en bas`}}</label>
-								<div class="container my-5">
-									<div class="row">
-										<!-- Tableau : 1 fusionnée en haut, 2 en bas -->
-										<div class="col-sm-3 mb-4">
-											<table class="table-jeeHistoGraph">
-												<tr>
-													<td colspan="2">Gr 1</td>
-												</tr>
-												<tr>
-													<td>Gr 2</td>
-													<td>Gr 3</td>
-												</tr>
-											</table>
-										</div>
-									</div>
-								</div>
+								<label class="col-sm-12 control-label pull-left">{{- `1 grand en haut + 2 petits en bas`}}</label>
 								<label class="col-sm-12 control-label pull-left">{{- `2 petits en haut + 1 grand en bas`}}</label>
-								<div class="container my-5">
-									<div class="row">
-										<!-- Tableau : 2 en haut, 1 fusionnée en bas -->
-										<div class="col-sm-3 mb-4">
-											<table class="table-jeeHistoGraph">
-												<tr>
-													<td>Gr 1</td>
-													<td>Gr 2</td>
-												</tr>
-												<tr>
-													<td colspan="2">Gr 3</td>
-												</tr>
-											</table>
-										</div>
-									</div>
-								</div>								
 								<label class="col-sm-12 control-label pull-left">{{- `3 graphiques de taille identique → 2 en haut, 1 centré en bas`}}</label>
-								<div class="container my-5">
-									<div class="row">
-										<!-- Tableau : 2 en haut, 1 fusionnée en bas -->
-										<div class="col-sm-3 mb-4">
-											<table class="table-jeeHistoGraph">
-												<tr>
-													<td colspan="2">Gr 1</td>
-													<td colspan="2">Gr 2</td>
-												</tr>
-												<tr>
-													<td></td>
-													<td colspan="2">Gr 3</td>
-													<td></td>
-												</tr>
-											</table>
-										</div>
-									</div>
-								</div>											
-								<br>
+								<br><br><br><br>
+								<br><br><br><br>
 								<label class="col-sm-12 control-label pull-left">{{Remettre tous les fonds transparents: }}{{permet de remettre le fond de tous les graphiques transparents en un seul clic}}</label>
 							</div>
 						</div>
@@ -818,7 +703,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										<table class="table table-bordered table-condensed">
 											<thead>
 												<tr>
-													<th class="text-center" style="width: 8%;">{{Courbe}}</th>
+													<th class="text-center" style="width: 10%;">{{Courbe}}</th>
 													<th class="text-center" style="width: 13%;">{{Libellé}}</th>
 													<th class="text-center" style="width: 16%;">{{Type de courbe}}</th>
 													<th class="text-center" style="width: 2%;">{{E}}														
@@ -826,15 +711,10 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 															<i class="fas fa-question-circle tooltips" title="{{Courbe en escalier, ne fonctionne pas avec tous les types de courbe}}"></i>
 														</sup>
 													</th>
-													<th class="text-center" style="width: 2%;">{{V}}														
-														<sup>
-															<i class="fas fa-question-circle tooltips" title="{{Variation}}"></i>
-														</sup>
-													</th>
 													<th class="text-center" style="width: 5%;">{{Couleur}}</th>
 													<th class="text-center" style="width: 40%;">{{Commande}}</th>
-													<th class="text-center" style="width: 6%;">{{Unité}}</th>
-													<th class="text-center" style="width: 10%;">{{Coef}}</th>
+													<th class="text-center" style="width: 8%;">{{Unité}}</th>
+													<th class="text-center" style="width: 8%;">{{Coef}}</th>
 												</tr>
 											</thead>
 											<tbody>
@@ -857,9 +737,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													</td>
 													<td class="text-center">
 														<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_stairStep">
-													</td>
-													<td class="text-center">
-														<input type="checkbox" class="eqLogicAttr VariationCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_variation">
 													</td>
 													<td><input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></td>
 													<td>
@@ -919,9 +796,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<label class="col-sm-12 control-label pull-left">{{libellé: nom donné à la courbe, obligatoire pour qu'elle puisse s'afficher}}</label>
 								<label class="col-sm-12 control-label pull-left">{{Type de graphique : permet de choisir individuellement le type de courbe ou d'appliquer le paramètre global du graphique. Tous les types ne peuvent pas être mixés.}}</label>
 								<label class="col-sm-12 control-label pull-left">{{E: affiche graphiquement la courbe en escalier pour le passage d'une valeur à la suivante}}</label>
-								<label class="col-sm-12 control-label pull-left">{{V: affiche graphiquement la courbe en variation (delta) d'une valeur à la suivante. }}</label>
-								<label class="col-sm-11 control-label pull-left">{{*** ATTENTION: la variation est calculée pour TOUS les points d'une commande, pour avoir la variation de cette commande sur un intervalle déterminé par "regroupement" 
-																						alors il faut donc demander à faire la somme de ces variations. Par exemple "Affichage des données = par heure" + "Valeur à afficher : somme" + V coché => variation par heure}}</label>
 								<label class="col-sm-12 control-label pull-left">{{Couleur : permet de choisir la couleur pour chaque courbe}}</label>
 								<label class="col-sm-12 control-label pull-left">{{Commande: sélectionner ici la commande qui servira à alimenter les données de la courbe}}</label>
 								<label class="col-sm-12 control-label pull-left">{{Unité : permet d'ajouter une unité si la commande n'en dispose pas ou de transformer l'unité en fonction du coefficient (passage des W en kW par exemple)}}</label>

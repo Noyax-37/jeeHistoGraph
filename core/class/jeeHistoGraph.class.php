@@ -181,6 +181,7 @@ public static function config() {
             $config[] = ["graph{$g}_unite{$i}", ""];
             $config[] = ["graph{$g}_coef{$i}", ""];
             $config[] = ["graph{$g}_curve{$i}_stairStep", 0];
+            $config[] = ["graph{$g}_curve{$i}_variation", 0];
         }
     }
     return $config;
@@ -231,6 +232,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $chartOrStock = 'StockChart';
         $inverted = 'false';
         $tooltipEnabled = 'true';
+        $xRangeSelectorButtonPosition = 0;
 
         $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
@@ -443,11 +445,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
             $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
             if (is_object($cmd)) {
-                $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
+                $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ' '));
                 if ($manualUnit !== '') {
                     $unite = $manualUnit;
                 } else {
-                    $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : '';
+                    $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : ' ';
                 }
                 $units[] = $unite;
             }
@@ -507,6 +509,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
             $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
             $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
+            $variation = $eqLogic->getConfiguration("graph{$g}_curve{$i}_variation", 0) ? true : false;
 
 
             if (empty($indexNom) || empty($cmdGraphe)) {
@@ -540,6 +543,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $chartOrStock = 'chart';
                     $refPrec = $eqLogic->getConfiguration("graph{$g}_show_refPrec", 1) ? true : false;
                     $inverted = $eqLogic->getConfiguration("graph{$g}_inverted", 1) ? 'true' : 'false';
+                    if ($inverted== 'true') $xRangeSelectorButtonPosition = -60;
                     $tooltipEnabled = $eqLogic->getConfiguration("graph{$g}_tooltip_enabled", 1) ? 'true' : 'false';
                     $limitHisto = intval($eqLogic->getConfiguration("graph{$g}_nbPointsTimeLine", 300));
                     if ($limitHisto <= 0 || $limitHisto > 300) {
@@ -555,7 +559,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 }
                 $coef = floatval($eqLogic->getConfiguration("graph{$g}_coef{$i}", '1'));
                 $histo = $cmd->getHistory($startTime, isset($endTime) ? $endTime : null);
-
+                
                 $listeHisto = [];
                 $recordYear = null;
                 $currentYear = (int)date('Y');
@@ -605,10 +609,26 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 } else {
 
                     //$recordData = [];
+                    $prevValue = null;
+                    $prevValueHisto = 0;
                     foreach ($histo as $record) {
+                        $valueHisto = $record->getValue();
+                        if ($variation){
+                            $prevValueHisto = $valueHisto;
+                            if ($prevValue!==null){
+                                $valueHisto =  $valueHisto - $prevValue;
+                                $prevValue = $prevValueHisto;
+                                $ts = strtotime($record->getDatetime()) * 1000;
+                            } else {
+                                $prevValue = $prevValueHisto;
+                                $ts = strtotime($record->getDatetime()) * 1000;
+                                continue;
+                            }
+                        }
+                         
                         if ($compareType == 'none'){
                             $ts = strtotime($record->getDatetime()) * 1000;
-                            $listeHisto[] = [$ts, $record->getValue() * $coef];
+                            $listeHisto[] = [$ts,  $valueHisto * $coef];
                         } elseif ($compareType == 'prev_year') {
                             $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
@@ -620,7 +640,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             $yearsDiff = $currentYear - $recordYear;
                             $adjustedDate = $recordDate->modify("+{$yearsDiff} years");
                             $ts = $adjustedDate->getTimestamp() * 1000;
-                            $recordData[$recordYear][] = [$ts, $record->getValue() * $coef];
+                            $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
                         } elseif ($compareType == 'prev_year_month') {
                             $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
@@ -629,7 +649,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 $yearsDiff = $currentYear - $recordYear;
                                 $adjustedDate = $recordDate->modify("+{$yearsDiff} years");
                                 $ts = $adjustedDate->getTimestamp() * 1000;
-                                $recordData[$recordYear][] = [$ts, $record->getValue() * $coef];
+                                $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
                             }
                         }
                     }
@@ -641,17 +661,22 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             
             $xAxisJS = "type: 'datetime',
                         ordinal: false,";
+            $$xAxisDateTimeLabelFormatJS = '';
 
             $headerFormatJS = '<span>{point.key}</span><br>';
-            $dateTimeLabelFormats = "   millisecond: '%H:%M:%S.%L',
-                                        second: '%H:%M:%S',
-                                        minute: '%H:%M',
-                                        hour: '%H:%M',
-                                        day: '%e. %b',
-                                        week: '%e. %b',
-                                        month: '%b \'%y',
-                                        year: '%Y'
-                                            ";
+            $dateTimeLabelFormats = "
+                            millisecond: [
+                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                            ],
+                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                            month: ['%B %Y', 'De %B', ' à %B %Y'],
+                            year: ['%Y', 'De %Y', ' à %Y']
+                                                ";
+
             if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
                 switch ($regroup) {
                     case 'minute':
@@ -732,6 +757,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             width: 200,
                         },
                         tooltip: {
+                            outside: false,
                             pointFormat: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/></span><b>{point.label}</b><br/>{point.description}<br/>',
                         }
                     },\n";
@@ -897,7 +923,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                     const points = series.points;
                                     if (points.length > 0) {
                                         const lastPoint = points[points.length - 1];
-                                        previousLabel = lastPoint.label || ''; // 'label' est ce qu'on a mis précédemment
+                                        previousLabel = lastPoint.label || '';
                                     }
 
                                     const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
@@ -945,15 +971,37 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     }
                     //log::add(__CLASS__, 'debug', "graph{$g} nbseries: {$nbSeries}");
                 } else {
-                    log::add(__CLASS__, 'debug', "pas timeline");
+                    $var = $variation ? 'true':'false';
                     $cmdUpdateJS .= "
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                            const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
-                            const y = parseFloat(_options.display_value);
-                            
+                            const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000;
+                            let currentRawValue = parseFloat(_options.display_value) * {$coef};
+
+                            const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
+
                             if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1].addPoint([dateLocaleMs, y], true, false, true); 
+                                const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
+
+                                // Récupère la dernière valeur brute stockée (ou null si première fois)
+                                let lastRawValue = series.userOptions?.lastRawValue ?? null;
+
+                                let yToAdd = currentRawValue; // par défaut : valeur brute
+
+                                if (variation) {
+                                    if (lastRawValue !== null) {
+                                        yToAdd = currentRawValue - lastRawValue; // vrai delta
+                                    } else {
+                                        yToAdd = 0; // premier point en mode variation
+                                    }
+                                }
+
+                                // Ajout du point
+                                series.addPoint([dateLocaleMs, yToAdd], true, false, true);
+
+                                // Sauvegarde la valeur brute pour la prochaine mise à jour
+                                if (!series.userOptions) series.userOptions = {};
+                                series.userOptions.lastRawValue = currentRawValue;
                             }
                         });
                     }\n";
@@ -961,33 +1009,19 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
 
         }
-/*                          'x' => $ts,
-                            'name' => $indexNom,           // nom de la série (ou de l'événement)
-                            'label' => $label,             // texte principal sur la timeline
-                            'description' => $description, // texte détaillé dans le popup
 
-                        if ($refPrec) {
-                            $description = $previousLabel . ' → ' . $label . ' le ' . date('d/m/Y à H:i:s', $ts/1000);
-                        } else {
-                            $description = 'Le ' . date('d/m/Y à H:i:s', $ts/1000);
-                        }
-
-                        {"x":1765778404000,"name":"time","label":"0.99 kW","description":"1 kW \u2192 0.99 kW le 15\/12\/2025 \u00e0 07:00:04"}
-*/
+        
         $rangeSelectorJS = "{
             enabled: {$configButtonsEnabled},
             selected: 6,
             inputEnabled: false,
             floating: true,
             allButtonsEnabled: true,
+            dropdown: 'always',
             {$buttonJS},
-            inputPosition: {
-                x: 0,
-                y: 0
-            },
             buttonPosition: {
-                x: 0,
-                y: -15
+                x: {$xRangeSelectorButtonPosition},
+                y: -30
             }
         }";
 
@@ -1004,6 +1038,17 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $headerFormatJS = ''; // pas de header pour les timelines
             $graphType = 'timeline';
             if ($inverted == 'true') {
+                $xAxisJS .=  "
+                    dateTimeLabelFormats: {
+                        millisecond: '%H:%M:%S.%L',
+                        second: '%H:%M:%S',
+                        minute: '%H:%M',
+                        hour: '%H:%M',
+                        day: '%e/%m/%y',
+                        week: '%e/%m/%y',
+                        month: '%m/%y',
+                        year: '%Y'
+                    },";
                 $xAxisNavigatorJS = "xAxis: {
                     labels: {
                         formatter: function () {
@@ -1027,7 +1072,14 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 backgroundColor: 'transparent',
                 plotBackgroundColor: {$plotBgCode},
                 spacing: [10, 0, 10, 0],
-                inverted: {$inverted}
+                inverted: {$inverted},
+                options3d: {
+                    enabled: false,
+                    alpha: 15,
+                    beta: 15,
+                    depth: 50,
+                    viewDistance: 25
+                }                
             },
             exporting: {
                 enabled: true,
