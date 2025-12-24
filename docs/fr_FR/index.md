@@ -74,9 +74,6 @@ Chaque graphique (1 à 4) possède ses propres paramètres disposés dans un ong
           
 - Bouton : **Tout forcer au même type** pour les 10 courbes du graphique concerné
 
-### Empilement (stacking)
-- Aucun / Normal / Pourcentage
-
 ### RAZ couleurs courbes
 - permet de remettre les couleurs par défaut de chaque courbe du graphique
 
@@ -106,11 +103,6 @@ Cette option permet de pouvoir comparer les données pour une même courbe selon
           </br>          
 
 
-### Affichage des données
-Permet d’afficher des moyennes/sommes sur de longues périodes :
-- Par minute, heure, jour, semaine, mois, année
-- Type : moyenne, somme, min, max
-
 ### Navigation
 - type d'infobulle: affichage des infobulles au choix:
   - aucune infobulle
@@ -133,15 +125,19 @@ Permet d’afficher des moyennes/sommes sur de longues périodes :
 
 Pour chaque courbe :
 
-| Champ               | Description |
-|---------------------|-----------|
-| Libellé             | Si vide → la courbe n’est **pas affichée** |
-| Type de courbe      | Hérite du graphique ou forcé (ligne, aire, colonne…) |
-| E                   | Si coché affiche la courbe en escalier. Ne fonctionne pas avec tous les types de courbe |
-| Couleur             | Choix libre |
-| Commande            | Sélectionner une commande historisée (info numérique) |
-| Unité               | Forcer une unité (ex: kWh au lieu de Wh) |
-| Coefficient         | Multiplier la valeur (ex: ×0.001 pour passer de kWh → Wh). Possibilité de mettre des coefficient négatifs |
+| Champ                 | Description |
+|-----------------------|-----------|
+| Libellé               | Si vide → la courbe n’est **pas affichée** |
+| Commande              | Sélectionner une commande historisée (info numérique) |
+| Type de courbe        | Hérite du graphique ou forcé (ligne, aire, colonne…) |
+| Empilement            | Sélectionner le type d'empilement souhaité puis cocher les cases pour les courbes à y inclure |
+| Affichage des données | Sélectionner une période de regroupement des données |
+| Opération à appliquer | Sélectionner une opération à appliquer lorsque "affichage des données" n'est pas sur "Aucun" |
+| Esc.                  | Si coché affiche la courbe en escalier. Ne fonctionne pas avec tous les types de courbe |
+| Var.                  | Affichie les données en variation par rapport à la donnée précédente |
+| Couleur               | Choix libre |
+| Unité                 | Forcer une unité (ex: kWh au lieu de Wh) |
+| Coefficient           | Multiplier la valeur (ex: ×0.001 pour passer de kWh → Wh). Possibilité de mettre des coefficient négatifs |
 
 > Astuce : Bouton **"Remettre les couleurs par défaut"** par graphique
 

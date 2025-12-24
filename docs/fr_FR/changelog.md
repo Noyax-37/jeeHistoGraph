@@ -11,6 +11,18 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.00
+- Descente de certaines options du niveau graphique vers le niveau courbe: emplilement (stacking), affichage des données avec le mode de calcul associé.
+- réorganisation de l'ordre des colonnes du tableau des courbes
+<br>
+=> Si vous aviez utilisé des options qui sont descendues de niveau il faudra reprendre la configuration de l'équipement
+
+# v1.20
+- ajout option « variation » pour l’affichage de la variation d’une valeur dans le temps. 
+ATTENTION: la variation est calculée pour TOUS les points d’une commande, pour avoir la variation de cette commande sur un intervalle déterminé par « regroupement » alors il faut donc demander à faire la somme de ces variations. Par exemple « Affichage des données = par heure » + « Valeur à afficher : somme » + V coché => variation par heure
+- correction d’un bug lorsque les unités étaient vides
+- modifications dans la page de configuration
+
 # v1.10
 - modification du positionnement des onglets
 - quelques modifications esthétiques

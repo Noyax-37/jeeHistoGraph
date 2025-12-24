@@ -142,11 +142,9 @@ public static function config() {
                 ];
     for ($g = 1; $g <= 4; $g++) {
         $config[] = ["graph{$g}_type", 'line'];
-        $config[] = ["graph{$g}_regroup", "aucun"];
-        $config[] = ["graph{$g}_typeRegroup", "aucun"];
-        $config[] = ["stacking_graph{$g}", "null"];
         $config[] = ["periode_histo_graph{$g}", "global"];
         $config[] = ["delai_histo_graph{$g}", ''];
+        $config[] = ["stacking_graph{$g}", "null"];
         $config[] = ["date_debut_histo_graph{$g}", ''];
         $config[] = ["date_debut_histo_2dates_graph{$g}", ""];
         $config[] = ["date_fin_histo_2dates_graph{$g}", ''];
@@ -176,6 +174,9 @@ public static function config() {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_index{$index}_nom", ''];
             $config[] = ["graph{$g}_curve{$i}_type", "inherit_curve"];
+            $config[] = ["stacking_graph{$g}_curve{$i}", 0];
+            $config[] = ["graph{$g}_curve{$i}_regroup", "aucun"];
+            $config[] = ["graph{$g}_curve{$i}_typeRegroup", "aucun"];
             $config[] = ["graph{$g}_color{$i}", $defaultColors[$i-1]];
             $config[] = ["graph{$g}_cmdGraphe{$index}", ""];
             $config[] = ["graph{$g}_unite{$i}", ""];
@@ -363,56 +364,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
         }
 
-
-        $dataGroupingJS = 'enabled: false,';
-        $regroup = $eqLogic->getConfiguration("graph{$g}_regroup", 'aucun');
-        $typeRegroup = $eqLogic->getConfiguration("graph{$g}_typeRegroup", 'aucun');
-        $dataGroupingDateTimeLabelFormatsJS = "
-                                        millisecond: ['%A %e %b %Y, %H:%M:%S.%L', '%A %e %b %Y de %H:%M:%S.%L', ' à %H:%M:%S.%L'],
-                                        second: ['%A %e %b %Y, %H:%M:%S', '%A %e %b %Y de %H:%M:%S', ' à %H:%M:%S'],
-                                        minute: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
-                                        hour: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
-                                        day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                                        week: ['Semaine du %e %b %Y', 'Du %e %b %Y', ' au %e %b %Y'],
-                                        month: ['%B %Y', 'De %B', ' à %B %Y'],
-                                        year: ['%Y', 'De %Y', ' à %Y']
-            ";
-
-        if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
-            $units = '';
-            switch ($regroup) {
-                case 'minute':
-                    $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
-                    break;
-                case 'hour':
-                    $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
-                    break;
-                case 'day':
-                    $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
-                    break;
-                case 'week':
-                    $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
-                    break;
-                case 'month':
-                    $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
-                    break;
-                case 'year':
-                    $units = "[[ 'year', [1] ]]";
-                    break;
-                default:
-                    $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
-            }
-
-            $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
-
-            $dataGroupingJS = "
-                enabled: true,
-                forced: true,
-                approximation: '{$approximation}',
-                units: {$units},
-            ";
-        }        
-        
         $seriesJS = '';
         $cmdUpdateJS = '';
         $compareType = $eqLogic->getConfiguration("graph{$g}_compare_type", 'none');
@@ -504,6 +455,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $nomKey = "graph{$g}_index{$index}_nom";
             $colorKey = "graph{$g}_color{$i}";
             $curveTypeKey = "graph{$g}_curve{$i}_type";
+            $stackingOptionEnabled = $eqLogic->getConfiguration("stacking_graph{$g}_curve{$i}", 0) ? true : false;
+            $stackingOption = ($stackingOptionEnabled) ? $stackingOption : null; 
             $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
             $indexNom = $eqLogic->getConfiguration($nomKey);
             $color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
@@ -570,6 +523,54 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $text = '';
                 $description = '';
 
+                $dataGroupingJS = 'enabled: false,';
+                $regroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_regroup", 'aucun');
+                $typeRegroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_typeRegroup", 'aucun');
+                $dataGroupingDateTimeLabelFormatsJS = "
+                                                millisecond: ['%A %e %b %Y, %H:%M:%S.%L', '%A %e %b %Y de %H:%M:%S.%L', ' à %H:%M:%S.%L'],
+                                                second: ['%A %e %b %Y, %H:%M:%S', '%A %e %b %Y de %H:%M:%S', ' à %H:%M:%S'],
+                                                minute: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                                hour: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                                week: ['Semaine du %e %b %Y', 'Du %e %b %Y', ' au %e %b %Y'],
+                                                month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                                year: ['%Y', 'De %Y', ' à %Y']
+                    ";
+
+                if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+                    $units = '';
+                    switch ($regroup) {
+                        case 'minute':
+                            $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
+                            break;
+                        case 'hour':
+                            $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
+                            break;
+                        case 'day':
+                            $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
+                            break;
+                        case 'week':
+                            $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
+                            break;
+                        case 'month':
+                            $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
+                            break;
+                        case 'year':
+                            $units = "[[ 'year', [1] ]]";
+                            break;
+                        default:
+                            $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
+                    }
+
+                    $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
+
+                    $dataGroupingJS = "
+                        enabled: true,
+                        forced: true,
+                        approximation: '{$approximation}',
+                        units: {$units},
+                    ";
+                }        
                 
                 // Si la courbe est de type timeline → on transforme les données
                 if ($finalCurveType === 'timeline') {
@@ -791,7 +792,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             tooltip: {
                                 valueSuffix: " . json_encode(' ' .$unite) . "
                             },
-                            yAxis: {$axisIndex}
+                            yAxis: {$axisIndex},
+                            stacking: '$stackingOption',
                         },\n";
                     }
                     $xAxisJS .=  "
@@ -838,7 +840,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             tooltip: {
                                 valueSuffix: " . json_encode(' ' .$unite) . "
                             },
-                            yAxis: {$axisIndex}
+                            yAxis: {$axisIndex},
+                            stacking: '$stackingOption',
                         },\n";
                     }
                     $xDateFormatJS = "%d %B - %Hh%M";
@@ -877,7 +880,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             month: ['%B %Y', 'De %B', ' à %B %Y'],
                             year: ['%Y', 'De %Y', ' à %Y']
                         },
-                        yAxis: {$axisIndex}
+                        yAxis: {$axisIndex},
+                        stacking: '$stackingOption',
+                        dataGrouping: { {$dataGroupingJS}
+                                        dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                                    },
                     },\n";
 
                     $xDateFormatJS = "%d %B %Y - %Hh%M";
@@ -1129,9 +1136,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     groupPadding:0.1,
                     pointPadding:0,
                     fillOpacity: 0.1,
-                    dataGrouping: { {$dataGroupingJS}
-                                    dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
-                                  },
                 },
             },
             series: [{$seriesJS}]

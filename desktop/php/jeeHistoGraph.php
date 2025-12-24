@@ -51,25 +51,66 @@ $nbGraphs = max(1, min(4, $nbGraphs));
         color: white !important;
     }
 
-        /* Style commun pour tous les tableaux */
-        .table-jeeHistoGraph {
-            width: 100%;
-            height: 70px; /* Hauteur fixe pour que tous les tableaux aient la même taille */
-            border: 4px double #000; /* Double trait extérieur */
-            border-collapse: collapse;
-            table-layout: fixed; /* Pour une répartition égale des colonnes */
-            margin: 0 auto;
-        }
-        .table-jeeHistoGraph td {
-            border: 1px solid #000; /* Trait simple intérieur */
-            text-align: center;
-            vertical-align: middle;
-            font-weight: bold;
-            font-size: 0.8rem;
-            padding: 0px 4px;
-			box-sizing: border-box;
-			overflow: hidden;
-        }
+	.table-jeeHistoGraph {
+		width: 100%;
+		height: 70px;
+		border: 4px double #000; /* Double trait extérieur */
+		border-collapse: collapse;
+		table-layout: fixed;
+		margin: 0 auto;
+	}
+	.table-jeeHistoGraph td {
+		border: 1px solid #000; /* Trait simple intérieur */
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-size: 0.8rem;
+		padding: 0px 4px;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
+	.table-responsive {
+		overflow-x: auto;
+	}
+
+	.sticky-left {
+		position: sticky;
+		left: 0;
+		background-color: rgb(var(--panel-bg-color));
+		z-index: 10;
+	}
+
+	.sticky-left-2 {
+		position: sticky;
+		left: 80px;
+		background-color: rgb(var(--panel-bg-color));
+		z-index: 10;
+	}
+
+	.sticky-left.th, /* pour les en-têtes */
+	.sticky-left:first-child {
+		font-weight: bold;
+	}
+
+	.checkbox-cell {
+		position: relative; 
+		padding: 0 !important; 
+		min-height: 30px;
+	}
+
+	.checkbox-cell input[type="checkbox"] {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		margin: 0;
+		cursor: pointer;
+	}
+
+	.checkbox-cell input[type="checkbox"]:hover {
+		transform: translate(-50%, -50%) scale(1.1);
+	}
 </style>
 
 <div class="row row-overflow">
@@ -188,7 +229,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								</div>
 							</div>
 
-							<div class="form-group col-sm-12" style="border: 6px solid grey; border-style: double; padding: 2px;">
+							<div class="form-group col-lg-12" style="border: 6px solid grey; border-style: double; padding: 2px;">
 								<legend><i class="fas fa-sliders-h"></i> {{Configuration commune aux graphiques}}</legend>
 								<div class="form-group">
 									<label class="col-sm-6 control-label">{{Nombre de graphique(s)}}</label>
@@ -204,7 +245,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 
 								<div class="form-group">
 									<label class="col-sm-6 control-label">{{Disposition des graphiques}}</label>
-									<div class="col-sm-3">
+									<div class="col-sm-5">
 										<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graphLayout">
 											<option value="auto">{{Automatique (selon le nombre)}}</option>
 											<option value="1col">{{1 colonne (empilés verticalement)}}</option>
@@ -219,12 +260,12 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 								</div>
 
-								<div class="col-sm-12" style="border: 1px solid grey; padding: 2px;">
+								<div class="col-lg-12" style="border: 1px solid grey; padding: 2px;">
 									<div class="form-group">
 										<label class="col-sm-6 control-label">{{Période d'affichage}}
 											<sup><i class="fas fa-question-circle tooltips" title="{{Définit la période affichée par défaut sur les graphiques. Peut être modifiée dynamiquement via le menu de chaque graphique.}}"></i></sup>
 										</label>
-										<div class="col-sm-3">
+										<div class="col-sm-5">
 											<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="periode_histo">
 												<option value="nbJours">{{en nombre de jours}}</option>
 												<option value="deDate">{{à partir d'une date}}</option>
@@ -255,7 +296,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									<div class="form-group periode_histo deDate" style="display:none;">
 										<label class="col-sm-2 control-label">{{De date début}}</label>
 										<div class="col-sm-3">
-											<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo">
+											<input type="datetime-local" value="" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo">
 										</div>
 										<label class="col-sm-3 control-label pull-left">{{à maintenant (actualisation auto)}}</label>
 									</div>
@@ -265,7 +306,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										<div class="col-sm-3">
 											<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates">
 										</div>
-										<label class="col-sm-1 control-label">{{Date de fin}}</label>
+										<label class="col-sm-1 control-label">{{à }}</label>
 										<div class="col-sm-3">
 											<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates">
 										</div>
@@ -292,12 +333,12 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 							</div>
 							<div class="form-group">
 								<br><br><br><br>
-								<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Explications succinctes}}:</label>
+								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Explications succinctes}}:</label>
 								<br><br>
-								<label class="col-sm-12 control-label pull-left">{{Nombre de graphique(s): }}{{choisir le nombre de graphique voulu à afficher, de 1 à 4 }}</label>
+								<label class="col-lg-12 control-label pull-left">{{Nombre de graphique(s): }}{{choisir le nombre de graphique voulu à afficher, de 1 à 4 }}</label>
 								<br><br>
-								<label class="col-sm-12 control-label pull-left">{{Disposition des graphiques: choisir la disposition des grphiques en fonction du nombre }}</label>
-								<label class="col-sm-12 control-label pull-left">{{- **Automatique** : s'adapte selon le nombre. Tout l'espace pour 1 graphique, l'un au dessus de l'autre pour 2, 2 petits en haut 1 qui prend l'espace en bas si 3 et 2x2 pour 4.}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Disposition des graphiques: choisir la disposition des grphiques en fonction du nombre }}</label>
+								<label class="col-lg-12 control-label pull-left">{{- **Automatique** : s'adapte selon le nombre. Tout l'espace pour 1 graphique, l'un au dessus de l'autre pour 2, 2 petits en haut 1 qui prend l'espace en bas si 3 et 2x2 pour 4.}}</label>
 								<div class="container my-5">
 									<div class="row">
 										<!-- Tableau 1 : 1 seule cellule -->
@@ -345,9 +386,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 									</div>
 								</div>
-								<label class="col-sm-12 control-label pull-left">{{- **1 colonne** / **1 ligne** / **2×2** / **2 colonnes** / **2 lignes**}}</label>
-								<label class="col-sm-12 control-label pull-left">{{- Dispositions spéciales :}}</label>
-								<label class="col-sm-12 control-label pull-left">{{- `1 grand en haut + 2 petits en bas`}}</label>
+								<label class="col-lg-12 control-label pull-left">{{- **1 colonne** / **1 ligne** / **2×2** / **2 colonnes** / **2 lignes**}}</label>
+								<label class="col-lg-12 control-label pull-left">{{- Dispositions spéciales :}}</label>
+								<label class="col-lg-12 control-label pull-left">{{- `1 grand en haut + 2 petits en bas`}}</label>
 								<div class="container my-5">
 									<div class="row">
 										<!-- Tableau : 1 fusionnée en haut, 2 en bas -->
@@ -364,7 +405,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 									</div>
 								</div>
-								<label class="col-sm-12 control-label pull-left">{{- `2 petits en haut + 1 grand en bas`}}</label>
+								<label class="col-lg-12 control-label pull-left">{{- `2 petits en haut + 1 grand en bas`}}</label>
 								<div class="container my-5">
 									<div class="row">
 										<!-- Tableau : 2 en haut, 1 fusionnée en bas -->
@@ -381,7 +422,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 									</div>
 								</div>								
-								<label class="col-sm-12 control-label pull-left">{{- `3 graphiques de taille identique → 2 en haut, 1 centré en bas`}}</label>
+								<label class="col-lg-12 control-label pull-left">{{- `3 graphiques de taille identique → 2 en haut, 1 centré en bas`}}</label>
 								<div class="container my-5">
 									<div class="row">
 										<!-- Tableau : 2 en haut, 1 fusionnée en bas -->
@@ -401,7 +442,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 								</div>											
 								<br>
-								<label class="col-sm-12 control-label pull-left">{{Remettre tous les fonds transparents: }}{{permet de remettre le fond de tous les graphiques transparents en un seul clic}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Remettre tous les fonds transparents: }}{{permet de remettre le fond de tous les graphiques transparents en un seul clic}}</label>
 							</div>
 						</div>
 					</fieldset>
@@ -437,10 +478,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 			<div role="tabpanel" class="tab-pane" id="graph<?= $g ?>tab" <?= $display ?>>
 				<form class="form-horizontal">
 					<fieldset>
-						<div class="col-lg-6">
-							<div class="graphConfig" data-graph="<?= $g ?>">
-								
-								<div class="form-group col-sm-12" style="border: 6px solid grey; border-style: double; padding: 2px;">
+						<div class="graphConfig col-lg-12" data-graph="<?= $g ?>">
+							<div class="col-lg-8">
+								<div class="form-group col-lg-12" style="border: 6px solid grey; border-style: double; padding: 2px;">
 									<legend><i class="fas fa-chart-line"></i> {{Graphique}} <?= $g ?></legend>
 
 									<div class="form-group">
@@ -451,7 +491,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 
 									<div class="form-group">
-										<label class="col-sm-6 control-label">{{Afficher le titre}}</label>
+										<label class="col-sm-6 control-label">{{Afficher le titre :}}</label>
 										<div class="col-sm-3">
 											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_showTitle" checked>
 										</div>
@@ -482,7 +522,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
 												</select>
 											</div>
-											<div class="col-sm-12" style="text-align:center;">
+											<div class="col-lg-12" style="text-align:center;">
 												<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
 											</div>
 										</div>
@@ -543,17 +583,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<br>
 										</div>
 
-										<div class="form-group">
-											<label class="col-sm-6 control-label">{{Empilement (si aire ou colonne) :}}</label>
-											<div class="col-sm-3">
-												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>">
-													<option value="null">{{Aucun}}</option>
-													<option value="normal">{{Normal}}</option>
-													<option value="percent">{{Pourcentage}}</option>
-												</select>
-											</div>
-										</div>
-
 										<div class="form-group Colors">
 											<label class="col-sm-6 control-label">{{RAZ couleurs courbes : }}</label>
 											<div class="col-sm-4">
@@ -576,14 +605,14 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 
 										<div class="bgOptions" style="display:none;">
-											<div class="col-sm-12 bgColorInput">
+											<div class="col-lg-12 bgColorInput">
 												<label class="col-sm-7 control-label">{{Couleur unie}}</label>
 												<div class="col-sm-2">
 													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_color" value="#ffffff">
 												</div>
 											</div>
 
-											<div class="col-sm-12 form-group gradientOptions" style="margin-top:10px;display:none;">
+											<div class="col-lg-12 form-group gradientOptions" style="margin-top:10px;display:none;">
 												<label class="col-sm-7 control-label">{{Utiliser un dégradé}}</label>
 												<div class="col-sm-4">
 													<input type="checkbox" class="eqLogicAttr gradientCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_gradient_enabled">
@@ -631,12 +660,12 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 
 									<!-- Gestion de la période -->
-									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
+									<div class="form-group">
 										<div class="col-sm-2"></div>
 										<span><b><i class="fas fa-calendar-times"></i> {{Gestion de la période à afficher}}</b></span>
 										<div class="form-group">
 											<label class="col-sm-6 control-label">{{Période d'affichage}}</label>
-											<div class="col-sm-3">
+											<div class="col-sm-4">
 												<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_histo_graph<?= $g ?>">
 													<option value="global">{{Paramètre global}}</option>
 													<option value="nbJours">{{En nombre de jours}}</option>
@@ -669,7 +698,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<div class="col-sm-3">
 												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_graph<?= $g ?>">
 											</div>
-											<label class="col-sm-6 control-label pull-left">{{à maintenant (actualisation auto)}}</label>
+											<label class="col-sm-3 control-label pull-left">{{à maintenant (actualisation auto)}}</label>
 										</div>
 
 										<div class="form-group periodeBlock<?= $g ?> deDateAdate" style="display:none;">
@@ -677,7 +706,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<div class="col-sm-3">
 												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_debut_histo_2dates_graph<?= $g ?>">
 											</div>
-											<label class="col-sm-1 control-label">{{Date de fin}}</label>
+											<label class="col-sm-1 control-label">{{à }}</label>
 											<div class="col-sm-3">
 												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph<?= $g ?>">
 											</div>
@@ -687,21 +716,21 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									<!-- Regroupements / comparaisons -->
 									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
 										<div class="col-sm-2"></div>
-										<span><b><i class="fas fa-arrows-alt"></i> {{Gestion des regroupements / comparaisons}}</b></span>
+										<span><b><i class="fas fa-arrows-alt"></i> {{Gestion comparaisons par période pour une même commande:}}</b></span>
 
 										<div class="form-group">
 											<div class="row">
-											<label class="col-sm-6 control-label">{{Comparaison temporelle :}}</label>
-											<div class="col-sm-3">
-												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_type">
-													<option value="none">{{Aucune}}</option>
-													<option value="prev_year_month">{{Même mois des années précédentes}}</option>
-													<option value="prev_year">{{Années précédentes}}</option>
-												</select>
-											</div>
+												<label class="col-sm-6 control-label">{{Comparaison temporelle :}}</label>
+												<div class="col-sm-4">
+													<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_type">
+														<option value="none">{{Aucune}}</option>
+														<option value="prev_year_month">{{Même mois des années précédentes}}</option>
+														<option value="prev_year">{{Années précédentes}}</option>
+													</select>
+												</div>
 											</div>
 											<div class="row">
-												<div class="col-sm-12 compareRollingMonth" style="display:none;">
+												<div class="col-lg-12 compareRollingMonth" style="display:none;">
 													<label class="col-sm-7 control-label">{{Mois de début}}</label>
 													<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
 														<option value="01">{{Janvier}}</option>
@@ -718,7 +747,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														<option value="12">{{Décembre}}</option>
 													</select>
 												</div>
-												<div class="col-sm-12 compareMonth" style="display:none;">
+												<div class="col-lg-12 compareMonth" style="display:none;">
 													<label class="col-sm-7 control-label">{{Mois à comparer}}</label>
 													<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
 														<option value="01">{{Janvier}}</option>
@@ -737,54 +766,24 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												</div>
 											</div>
 										</div>									
-
-										<br>
-										<div class="form-group">
-											<label class="col-sm-6 control-label">{{Affichage des données :}}</label>
-											<div class="col-sm-3">
-												<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_regroup">
-													<option value="aucun">{{Toutes}}</option>
-													<option value="minute">{{par minute}}</option>
-													<option value="hour">{{par heure}}</option>
-													<option value="day">{{par jour}}</option>
-													<option value="week">{{par semaine}}</option>
-													<option value="month">{{par mois}}</option>
-													<option value="year">{{par année}}</option>
-												</select>
-											</div>
-										</div>
-										<div class="form-group">
-											<label class="col-sm-7 control-label">{{Valeur à afficher :}} 
-												<sup>
-													<i class="fas fa-question-circle tooltips" title="{{N'a aucun effet si l'affichage des données est sur 'Toutes'}}"></i>
-												</sup>
-											</label>
-											<div class="col-sm-3">
-												<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_typeRegroup">
-													<option value="aucun">{{Pas d'opération}}</option>
-													<option value="average">{{moyenne}}</option>
-													<option value="sum">{{somme}}</option>
-													<option value="low">{{mini}}</option>
-													<option value="high">{{maxi}}</option>
-												</select>
-											</div>
-										</div>
 									</div>
 
 									<!-- Navigation -->
-									<div class="form-group" style="border: 1px solid grey; padding: 2px;">
+									<div class="form-group">
 										<div class="col-sm-2"></div>
 										<span><b><i class="fas fa-glasses"></i> {{Aide navigation}}</b></span>
 
 										<div class="form-group">
-											<label class="col-sm-6 control-label">{{Type d'infobulle: }}</label>
-											<div class="col-sm-6">
-												<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="tooltip<?= $g ?>">
-													<option value="sans">{{aucune infobulle}}</option>
-													<option value="normal">{{une infobulle par point}}</option>
-													<option value="regroup">{{une seule infobulle par date commune}}</option>
-													<option value="multi">{{une infobulle par courbe par date commune}}</option>
-												</select>
+											<div class="row">
+												<label class="col-sm-6 control-label">{{Type d'infobulle: }}</label>
+												<div class="col-sm-5">
+													<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="tooltip<?= $g ?>">
+														<option value="sans">{{aucune infobulle}}</option>
+														<option value="normal">{{une infobulle par point}}</option>
+														<option value="regroup">{{une seule infobulle par date commune}}</option>
+														<option value="multi">{{une infobulle par courbe par date commune}}</option>
+													</select>
+												</div>
 											</div>
 										</div>
 
@@ -806,81 +805,131 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_buttons" checked>
 											</div>
 										</div>
-											<div class="col-sm-12" style="text-align:center;">
+											<div class="col-lg-12" style="text-align:center;">
 												<a class="btn btn-info" id="bt_openNavigatorHelp"><i class="fas fa-info-circle"></i> {{À quoi correspondent les options de navigation ?}}</a>
 											</div>
 									</div>
 
 									<br>
+								</div>
+							</div>
+
+							<div class="col-lg-12">
+								<div class="form-group col-lg-12" style="border: 6px solid grey; border-style: double; padding: 2px;">
 
 									<!-- Tableau des courbes -->
-									<div class="form-group col-sm-12">
-										<table class="table table-bordered table-condensed">
-											<thead>
-												<tr>
-													<th class="text-center" style="width: 8%;">{{Courbe}}</th>
-													<th class="text-center" style="width: 13%;">{{Libellé}}</th>
-													<th class="text-center" style="width: 16%;">{{Type de courbe}}</th>
-													<th class="text-center" style="width: 2%;">{{E}}														
-														<sup>
-															<i class="fas fa-question-circle tooltips" title="{{Courbe en escalier, ne fonctionne pas avec tous les types de courbe}}"></i>
-														</sup>
-													</th>
-													<th class="text-center" style="width: 2%;">{{V}}														
-														<sup>
-															<i class="fas fa-question-circle tooltips" title="{{Variation}}"></i>
-														</sup>
-													</th>
-													<th class="text-center" style="width: 5%;">{{Couleur}}</th>
-													<th class="text-center" style="width: 40%;">{{Commande}}</th>
-													<th class="text-center" style="width: 6%;">{{Unité}}</th>
-													<th class="text-center" style="width: 10%;">{{Coef}}</th>
-												</tr>
-											</thead>
-											<tbody>
-												<?php for ($i = 1; $i <= 10; $i++) { 
-													$index = str_pad($i, 2, '0', STR_PAD_LEFT);
-												?>
-												<tr>
-													<td class="text-center">{{Courbe <?= $index ?>}}</td>
-													<td><input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/></td>
-													<td>
-														<select class="eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
-															<option value="inherit_curve" selected>{{Config graphique}}</option>
-															<option value="line">{{Ligne}}</option>
-															<option value="spline">{{Courbe lisse}}</option>
-															<option value="areaspline">{{Aire lisse}}</option>
-															<option value="area">{{Aire}}</option>
-															<option value="column">{{Colonne}}</option>
-															<option value="bar">{{Barre}}</option>
-														</select>
-													</td>
-													<td class="text-center">
-														<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_stairStep">
-													</td>
-													<td class="text-center">
-														<input type="checkbox" class="eqLogicAttr VariationCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_variation">
-													</td>
-													<td><input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></td>
-													<td>
-														<div class="input-group">
-															<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
-															<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a>
-														</div>
-													</td>
-													<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>"></td>
-													<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>"></td>
-												</tr>
-												<?php } ?>
-											</tbody>
-										</table>
+									<div class="form-group col-lg-12">
+										<div class="table-responsive">
+											<table class="table table-bordered table-condensed" style="width: 100%; table-layout: fixed;">
+												<thead>
+													<tr>
+														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th>
+														<th class="text-center sticky-left-2" style="width: 140px;">{{Libellé}}</th>
+														<th class="text-center" style="width: 400px;">{{Commande}}</th>
+														<th class="text-center" style="width: 140px;">{{Type de courbe}}</th>
+														<th class="text-center" style="width: 120px;">
+															<div>{{Empilement}}
+																<sup>
+																	<i class="fas fa-question-circle tooltips" title="{{Courbe à inclure dans l'empilement après avoir choisi le type}}"></i>
+																</sup>
+															</div>
+															<div>
+																<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>">
+																	<option value="null">{{Aucun}}</option>
+																	<option value="normal">{{Normal}}</option>
+																	<option value="percent">{{Pourcentage}}</option>
+																</select>
+															</div>															
+														</th>
+														<th class="text-center" style="width: 130px;">{{Affichage des données}}</th>
+														<th class="text-center" style="width: 130px;">{{Opération à appliquer}}												
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{N'a aucun effet si l'affichage des données est sur 'Toutes'}}"></i>
+															</sup>
+														</th>
+														<th class="text-center" style="width: 60px;">{{Esc.}}														
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Courbe en escalier, ne fonctionne pas avec tous les types de courbe}}"></i>
+															</sup>
+														</th>
+														<th class="text-center" style="width: 60px;">{{Var.}}														
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Variation}}"></i>
+															</sup>
+														</th>
+														<th class="text-center" style="width: 60px;">{{Couleur}}</th>
+														<th class="text-center" style="width: 60px;">{{Unité}}</th>
+														<th class="text-center" style="width: 60px;">{{Coef}}</th>
+													</tr>
+												</thead>
+												<tbody>
+													<?php for ($i = 1; $i <= 10; $i++) { 
+														$index = str_pad($i, 2, '0', STR_PAD_LEFT);
+													?>
+													<tr>
+														<td class="text-center sticky-left">{{Courbe <?= $index ?>}}</td>
+														<td class="sticky-left-2"><input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/></td>
+														<td>
+															<div class="input-group">
+																<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
+																<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a>
+															</div>
+														</td>
+														<td>
+															<select class="eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
+																<option value="inherit_curve" selected>{{Config graphique}}</option>
+																<option value="line">{{Ligne}}</option>
+																<option value="spline">{{Courbe lisse}}</option>
+																<option value="areaspline">{{Aire lisse}}</option>
+																<option value="area">{{Aire}}</option>
+																<option value="column">{{Colonne}}</option>
+																<option value="bar">{{Barre}}</option>
+															</select>
+														</td>
+														<td class="text-center checkbox-cell">
+															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>_curve<?= $i ?>">
+														</td>
+														<td>
+															<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_regroup">
+																<option value="aucun">{{Toutes}}</option>
+																<option value="minute">{{par minute}}</option>
+																<option value="hour">{{par heure}}</option>
+																<option value="day">{{par jour}}</option>
+																<option value="week">{{par semaine}}</option>
+																<option value="month">{{par mois}}</option>
+																<option value="year">{{par année}}</option>
+															</select>
+														</td>
+														<td>
+															<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_typeRegroup">
+																<option value="aucun">{{Pas d'opération}}</option>
+																<option value="average">{{moyenne}}</option>
+																<option value="sum">{{somme}}</option>
+																<option value="low">{{mini}}</option>
+																<option value="high">{{maxi}}</option>
+															</select>
+														</td>
+														<td class="text-center checkbox-cell">
+															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_stairStep">
+														</td>
+														<td class="text-center checkbox-cell">
+															<input type="checkbox" class="eqLogicAttr VariationCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_variation">
+														</td>
+														<td><input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></td>
+														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>"></td>
+														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>"></td>
+													</tr>
+													<?php } ?>
+												</tbody>
+											</table>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						<div class="col-lg-6">
-							<div class="form-group col-sm-12">
+						<div class="col-lg-8">
+							<div class="form-group col-lg-12">
 								<legend><i class="fas fa-info"></i> {{Informations}}</legend>
 								<label class="col-sm-4 control-label">{{Description}}</label>
 								<div class="col-sm-6">
@@ -889,43 +938,46 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 							</div>
 							<div class="form-group">
 								<br/><br><br><br>
-								<legend><label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Explications succinctes}}:</label></legend>
+								<legend><label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Explications succinctes}}:</label></legend>
 								<br><br>
-								<label class="col-sm-12 control-label pull-left">{{Titre du graphique: }}{{facultatif, donner un nom à votre graphique }}</label>
-								<label class="col-sm-12 control-label pull-left">{{Afficher le titre, la légende: }}{{afficher ou non ces infos sur votre graphique}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Titre du graphique: }}{{facultatif, donner un nom à votre graphique }}</label>
+								<label class="col-lg-12 control-label pull-left">{{Afficher le titre, la légende: }}{{afficher ou non ces infos sur votre graphique}}</label>
 								<br/><br><br>
-								<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Paramètres de courbes}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Type de courbe par défaut : }}{{choisir le type de courbe voulue (ligne, aire, ...). S'applique à toutes les courbes du graphique qui n'ont pas de type sélectionné individuellement}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Empilement: permet de positionner les courbes l'une au dessus de l'autre}}</label>
-								<label class="col-sm-12 control-label pull-left">{{RAZ couleurs courbes : permet de remettre toutes les couleurs de courbes par défaut}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Afficher l'axe Y (valeurs) : afficher ou non l'axe des valeurs (vertical en général)}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Fond transparent : si déselectionné permet de choisir une couleur de fond pour le graphique}}</label>
+								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Paramètres de courbes}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Type de courbe par défaut : }}{{choisir le type de courbe voulue (ligne, aire, ...). S'applique à toutes les courbes du graphique qui n'ont pas de type sélectionné individuellement}}</label>
+								<label class="col-lg-12 control-label pull-left">{{RAZ couleurs courbes : permet de remettre toutes les couleurs de courbes par défaut}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Afficher l'axe Y (valeurs) : afficher ou non l'axe des valeurs (vertical en général)}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Fond transparent : si déselectionné permet de choisir une couleur de fond pour le graphique}}</label>
 								<br/><br><br>
-								<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Gestion de la période à afficher}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Période d'affichage : applique la période du paramètre choisi sur la page "équipement" ou le personnalise pour ce graphique}}</label>
+								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Gestion de la période à afficher}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Période d'affichage : applique la période du paramètre choisi sur la page "équipement" ou le personnalise pour ce graphique}}</label>
 								<br/><br><br>
-								<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Gestion des regroupements / comparaisons}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Comparaison temporelle : permet de comparer d'une année sur l'autre soit la totalité de l'année soit un mois en particulier pour une commande disposant de plusieurs années d'enregistrement}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Affichage des données : permet de faire des regroupement par intervalles temporels (minute, heure, ...) et d'y appliquer une opération (moyenne, somme, ...)}}</label>
+								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Gestion des comparaisons par période pour une même commande}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Comparaison temporelle : permet de comparer d'une année sur l'autre soit la totalité de l'année soit un mois en particulier pour une commande disposant de plusieurs années d'enregistrement}}</label>
 								<br/><br><br>
-								<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Aide navigation}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Type d'infobulle: permet de définir la façon dont les infobulles seront ou non affichées}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Afficher la barre de navigation, de défilement ou les boutons: voir l'aide en cliquant sur le bouton}}</label>
+								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Aide navigation}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Type d'infobulle: permet de définir la façon dont les infobulles seront ou non affichées}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Afficher la barre de navigation, de défilement ou les boutons: voir l'aide en cliquant sur le bouton}}</label>
 								<br/><br><br>
-								<label class="col-sm-12 control-label pull-left" style="text-decoration:underline">{{Tableau des courbes}}</label>
+								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Tableau des courbes}}</label>
 								<br/><br>
-								<label class="col-sm-12 control-label pull-left">{{Attention: si le libellé de la courbe n'est pas complété alors elle ne s'affichera pas même si la commande existe}}</label>
-								<label class="col-sm-12 control-label pull-left">{{courbe: information purement indicative donnant le numéro de la courbe}}</label>
-								<label class="col-sm-12 control-label pull-left">{{libellé: nom donné à la courbe, obligatoire pour qu'elle puisse s'afficher}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Type de graphique : permet de choisir individuellement le type de courbe ou d'appliquer le paramètre global du graphique. Tous les types ne peuvent pas être mixés.}}</label>
-								<label class="col-sm-12 control-label pull-left">{{E: affiche graphiquement la courbe en escalier pour le passage d'une valeur à la suivante}}</label>
-								<label class="col-sm-12 control-label pull-left">{{V: affiche graphiquement la courbe en variation (delta) d'une valeur à la suivante. }}</label>
+								<label class="col-lg-12 control-label pull-left">{{Attention: si le libellé de la courbe n'est pas complété alors elle ne s'affichera pas même si la commande existe}}</label>
+								<label class="col-lg-12 control-label pull-left">{{courbe: information purement indicative donnant le numéro de la courbe}}</label>
+								<label class="col-lg-12 control-label pull-left">{{libellé: nom donné à la courbe, obligatoire pour qu'elle puisse s'afficher}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Type de courbe : permet de choisir individuellement le type de courbe ou d'appliquer le paramètre global du graphique. Tous les types ne peuvent pas être mixés.}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Empilement: permet de positionner les courbes l'une au dessus de l'autre. Choisir d'abord le type d'empilement souhaité (normal ou en %) puis cocher les cases}}</label>
+								<label class="col-lg-12 control-label pull-left">{{*** ATTENTION 1: positionner les courbes à empiler les unes après les autres sinon cela ne fonctionnera pas}}</label>
+								<label class="col-lg-12 control-label pull-left">{{*** ATTENTION 2: si les données des courbes ne sont pas regroupées par le même intervalle temporel (voir ci dessous) alors cela ne fonctionnera pas non plus}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Affichage des données : permet de faire des regroupement par intervalles temporels (minute, heure, ...) et d'y appliquer une opération (moyenne, somme, ...)}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Opération à appliquer : appliquer une opération (moyenne, somme, ...) aux données pour lesquelles le choix "Affichage des données" n'est pas "Toutes"}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Esc.: affiche graphiquement la courbe en escalier pour le passage d'une valeur à la suivante}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Var.: affiche graphiquement la courbe en variation (delta) d'une valeur à la suivante. }}</label>
 								<label class="col-sm-11 control-label pull-left">{{*** ATTENTION: la variation est calculée pour TOUS les points d'une commande, pour avoir la variation de cette commande sur un intervalle déterminé par "regroupement" 
 																						alors il faut donc demander à faire la somme de ces variations. Par exemple "Affichage des données = par heure" + "Valeur à afficher : somme" + V coché => variation par heure}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Couleur : permet de choisir la couleur pour chaque courbe}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Commande: sélectionner ici la commande qui servira à alimenter les données de la courbe}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Unité : permet d'ajouter une unité si la commande n'en dispose pas ou de transformer l'unité en fonction du coefficient (passage des W en kW par exemple)}}</label>
-								<label class="col-sm-12 control-label pull-left">{{Coefficient: permet d'appliquer un coefficient aux valeurs de la commande pour passer d'une unité à une autre. Des coefficients négatifs peuvent être appliqués}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Couleur : permet de choisir la couleur pour chaque courbe}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Commande: sélectionner ici la commande qui servira à alimenter les données de la courbe}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Unité : permet d'ajouter une unité si la commande n'en dispose pas ou de transformer l'unité en fonction du coefficient (passage des W en kW par exemple)}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Coefficient: permet d'appliquer un coefficient aux valeurs de la commande pour passer d'une unité à une autre. Des coefficients négatifs peuvent être appliqués}}</label>
 								
 							</div>
 						</div>						
