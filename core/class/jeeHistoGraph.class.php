@@ -92,7 +92,20 @@ class jeeHistoGraph extends eqLogic {
     foreach ($configs as $key) {
         $this ->setConfiguration($key[0], $key[1]);
     }
+    $actualVersion = config::byKey('version', 'jeeHistoGraph', '0.0', true);
+    $this   ->setConfiguration('version', $actualVersion);
     $this->save();
+    $refresh = $this->getCmd('action', 'refresh');
+    if (!is_object($refresh)) {
+        log::add("jeeHistoGraph", "debug", "création de refresh");
+        $refresh = new jeeHistoGraphCmd();
+        $refresh->setName(__('Rafraichir', __FILE__));
+    }
+    $refresh->setEqLogic_id($this->getId());
+    $refresh->setLogicalId('refresh');
+    $refresh->setType('action');
+    $refresh->setSubType('other');
+    $refresh->save();    
   }
 
   // Fonction exécutée automatiquement avant la mise à jour de l'équipement
@@ -142,11 +155,9 @@ public static function config() {
                 ];
     for ($g = 1; $g <= 4; $g++) {
         $config[] = ["graph{$g}_type", 'line'];
-        $config[] = ["graph{$g}_regroup", "aucun"];
-        $config[] = ["graph{$g}_typeRegroup", "aucun"];
-        $config[] = ["stacking_graph{$g}", "null"];
         $config[] = ["periode_histo_graph{$g}", "global"];
         $config[] = ["delai_histo_graph{$g}", ''];
+        $config[] = ["stacking_graph{$g}", "null"];
         $config[] = ["date_debut_histo_graph{$g}", ''];
         $config[] = ["date_debut_histo_2dates_graph{$g}", ""];
         $config[] = ["date_fin_histo_2dates_graph{$g}", ''];
@@ -171,11 +182,21 @@ public static function config() {
         $config[] = ["graph{$g}_show_refPrec", 1];
         $config[] = ["graph{$g}_inverted", 1];
         $config[] = ["graph{$g}_tooltip_enabled", 1];
-        $config[] = ["graph{$g}_dataLabels_overlaps"];
+        $config[] = ["graph{$g}_dataLabels_overlaps", 0];
+        $config[] = ["graph{$g}_3D_enabled", 0];
+        $config[] = ["graph{$g}_3D_alpha", 15];
+        $config[] = ["graph{$g}_3D_beta", 15];
+        $config[] = ["graph{$g}_3D_depth", 25];
+        $config[] = ["graph{$g}_3D_view_distance", 0];
+        $config[] = ["graph{$g}_zoom_axe_x", 1];
+        $config[] = ["graph{$g}_zoom_axe_y", 1];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_index{$index}_nom", ''];
             $config[] = ["graph{$g}_curve{$i}_type", "inherit_curve"];
+            $config[] = ["stacking_graph{$g}_curve{$i}", 0];
+            $config[] = ["graph{$g}_curve{$i}_regroup", "aucun"];
+            $config[] = ["graph{$g}_curve{$i}_typeRegroup", "aucun"];
             $config[] = ["graph{$g}_color{$i}", $defaultColors[$i-1]];
             $config[] = ["graph{$g}_cmdGraphe{$index}", ""];
             $config[] = ["graph{$g}_unite{$i}", ""];
@@ -233,10 +254,33 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $inverted = 'false';
         $tooltipEnabled = 'true';
         $xRangeSelectorButtonPosition = 0;
+        $yRangeSelectorButtonPosition = $showTitle ? -30 : 0;
 
         $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
         $configButtonsEnabled = $eqLogic->getConfiguration("graph{$g}_buttons", 0) ? 'true' : 'false';
+        $config3DEnabled = $eqLogic->getConfiguration("graph{$g}_3D_enabled", 0) ? 'true' : 'false';
+        if ($config3DEnabled == 'true') {
+            // Si 3D activé, on désactive la barre de navigation
+            $configNavigatorEnabled = 'false';
+            $configBarreEnabled = 'false';
+            //$configButtonsEnabled = 'false';
+        }
+        $config3DAlpha = (int)$eqLogic->getConfiguration("graph{$g}_3D_alpha", 15);
+        $config3DBeta = (int)$eqLogic->getConfiguration("graph{$g}_3D_beta", 15);
+        $config3DDepth = (int)$eqLogic->getConfiguration("graph{$g}_3D_depth", 25);
+        $config3DViewDistance = (int)$eqLogic->getConfiguration("graph{$g}_3D_view_distance", 0);
+        $configZoomAxeX = $eqLogic->getConfiguration("graph{$g}_zoom_axe_x", 1) ? true : false;
+        $configZoomAxeY = $eqLogic->getConfiguration("graph{$g}_zoom_axe_y", 1) ? true : false;
+        if ($configZoomAxeX && $configZoomAxeY) {
+            $zoomType = 'xy';
+        } elseif ($configZoomAxeX) {
+            $zoomType = 'x';
+        } elseif ($configZoomAxeY) {
+            $zoomType = 'y';
+        } else {
+            $zoomType = 'none';
+        }
 
         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
         
@@ -302,44 +346,44 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'nbJours':
                 $delai = ($global) ? $delaiGraph : intval($eqLogic->getConfiguration("delai_histo_graph{$g}"));
                 $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dDay':
                 $startTime = date("Y-m-d 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dWeek':
                 $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dMonth':
                 $startTime = date("Y-m-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dYear':
                 $startTime = date("Y-01-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dAll':
                 $startTime = date("1970-01-01 00:00:00");
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now");
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             default:
         }
@@ -363,56 +407,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
         }
 
-
-        $dataGroupingJS = 'enabled: false,';
-        $regroup = $eqLogic->getConfiguration("graph{$g}_regroup", 'aucun');
-        $typeRegroup = $eqLogic->getConfiguration("graph{$g}_typeRegroup", 'aucun');
-        $dataGroupingDateTimeLabelFormatsJS = "
-                                        millisecond: ['%A %e %b %Y, %H:%M:%S.%L', '%A %e %b %Y de %H:%M:%S.%L', ' à %H:%M:%S.%L'],
-                                        second: ['%A %e %b %Y, %H:%M:%S', '%A %e %b %Y de %H:%M:%S', ' à %H:%M:%S'],
-                                        minute: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
-                                        hour: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
-                                        day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                                        week: ['Semaine du %e %b %Y', 'Du %e %b %Y', ' au %e %b %Y'],
-                                        month: ['%B %Y', 'De %B', ' à %B %Y'],
-                                        year: ['%Y', 'De %Y', ' à %Y']
-            ";
-
-        if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
-            $units = '';
-            switch ($regroup) {
-                case 'minute':
-                    $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
-                    break;
-                case 'hour':
-                    $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
-                    break;
-                case 'day':
-                    $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
-                    break;
-                case 'week':
-                    $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
-                    break;
-                case 'month':
-                    $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
-                    break;
-                case 'year':
-                    $units = "[[ 'year', [1] ]]";
-                    break;
-                default:
-                    $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
-            }
-
-            $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
-
-            $dataGroupingJS = "
-                enabled: true,
-                forced: true,
-                approximation: '{$approximation}',
-                units: {$units},
-            ";
-        }        
-        
         $seriesJS = '';
         $cmdUpdateJS = '';
         $compareType = $eqLogic->getConfiguration("graph{$g}_compare_type", 'none');
@@ -504,6 +498,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $nomKey = "graph{$g}_index{$index}_nom";
             $colorKey = "graph{$g}_color{$i}";
             $curveTypeKey = "graph{$g}_curve{$i}_type";
+            $stackingOptionEnabled = $eqLogic->getConfiguration("stacking_graph{$g}_curve{$i}", 0) ? true : false;
+            $stackingOption = ($stackingOptionEnabled) ? $stackingOption : null; 
             $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
             $indexNom = $eqLogic->getConfiguration($nomKey);
             $color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
@@ -526,7 +522,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
             $nbSeries += 1;
             
-            log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
+            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
 
 
             $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
@@ -570,6 +566,54 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $text = '';
                 $description = '';
 
+                $dataGroupingJS = 'enabled: false,';
+                $regroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_regroup", 'aucun');
+                $typeRegroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_typeRegroup", 'aucun');
+                $dataGroupingDateTimeLabelFormatsJS = "
+                                                millisecond: ['%A %e %b %Y, %H:%M:%S.%L', '%A %e %b %Y de %H:%M:%S.%L', ' à %H:%M:%S.%L'],
+                                                second: ['%A %e %b %Y, %H:%M:%S', '%A %e %b %Y de %H:%M:%S', ' à %H:%M:%S'],
+                                                minute: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                                hour: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                                week: ['Semaine du %e %b %Y', 'Du %e %b %Y', ' au %e %b %Y'],
+                                                month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                                year: ['%Y', 'De %Y', ' à %Y']
+                    ";
+
+                if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+                    $units = '';
+                    switch ($regroup) {
+                        case 'minute':
+                            $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
+                            break;
+                        case 'hour':
+                            $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
+                            break;
+                        case 'day':
+                            $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
+                            break;
+                        case 'week':
+                            $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
+                            break;
+                        case 'month':
+                            $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
+                            break;
+                        case 'year':
+                            $units = "[[ 'year', [1] ]]";
+                            break;
+                        default:
+                            $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
+                    }
+
+                    $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
+
+                    $dataGroupingJS = "
+                        enabled: true,
+                        forced: true,
+                        approximation: '{$approximation}',
+                        units: {$units},
+                    ";
+                }        
                 
                 // Si la courbe est de type timeline → on transforme les données
                 if ($finalCurveType === 'timeline') {
@@ -741,7 +785,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
 
             $axisIndex = $unitToAxis[$unite] ?? 0;
-            log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
+            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
 
             if ($finalCurveType === 'timeline') {
                 $dataLabelsOverlap = $eqLogic->getConfiguration("graph{$g}_dataLabels_overlaps", 0) ? 'true' : 'false';
@@ -775,7 +819,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $actualisation = false;
                     foreach ($recordData as $year => $data) {
                         if ($year == $currentYear) $actualisation = true; // ne pas mettre à jour si pas l'année courante
-                        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
+                        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         if ($rolling){
                             $years = $year . '.' . (substr($year,2,2) + 1);
                         } else {
@@ -791,7 +835,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             tooltip: {
                                 valueSuffix: " . json_encode(' ' .$unite) . "
                             },
-                            yAxis: {$axisIndex}
+                            yAxis: {$axisIndex},
+                            stacking: '$stackingOption',
+                            dataGrouping: { {$dataGroupingJS}
+                                dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                            },
                         },\n";
                     }
                     $xAxisJS .=  "
@@ -828,7 +876,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $nbSeries = count($recordData);
                     foreach ($recordData as $year => $data) {
                         if ($compareMonth == $currentMonth && $year == $currentYear) $actualisation = true; // ne pas mettre à jour si pas le mois courant de l'année courante
-                        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
+                        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
                             borderColor: " . json_encode($color) . ",
@@ -838,7 +886,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             tooltip: {
                                 valueSuffix: " . json_encode(' ' .$unite) . "
                             },
-                            yAxis: {$axisIndex}
+                            yAxis: {$axisIndex},
+                            stacking: '$stackingOption',
+                            dataGrouping: { {$dataGroupingJS}
+                                dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                            },
                         },\n";
                     }
                     $xDateFormatJS = "%d %B - %Hh%M";
@@ -877,7 +929,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             month: ['%B %Y', 'De %B', ' à %B %Y'],
                             year: ['%Y', 'De %Y', ' à %Y']
                         },
-                        yAxis: {$axisIndex}
+                        yAxis: {$axisIndex},
+                        stacking: '$stackingOption',
+                        dataGrouping: { {$dataGroupingJS}
+                                        dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                                    },
                     },\n";
 
                     $xDateFormatJS = "%d %B %Y - %Hh%M";
@@ -901,7 +957,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
             }
             
-            log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} cmdId= {$cmdId} actualisation= " . ($actualisation ? 'true' : 'false'));
+            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} cmdId= {$cmdId} actualisation= " . ($actualisation ? 'true' : 'false'));
             if ($cmdId and $actualisation) {
                 //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} graphtype= {$graphType}");
                 //log::add(__CLASS__, 'debug', "{$graphType} data: " . json_encode($listeHisto));
@@ -976,7 +1032,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000;
-                            let currentRawValue = parseFloat(_options.display_value) * {$coef};
+                            let currentRawValue = parseFloat(_options.value) * {$coef};
 
                             const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
@@ -998,7 +1054,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                                 // Ajout du point
                                 series.addPoint([dateLocaleMs, yToAdd], true, false, true);
-
+                                console.log('Points nouveaux : ' + yToAdd + ' Série : ' + {$nbSeries} + ' _options.unit: ' + _options.unit);
+                                console.log(_options);
+                                
                                 // Sauvegarde la valeur brute pour la prochaine mise à jour
                                 if (!series.userOptions) series.userOptions = {};
                                 series.userOptions.lastRawValue = currentRawValue;
@@ -1021,7 +1079,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             {$buttonJS},
             buttonPosition: {
                 x: {$xRangeSelectorButtonPosition},
-                y: -30
+                y: {$yRangeSelectorButtonPosition},
             }
         }";
 
@@ -1037,6 +1095,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         if ($isTimeline) {
             $headerFormatJS = ''; // pas de header pour les timelines
             $graphType = 'timeline';
+            $xAxisNavigatorJS = '';
             if ($inverted == 'true') {
                 $xAxisJS .=  "
                     dateTimeLabelFormats: {
@@ -1069,16 +1128,22 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
             chart: {
                 type: '$graphType',
+                zooming: {
+                    mouseWheel: true,
+                    type: '{$zoomType}',
+                },                
                 backgroundColor: 'transparent',
                 plotBackgroundColor: {$plotBgCode},
                 spacing: [10, 0, 10, 0],
                 inverted: {$inverted},
                 options3d: {
-                    enabled: false,
-                    alpha: 15,
-                    beta: 15,
-                    depth: 50,
-                    viewDistance: 25
+                    enabled: {$config3DEnabled},
+                    alpha: {$config3DAlpha},
+                    beta: {$config3DBeta},
+                    depth: {$config3DDepth},
+                    viewDistance: {$config3DViewDistance},
+                    fitToPlot: true,
+                    axisLabelPosition: 'auto'
                 }                
             },
             exporting: {
@@ -1129,9 +1194,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     groupPadding:0.1,
                     pointPadding:0,
                     fillOpacity: 0.1,
-                    dataGrouping: { {$dataGroupingJS}
-                                    dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
-                                  },
                 },
             },
             series: [{$seriesJS}]
@@ -1185,7 +1247,7 @@ class jeeHistoGraphCmd extends cmd {
     $eqLogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
       case 'refresh': // LogicalId de la commande rafraîchir
-        //log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
+        log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
         jeeHistoGraph::rfresh($eqLogic);
       break;
       default:
