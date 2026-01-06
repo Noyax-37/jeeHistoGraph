@@ -1,4 +1,4 @@
-# Changelog plugin template
+# Changelog plugin jeeHistoGraph
 
 **IMPORTANT**
 
@@ -10,6 +10,12 @@ Lien vers:
 - documentation : https://github.com/Noyax-37/jeeHistoGraph/blob/main/docs/fr_FR/index.md
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
+
+# v2.01
+- création auto de la commande 'refresh' (oubli de ma part)
+- correction d'un bug d'affichage des boutons du range selector lorsque le titre du graphique n'était pas affiché
+- ajout des graphiques 3D
+- ajout des options de zoom sur les axes X et Y (indépendamment)
 
 # v2.00
 - Descente de certaines options du niveau graphique vers le niveau courbe: emplilement (stacking), affichage des données avec le mode de calcul associé.

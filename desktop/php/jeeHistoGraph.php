@@ -509,24 +509,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										<div class="col-sm-2"></div>
 										<span><b><i class="fas fa-chart-bar"></i> {{Paramètres des courbes}}</b></span>
 
-										<div class="form-group">
-											<label class="col-sm-6 control-label">{{Type de courbe par défaut :}}</label>
-											<div class="col-sm-3">
-												<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type" id="graphType<?= $g ?>">
-													<option value="line">{{Ligne classique}}</option>
-													<option value="spline">{{Courbe lisse}}</option>
-													<option value="areaspline">{{Aire lisse}}</option>
-													<option value="area">{{Aire}}</option>
-													<option value="column">{{Colonne}}</option>
-													<option value="bar">{{Barre}}</option>
-													<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
-												</select>
-											</div>
-											<div class="col-lg-12" style="text-align:center;">
-												<a class="btn btn-primary" id="bt_forceAllToGraph<?= $g ?>"><i class="fas fa-magic"></i> Tout forcer au même type</a>
-											</div>
-										</div>
-
 										<div class="form-group graph<?= $g ?>_nbPointsTimeLine" style="display:none;">
 											<div class="col-sm-2"></div>
 											<div class="form-group">
@@ -594,6 +576,75 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<label class="col-sm-6 control-label">{{Afficher l'axe Y (valeurs) : }}</label>
 											<div class="col-sm-3">
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_yAxis" checked>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Graphique 3D : }}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Attention: si cette option est sélectionnée les barres de navigation et de défilement ne pourront pas être affichées}}"></i>
+												</sup>
+											</label>
+											<div class="col-sm-1">
+												<input type="checkbox" class="eqLogicAttr bg3dCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_3D_enabled">
+											</div>
+										</div>
+
+										<div class="form-group 3dGraph<?= $g ?>">
+											<label class="col-sm-8 control-label">{{Angle de rotation Alpha}}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Angle selon un axe horizontal de 0 à 360}}"></i>
+												</sup>
+											</label>
+											<div class="col-sm-2">
+												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_3D_alpha" placeholder="{{15}}">
+											</div>
+										</div>
+
+										<div class="form-group 3dGraph<?= $g ?>">
+											<label class="col-sm-8 control-label">{{Angle de rotation Béta}}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Angle selon un axe vertical de 0 à 360}}"></i>
+												</sup>
+											</label>
+											<div class="col-sm-2">
+												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_3D_beta" placeholder="{{15}}">
+											</div>
+										</div>
+
+										<div class="form-group 3dGraph<?= $g ?>">
+											<label class="col-sm-8 control-label">{{Profondeur du graphique}}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Profondeur de la vue 3D}}"></i>
+												</sup>
+											</label>
+											<div class="col-sm-2">
+												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_3D_depth" placeholder="{{25}}">
+											</div>
+										</div>
+<!--
+										<div class="form-group 3dGraph<?= $g ?>">
+											<label class="col-sm-8 control-label">{{Distance de vision}}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Distance entre le point de vue et le graphique}}"></i>
+												</sup>
+											</label>
+											<div class="col-sm-2">
+												<input type="number" min="1" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_3D_view_distance" placeholder="{{25}}">
+											</div>
+										</div>
+			-->
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Permettre zoom par souris axe des x : }}</label>
+											<div class="col-sm-1">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_zoom_axe_x" checked>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Permettre zoom par souris axe des y : }}</label>
+											<div class="col-sm-1">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_zoom_axe_y" checked>
 											</div>
 										</div>
 
@@ -826,7 +877,20 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th>
 														<th class="text-center sticky-left-2" style="width: 140px;">{{Libellé}}</th>
 														<th class="text-center" style="width: 400px;">{{Commande}}</th>
-														<th class="text-center" style="width: 140px;">{{Type de courbe}}</th>
+														<th class="text-center" style="width: 400px;">
+															<div>{{Type de courbe par défaut (ci-dessous) ou par courbe}}</div>
+															<div>
+																<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type" id="graphType<?= $g ?>">
+																	<option value="line">{{Ligne classique}}</option>
+																	<option value="spline">{{Courbe lisse}}</option>
+																	<option value="areaspline">{{Aire lisse}}</option>
+																	<option value="area">{{Aire}}</option>
+																	<option value="column">{{Colonne}}</option>
+																	<option value="bar">{{Barre}}</option>
+																	<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
+																</select>
+															</div>
+														</th>
 														<th class="text-center" style="width: 120px;">
 															<div>{{Empilement}}
 																<sup>
@@ -877,7 +941,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														</td>
 														<td>
 															<select class="eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
-																<option value="inherit_curve" selected>{{Config graphique}}</option>
+																<option value="inherit_curve" selected>{{Config globale}}</option>
 																<option value="line">{{Ligne}}</option>
 																<option value="spline">{{Courbe lisse}}</option>
 																<option value="areaspline">{{Aire lisse}}</option>
@@ -1193,75 +1257,7 @@ $(function() {
     $('[data-l2key^="graph"][data-l2key$="_bg_transparent"]').trigger('change');
 });
 
-// BOUTON MAGIQUE : Tout forcer au type graphique 1
-$('#bt_forceAllToGraph1').on('click', function() {
-	const graphType = $('#graphType1').val();
-	
-	// Toutes les courbes → inherit_curve
-	$('.curveTypeSelect1').val('inherit_curve').trigger('change');
-	
-	jeedomUtils.showAlert({
-		message: 'Toutes les courbes du graphique 1 sont maintenant forcées au type : ' + graphType + " n'oubliez pas de sauvegarder",
-		level: 'success'
-	});
-	jeedomUtils.showAlert({
-		message: "n'oubliez pas de sauvegarder",
-		level: 'warning'
-	});
-});
-
-// BOUTON MAGIQUE : Tout forcer au type graphique 2
-$('#bt_forceAllToGraph2').on('click', function() {
-	const graphType = $('#graphType2').val();
-	
-	// Toutes les courbes → inherit_curve
-	$('.curveTypeSelect2').val('inherit_curve').trigger('change');
-	
-	jeedomUtils.showAlert({
-		message: 'Toutes les courbes du graphique 2 sont maintenant forcés au type : ' + graphType,
-		level: 'success'
-	});
-	jeedomUtils.showAlert({
-		message: "n'oubliez pas de sauvegarder",
-		level: 'warning'
-	});
-});
-
-// BOUTON MAGIQUE : Tout forcer au type graphique 3
-$('#bt_forceAllToGraph3').on('click', function() {
-	const graphType = $('#graphType3').val();
-	
-	// Toutes les courbes → inherit_curve
-	$('.curveTypeSelect3').val('inherit_curve').trigger('change');
-	
-	jeedomUtils.showAlert({
-		message: 'Toutes les courbes du graphique 3 sont maintenant forcés au type : ' + graphType,
-		level: 'success'
-	});
-	jeedomUtils.showAlert({
-		message: "n'oubliez pas de sauvegarder",
-		level: 'warning'
-	});
-});
-
-// BOUTON MAGIQUE : Tout forcer au type graphique 4
-$('#bt_forceAllToGraph4').on('click', function() {
-	const graphType = $('#graphType4').val();
-	
-	// Toutes les courbes → inherit_curve
-	$('.curveTypeSelect4').val('inherit_curve').trigger('change');
-	
-	jeedomUtils.showAlert({
-		message: 'Toutes les courbes du graphique 4 sont maintenant forcés au type : ' + graphType,
-		level: 'success'
-	});
-	jeedomUtils.showAlert({
-		message: "n'oubliez pas de sauvegarder",
-		level: 'warning'
-	});
-});
-
-
+// modification des périodes histo
 $(document).on('change', '.eqLogicAttr[data-l1key=configuration][data-l2key=periode_histo]', function () {
     var valeur = $(this).value();
 
@@ -1375,6 +1371,28 @@ $(document).on('change', '[data-l2key$="_compare_type"]', function() {
     const val = $(this).value();
     $(this).closest('.form-group').find('.compareMonth').toggle(val === 'prev_year_month');
     $(this).closest('.form-group').find('.compareRollingMonth').toggle(val === 'prev_year');
+});
+
+// Gestion de l'affichage des options 3D lorsqu'on coche/décoche "Graphique 3D"
+$(document).on('change', '.bg3dCheckbox', function() {
+    const $checkbox = $(this);
+    const graphNum = $checkbox.data('l2key').match(/graph(\d+)_3D_enabled/)[1];
+
+    // On récupère tous les éléments qui ont la classe 3dGraph + numéro du graphique
+    const $options3d = $('.3dGraph' + graphNum);
+
+    if ($checkbox.is(':checked')) {
+        $options3d.show();
+    } else {
+        $options3d.hide();
+    }
+});
+
+// Au chargement de la page : on applique l'état actuel de chaque checkbox 3D
+$(function() {
+    $('.bg3dCheckbox').each(function() {
+        $(this).trigger('change');
+    });
 });
 
 // affichage de la modale d'aide navigator

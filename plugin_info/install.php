@@ -52,8 +52,11 @@ function jeeHistoGraph_update() {
 
         $refresh = $eqLogic->getCmd('action', 'refresh');
         if (!is_object($refresh)) {
+            log::add("jeeHistoGraph", "debug", "création de refresh pour {$eqLogic->getName()}");
             $refresh = new jeeHistoGraphCmd();
             $refresh->setName(__('Rafraichir', __FILE__));
+        } else {
+            log::add("jeeHistoGraph", "debug", "refresh existe pour l'eqlogiq {$eqLogic->getName()}");
         }
         $refresh->setEqLogic_id($eqLogic->getId());
         $refresh->setLogicalId('refresh');
@@ -67,7 +70,7 @@ function jeeHistoGraph_update() {
         }
         $version = $eqLogic->getConfiguration('version', '0.0');
         $actualVersion = config::byKey('version', 'jeeHistoGraph', '0.0', true);
-        log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' current config version: {$version}, Actual plugin version: {$actualVersion}");
+        log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' current config version: {$version}, new plugin version: {$actualVersion}");
         if (version_compare($version, $actualVersion, '<')) {
             $decode = $eqLogic->getConfiguration();
             foreach ($decode as $key => $value) {
