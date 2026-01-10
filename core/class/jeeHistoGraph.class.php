@@ -178,6 +178,7 @@ public static function config() {
         $config[] = ["graph{$g}_showLegend", 1];
         $config[] = ["graph{$g}_showTitle", 1];
         $config[] = ["graph{$g}_show_yAxis", 1];
+        $config[] = ["graph{$g}_alternate_yAxis", 1];
         $config[] = ["graph{$g}_nbPointsTimeLine", 300];
         $config[] = ["graph{$g}_show_refPrec", 1];
         $config[] = ["graph{$g}_inverted", 1];
@@ -190,6 +191,8 @@ public static function config() {
         $config[] = ["graph{$g}_3D_view_distance", 0];
         $config[] = ["graph{$g}_zoom_axe_x", 1];
         $config[] = ["graph{$g}_zoom_axe_y", 1];
+        $config[] = ["graph{$g}_title_align", 'center'];
+        $config[] = ["graph{$g}_default_color", 0];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_index{$index}_nom", ''];
@@ -250,11 +253,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $showLegend = $eqLogic->getConfiguration("graph{$g}_showLegend", 1) ? 'true' : 'false';
         $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
+        $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
         $chartOrStock = 'StockChart';
         $inverted = 'false';
         $tooltipEnabled = 'true';
         $xRangeSelectorButtonPosition = 0;
-        $yRangeSelectorButtonPosition = $showTitle ? -30 : 0;
+        $yRangeSelectorButtonPosition = $showTitle ? ($titleAlign == 'left' ? 0 : -30) : 0; // remonte les boutons sauf si titre non affiché ou affiché à gauche
 
         $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
@@ -266,6 +270,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $configBarreEnabled = 'false';
             //$configButtonsEnabled = 'false';
         }
+        // $configNavigatorEnabled = 'true';
         $config3DAlpha = (int)$eqLogic->getConfiguration("graph{$g}_3D_alpha", 15);
         $config3DBeta = (int)$eqLogic->getConfiguration("graph{$g}_3D_beta", 15);
         $config3DDepth = (int)$eqLogic->getConfiguration("graph{$g}_3D_depth", 25);
@@ -315,8 +320,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
             } else {
                 // Couleur unie
-                $color = $eqLogic->getConfiguration("graph{$g}_bg_color", '#ffffff');
-                $plotBgCode = "'$color'";
+                $bgColor = $eqLogic->getConfiguration("graph{$g}_bg_color", '#ffffff');
+                $plotBgCode = "'$bgColor'";
             }
         }
 
@@ -461,17 +466,20 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
         // construire les axes Y
         $showYAxis = $eqLogic->getConfiguration("graph{$g}_show_yAxis", 1);
+        $alternateYAxis = $eqLogic->getConfiguration("graph{$g}_alternate_yAxis", 1);
+        $position = 'true'; // commencer à droite
         $yAxisJS = 'yAxis: [';
         foreach ($uniqueUnits as $idx => $u) {
             $offset = $idx * 20;
             $visible = $showYAxis ? 'true' : 'false';
+            $align = ($position == 'false' && $alternateYAxis == 1) ? 'right' : 'left';
             $yAxisJS .= "{
                 visible: {$visible},
-                opposite: true,
+                opposite: {$position},
                 offset: {$offset},
                 labels: {
                     format: '{value} " . ($u !== '' ? " " . addslashes($u) : '') . "',
-                    align: 'left',
+                    align: '{$align}',
                     x: 8,
                     y: 4,
                     style: { fontSize: '11px' },
@@ -486,12 +494,15 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     zIndex: 5
                 }]                
             },";
+            $position = ($position == 'true' && $alternateYAxis == 1) ? 'false' : 'true'; // alterner gauche/droite
         }
         $yAxisJS .= '],';
 
         $first = false; // Reset for second loop
         $nbSeries = 0;
 
+        $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
+        
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $cmdKey = "graph{$g}_cmdGraphe{$index}";
@@ -503,6 +514,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
             $indexNom = $eqLogic->getConfiguration($nomKey);
             $color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
+            $colorJS = $defaultColors == 1 ? '' : "color: " . json_encode($color) . ",";
             $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
             $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
             $variation = $eqLogic->getConfiguration("graph{$g}_curve{$i}_variation", 0) ? true : false;
@@ -792,6 +804,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $seriesJS .= "{
                         name: " . json_encode($indexNom) . ",
                         type: 'timeline',
+                        pointInterval: 24 * 3600 * 1000,
                         data: " . json_encode($listeHisto) . ", 
                         legendIndex: {$i},
                         marker: { symbol: 'circle' },
@@ -910,7 +923,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
                         borderColor: " . json_encode($color) . ",
                         step: {$stairStepKey},
-                        color: " . json_encode($color) . ",
+                        {$colorJS}
                         type: " . json_encode($finalCurveType) . ",
                         id: " . json_encode("graph_{$g}_curve_{$i}") . ",
                         data: ". json_encode($listeHisto) . ",
@@ -953,6 +966,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         enabled: $configNavigatorEnabled,
                         margin: 1
                         }";
+                    $xAxisJS .=  "
+                                labels: {
+                                    skew3d: true,
+                                    },";
                 }
 
             }
@@ -1154,6 +1171,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 margin: 0,
                 y: 5,
                 text: '{$titleGraph}', 
+                align: '{$titleAlign}',
                 height: 10,
                 style: { 
                     fontWeight: 'bold', 

@@ -251,8 +251,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<option value="1col">{{1 colonne (empilés verticalement)}}</option>
 											<option value="1row">{{1 ligne (côte à côte)}}</option>
 											<option value="2x2">{{Grille 2×2}}</option>
-											<option value="2col">{{2 colonnes}}</option>
-											<option value="2row">{{2 lignes}}</option>
 											<option value="1big-2small">{{1 grand en haut + 2 petits en bas}}</option>
 											<option value="2small-1big">{{2 petits en haut + 1 grand en bas}}</option>
 											<option value="3grid">{{3 graphiques → 2 en haut, 1 en bas centré}}</option>
@@ -386,7 +384,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 									</div>
 								</div>
-								<label class="col-lg-12 control-label pull-left">{{- **1 colonne** / **1 ligne** / **2×2** / **2 colonnes** / **2 lignes**}}</label>
+								<label class="col-lg-12 control-label pull-left">{{- **1 colonne** / **1 ligne** / **2×2**}}</label>
 								<label class="col-lg-12 control-label pull-left">{{- Dispositions spéciales :}}</label>
 								<label class="col-lg-12 control-label pull-left">{{- `1 grand en haut + 2 petits en bas`}}</label>
 								<div class="container my-5">
@@ -498,6 +496,17 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 
 									<div class="form-group">
+										<label class="col-sm-7 control-label">{{Positionnement du titre si affiché:}}</label>
+										<div class="col-sm-2">
+											<select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_title_align">
+												<option value="center" selected>{{Centré}}</option>
+												<option value="left">{{Gauche}}</option>
+												<option value="right">{{Droite}}</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group">
 										<label class="col-sm-6 control-label">{{Afficher la légende :}}</label>
 										<div class="col-sm-3">
 											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_showLegend" checked>
@@ -509,7 +518,11 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										<div class="col-sm-2"></div>
 										<span><b><i class="fas fa-chart-bar"></i> {{Paramètres des courbes}}</b></span>
 
+										<div class="col-sm-2"></div>
 										<div class="form-group graph<?= $g ?>_nbPointsTimeLine" style="display:none;">
+											<div class="form-group">
+												<label class="col-sm-6 control-label">{{Paramètres pour graphique "ligne de temps": }} <sup><i class="fas fa-question-circle tooltips" title="{{Affiche des options si 'ligne de temps' est sélectionné en 'type de courbe'}}"></i></sup></label>
+											</div>										
 											<div class="col-sm-2"></div>
 											<div class="form-group">
 												<label class="col-sm-6 control-label">{{Nombre max de datas: }} <sup><i class="fas fa-question-circle tooltips" title="{{Nombre de datas limité à 300 mais peut être descendu si ralentissements}}"></i></sup></label>
@@ -566,9 +579,13 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 
 										<div class="form-group Colors">
-											<label class="col-sm-6 control-label">{{RAZ couleurs courbes : }}</label>
+											<label class="col-sm-6 control-label">{{RAZ couleurs courbes : }}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Remet les couleurs des courbes de ce graphique aux couleurs par défaut du plugin et décoche la case défaut si besoin}}"></i>
+												</sup>
+											</label>
 											<div class="col-sm-4">
-												<a class="btn btn-warning tooltips btjeeHistoGraphRazCouleurs" data-graph="<?= $g ?>"><i class="fas fa-medkit"></i> {{Remettre les couleurs par défaut}}</a>
+												<a class="btn btn-warning tooltips btjeeHistoGraphRazCouleurs" data-graph="<?= $g ?>"><i class="fas fa-medkit"></i> {{Remettre les couleurs du plugin par défaut}}</a>
 											</div>
 										</div>
 
@@ -576,6 +593,16 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<label class="col-sm-6 control-label">{{Afficher l'axe Y (valeurs) : }}</label>
 											<div class="col-sm-3">
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_show_yAxis" checked>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-7 control-label">{{Alterner axe Y gauche/droite : }}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Si coché les axes Y ne portant pas les mêmes unités seront alternativement à gauche et à droite}}"></i>
+												</sup>
+											</label>
+											<div class="col-sm-3">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_alternate_yAxis" checked>
 											</div>
 										</div>
 
@@ -921,7 +948,21 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<i class="fas fa-question-circle tooltips" title="{{Variation}}"></i>
 															</sup>
 														</th>
-														<th class="text-center" style="width: 60px;">{{Couleur}}</th>
+														<th class="text-center" style="width: 60px;">
+															<div>
+																{{Couleur}}
+																<sup>
+																	<i class="fas fa-question-circle tooltips" title="{{Permet de choisir la couleur de la courbe}}"></i>
+																</sup>
+															</div>
+															<div>
+																{{Défaut}}
+																<sup>
+																	<i class="fas fa-question-circle tooltips" title="{{Applique la couleur par défaut de Highcharts, décocher pour sélectioner celles que vous souhaitez}}"></i>
+																</sup>
+																<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_default_color">
+															</div>
+														</th>
 														<th class="text-center" style="width: 60px;">{{Unité}}</th>
 														<th class="text-center" style="width: 60px;">{{Coef}}</th>
 													</tr>
@@ -1006,11 +1047,13 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<br><br>
 								<label class="col-lg-12 control-label pull-left">{{Titre du graphique: }}{{facultatif, donner un nom à votre graphique }}</label>
 								<label class="col-lg-12 control-label pull-left">{{Afficher le titre, la légende: }}{{afficher ou non ces infos sur votre graphique}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Positionnement du titre si affiché: }}{{choisir l'emplacement du titre sur le graphique}}</label>
 								<br/><br><br>
 								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Paramètres de courbes}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Type de courbe par défaut : }}{{choisir le type de courbe voulue (ligne, aire, ...). S'applique à toutes les courbes du graphique qui n'ont pas de type sélectionné individuellement}}</label>
 								<label class="col-lg-12 control-label pull-left">{{RAZ couleurs courbes : permet de remettre toutes les couleurs de courbes par défaut}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Afficher l'axe Y (valeurs) : afficher ou non l'axe des valeurs (vertical en général)}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Alterner axe Y gauche/droite : si plusieurs unités sont utilisées, permet d'alterner les axes Y gauche et droite pour chaque courbe}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Fond transparent : si déselectionné permet de choisir une couleur de fond pour le graphique}}</label>
 								<br/><br><br>
 								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Gestion de la période à afficher}}</label>
@@ -1159,16 +1202,35 @@ document.querySelector('.nbgraphs').addEventListener('change', function() {
 
 document.querySelectorAll('.btjeeHistoGraphRazCouleurs').forEach(btn => {
     btn.addEventListener('click', function() {
-		// Couleurs par défaut par graphique
-		if(typeof(defaultColors)=='undefined'){
-			defaultColors = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4','#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
-		}
+        // Couleurs par défaut par graphique
+        if(typeof(defaultColors)=='undefined'){
+            defaultColors = ['#FF4500','#00FF7F','#1E90FF','#FFD700','#FF69B4','#00CED1','#ADFF2F','#FF1493','#00BFFF','#FFA500'];
+        }
+        
         const graph = this.getAttribute('data-graph');
+        
         defaultColors.forEach((color, i) => {
             const input = document.querySelector('#favcolor_g' + graph + '_c' + (i+1));
-            if (input) input.value = color;
-            input.dispatchEvent(new Event('change'));
+            if (input) {
+                input.value = color;
+                input.dispatchEvent(new Event('change'));
+            }
         });
+
+        const defaultColorCheckbox = document.querySelector(
+            `[data-l2key="graph${graph}_default_color"]`
+        );
+
+		const $colors = $(`.graphConfig[data-graph="${graph}"] input[type=color][data-l2key*="color"]`);
+		
+		$colors.prop('disabled', this.checked)
+			.css('opacity', this.checked ? '0.45' : '1')
+			.css('cursor', this.checked ? 'not-allowed' : 'pointer');
+        
+        if (defaultColorCheckbox) {
+            defaultColorCheckbox.checked = false;
+            defaultColorCheckbox.dispatchEvent(new Event('change'));
+        }
     });
 });
 
@@ -1406,6 +1468,53 @@ $(document).on('click', '#bt_openRefPrecHelp', function() {
 	console.log("Ouverture modale aide référence précédente");
     $('#md_refPrecHelp').modal('show');
 });
+
+// Gestion de l'activation/désactivation des inputs couleurs selon la case "couleur par défaut"
+$(document).on('change', '[data-l2key$="_default_color"]', function() {
+    const g = this.dataset.l2key.match(/graph(\d+)/)?.[1];
+    if (!g) return;
+    
+    const $colors = $(`.graphConfig[data-graph="${g}"] input[type=color][data-l2key*="color"]`);
+    
+    $colors.prop('disabled', this.checked)
+           .css('opacity', this.checked ? '0.45' : '1')
+           .css('cursor', this.checked ? 'not-allowed' : 'pointer');
+});
+
+// Appliquer au démarrage
+$('[data-l2key$="_default_color"]').trigger('change');
+
+// Gestion de l'affichage de l'option "Alterner axe Y gauche/droite" selon la case "Afficher l'axe Y"
+$(document).on('change', '[data-l2key$="_show_yAxis"]', function() {
+    const g = this.dataset.l2key.match(/graph(\d+)/)?.[1];
+    if (!g) return;
+    
+    const $alternate = $(`[data-l2key="graph${g}_alternate_yAxis"]`).closest('.form-group');
+    $alternate.toggle(this.checked);
+});
+
+// Appliquer au chargement
+$('[data-l2key$="_show_yAxis"]').trigger('change');
+
+// ───────────────────────────────────────────────────────────────
+// Masquer barre de navigation + défilement quand Graphique 3D est activé
+// ───────────────────────────────────────────────────────────────
+$(document).on('change', '[data-l2key$="_3D_enabled"]', function() {
+    const g = this.dataset.l2key.match(/graph(\d+)/)?.[1];
+    if (!g) return;
+
+    // Les deux lignes à masquer quand 3D est coché
+    const $navigatorLine = $(`[data-l2key="graph${g}_navigator"]`).closest('.form-group');
+    const $scrollbarLine  = $(`[data-l2key="graph${g}_barre"]`).closest('.form-group');
+
+    // Si 3D activé → on cache, sinon on affiche
+    const is3D = this.checked;
+    $navigatorLine.toggle(!is3D);
+    $scrollbarLine.toggle(!is3D);
+});
+
+// Appliquer l'état actuel au chargement
+$('[data-l2key$="_3D_enabled"]').trigger('change');
 
 </script>
 

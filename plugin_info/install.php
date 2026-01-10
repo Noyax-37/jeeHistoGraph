@@ -95,10 +95,32 @@ function jeeHistoGraph_update() {
                             $eqLogic   ->setConfiguration($key, $newValue);
                         }
                     }
+                    if ($key == "graphLayout"){
+                        // Migration des anciennes valeurs de graphLayout
+                        switch ($value) {
+                            case '2col':
+                            case '2row':
+                                $newValue = 'auto';
+                                break;
+                            default:
+                                $newValue = $value;
+                        }
+                        if ($newValue != $value) {
+                            log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} from value: {$value} to new value: {$newValue}");
+                            $eqLogic   ->setConfiguration($key, $newValue);
+                        }
+                    }
                     continue;
                 }
                 log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' removing obsolete configuration key: {$key} with value: " . json_encode($value));
                 $eqLogic   ->setConfiguration($key, null);
+            }
+
+            foreach( $configs as $key ) {
+                if (!isset($decode[$key[0]])) {
+                    log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' adding new configuration key: {$key[0]} with default value: " . json_encode($key[1]));
+                    $eqLogic   ->setConfiguration($key[0], $key[1]);
+                }
             }
 
             $eqLogic   ->setConfiguration('version', $actualVersion);

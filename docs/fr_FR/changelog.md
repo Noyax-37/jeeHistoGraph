@@ -11,6 +11,12 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.02
+- ajout d'une option d'alignement du titre du graphique (gauche, centre, droite)
+- suppression des options de disposition "2 colonnes" et "2 lignes" (inutiles, déjà pris en compte dans les autres options)
+- permettre d'alterner le positionnement des axes Y (gauche/droite) en fonction de l'ordre d'apparition des unités
+- possibilité de choisir soit les couleurs par défaut d'Highcharts soit des couleurs personnalisées pour chaque courbe (option par graphique)
+
 # v2.01
 - création auto de la commande 'refresh' (oubli de ma part)
 - correction d'un bug d'affichage des boutons du range selector lorsque le titre du graphique n'était pas affiché
