@@ -123,6 +123,8 @@ class jeeHistoGraph extends eqLogic {
 
   // Fonction exécutée automatiquement après la sauvegarde (création ou mise à jour) de l'équipement
   public function postSave() {
+    log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $this->getName(), __FILE__));
+    $this->refreshWidget();
   }
   // Fonction exécutée automatiquement avant la suppression de l'équipement
   public function preRemove() {
@@ -215,6 +217,7 @@ public static function config() {
 // Permet de modifier l'affichage du widget (également utilisable par les commandes)
 public function toHtml($_version = 'dashboard', $eqLogic = null) {
     //log::add(__CLASS__, 'debug', "toHtml called for version: {$_version} and for eqlogic: " . ($eqLogic ? $eqLogic->getName() : 'self'));
+        
     if (!is_object($eqLogic)) {
         $eqLogic = $this;
     }
@@ -222,6 +225,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     if (!is_array($replace)) {
         return $replace;
     }
+
 
     $version = jeedom::versionAlias($_version);
     $nbGraphs = max(1, min(4, $eqLogic->getConfiguration('nbGraphs', 1)));
@@ -241,10 +245,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
     $graphContainers = '';
     $chartScripts = '';
-    
 
-    for ($g = 1; $g <= 4; $g++) {
-        if ($g > $nbGraphs) continue;
+    for ($g = 1; $g <= $nbGraphs; $g++) {
         // Type du graphique
         $graphType = $eqLogic->getConfiguration("graph{$g}_type", 'line');
         $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
@@ -328,7 +330,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $uid = $replace['#uid#'];
         $containerId = "graphContainer{$uid}_{$g}";
         $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 98%; margin: 0 1% 0 1%;\"></div>";
-
         $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
         $global = false;
         if ($periodeHistoGraph === 'global') {
@@ -717,7 +718,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             
             $xAxisJS = "type: 'datetime',
                         ordinal: false,";
-            $$xAxisDateTimeLabelFormatJS = '';
+            $xAxisDateTimeLabelFormatJS = '';
 
             $headerFormatJS = '<span>{point.key}</span><br>';
             $dateTimeLabelFormats = "
@@ -1231,18 +1232,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     }
     $replace['#coreVersion#'] = config::byKey('version',__CLASS__);
     
-    //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' chartScripts= " . json_encode($chartScripts));
+    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' replace= " . json_encode($replace));
 
     $html = template_replace($replace, getTemplate('core', $version, 'jeeHistoGraph', __CLASS__));
     return $eqLogic->postToHtml($_version, $html);
 }
 
   
-    // Rafraîchissement du graphique sur le dashboard
-    public static function rfresh($eqLogic) {
-        $eqLogic->toHtml( 'dashboard' , $eqLogic);
-    }
-
 }
 
 
@@ -1266,7 +1262,7 @@ class jeeHistoGraphCmd extends cmd {
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
       case 'refresh': // LogicalId de la commande rafraîchir
         log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
-        jeeHistoGraph::rfresh($eqLogic);
+        $eqLogic->refreshWidget();
       break;
       default:
         log::add('jeeHistoGraph', 'debug', __('Erreur durant execute', __FILE__));

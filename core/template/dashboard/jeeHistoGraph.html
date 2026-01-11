@@ -1,4 +1,4 @@
-<div class="eqLogic eqLogic-widget allowResize allowReorderCmd jeeHistoGraph #custom_layout# #eqLogic_class# #class#"
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd jeeHistoGraph **cmd** #eqLogic_class# #class#"
     data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
     style="width: #width#;height: #height#;#style#; display: flex; flex-direction: column; overflow: hidden;">
     <center class="widget-name" style="flex: 0 0 auto; font-size: 0.9em;">
@@ -15,10 +15,10 @@
         display: grid; gap: 8px; padding: 4px; box-sizing: border-box; 
     }
 
-    /* Layout automatique (comportement actuel) */
+    /* Layout automatique */
     .jeeHistoGraph .graphs-container.layout-auto { grid-template: 1fr / 1fr; }
     .jeeHistoGraph .graphs-container.layout-auto[data-nb-graphs="2"] { grid-template: 1fr 1fr / 1fr; }
-    .jeeHistoGraph .graphs-container.layout-auto[data-nb-graphs="3"] { grid-template: 1fr 1fr / 1fr 1fr; }
+    .jeeHistoGraph .graphs-container.layout-auto[data-nb-graphs="3"] { grid-template: 1fr 1fr / repeat(2, 1fr); }
     .jeeHistoGraph .graphs-container.layout-auto[data-nb-graphs="3"] > div:nth-child(1) { grid-area: 1 / 1; }
     .jeeHistoGraph .graphs-container.layout-auto[data-nb-graphs="3"] > div:nth-child(2) { grid-area: 1 / 2; }
     .jeeHistoGraph .graphs-container.layout-auto[data-nb-graphs="3"] > div:nth-child(3) { grid-area: 2 / 1 / 3 / 3; }
@@ -54,13 +54,13 @@
     .jeeHistoGraph .graphs-container.layout-3grid > div:nth-child(3) { grid-area: 2 / 2 / 2 / 3; }
 
 </style>
-    <div class="graphs-container layout-#graphLayout#" data-nb-graphs="#nbGraphs#" style="flex: 1; min-height: 0; overflow: hidden; display: grid; gap: 6px; padding: 0;">
     <script src="/3rdparty/highstock/modules/timeline.js"></script>
     <script src="/3rdparty/highstock/modules/exporting.js"></script>
     <script src="/3rdparty/highstock/modules/export-data.js"></script>
     <script src="/3rdparty/highstock/modules/accessibility.js"></script>
     <script src="/3rdparty/highstock/highcharts-more.js"></script>
     <script src="/3rdparty/highstock/highcharts-3d.js"></script>
+    <div class="graphs-container layout-#graphLayout#" data-layout="#graphLayout#" data-nb-graphs="#nbGraphs#" style="flex: 1; min-height: 0; overflow: hidden; display: grid; gap: 6px; padding: 0;">
         #graph_containers#
     </div>
     <div style="flex: 0 0 auto; text-align: right; font-size: 0.8em; padding: 2px 6px; color: #888;">
@@ -74,7 +74,6 @@
             const uid = '#uid#';
             const nbGraphs = parseInt('#nbGraphs#') || 0;
             const now = Date.now();
-
 
             window.charts = window.charts || {};
             #chart_scripts#

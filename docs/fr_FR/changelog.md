@@ -11,6 +11,9 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.03
+ - correction du refresh widget qui ne fonctionnait plus
+ 
 # v2.02
 - ajout d'une option d'alignement du titre du graphique (gauche, centre, droite)
 - suppression des options de disposition "2 colonnes" et "2 lignes" (inutiles, déjà pris en compte dans les autres options)
