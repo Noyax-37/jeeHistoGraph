@@ -576,6 +576,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 }
                 $coef = floatval($eqLogic->getConfiguration("graph{$g}_coef{$i}", '1'));
                 $histo = $cmd->getHistory($startTime, isset($endTime) ? $endTime : null);
+                //log::add(__CLASS__, 'debug', "Equipment2: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Retrieved " . count($histo) . " history records: date= 2026-01-14 23:39:03" . strtotime("2026-01-14 23:39:03 UTC"));
                 
                 $listeHisto = [];
                 $recordYear = null;
@@ -639,7 +640,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 // Si la courbe est de type timeline → on transforme les données
                 if ($finalCurveType === 'timeline') {
                     foreach ($histo as $record) {
-                        $ts = strtotime($record->getDatetime()) * 1000;
+                        $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
                         $value = $record->getValue();
 
                         $previousLabel = $label ?? '';  
@@ -683,16 +684,16 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             if ($prevValue!==null){
                                 $valueHisto =  $valueHisto - $prevValue;
                                 $prevValue = $prevValueHisto;
-                                $ts = strtotime($record->getDatetime()) * 1000;
+                                $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
                             } else {
                                 $prevValue = $prevValueHisto;
-                                $ts = strtotime($record->getDatetime()) * 1000;
+                                $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
                                 continue;
                             }
                         }
                          
                         if ($compareType == 'none'){
-                            $ts = strtotime($record->getDatetime()) * 1000;
+                            $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
                             $listeHisto[] = [$ts,  $valueHisto * $coef];
                         } elseif ($compareType == 'prev_year') {
                             $recordDate = new DateTime($record->getDatetime());
@@ -996,7 +997,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
+                                const dateLocaleMs = Math.floor(new Date().getTime()/1000 + (60*60)) * 1000; 
                                 const y = parseFloat(_options.display_value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
@@ -1031,7 +1032,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000; 
+                                const dateLocaleMs = Math.floor(new Date().getTime()/1000 + (60*60)) * 1000; 
                                 const y = parseFloat(_options.display_value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
@@ -1061,7 +1062,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $cmdUpdateJS .= "
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                            const dateLocaleMs = Math.floor(new Date().getTime()/1000) * 1000;
+                            const dateLocaleMs = Math.floor(new Date().getTime()/1000 + (60*60)) * 1000;
                             let currentRawValue = parseFloat(_options.value) * {$coef};
 
                             const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
