@@ -1,6 +1,12 @@
-<div class="eqLogic eqLogic-widget allowResize allowReorderCmd jeeHistoGraph **cmd** #eqLogic_class# #class#"
-    data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
-    style="width: #width#;height: #height#;#style#; display: flex; flex-direction: column; overflow: hidden;">
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd jeeHistoGraph #eqLogic_class# #class#"
+     data-eqType="#eqType#"
+     data-eqLogic_id="#id#"
+     data-eqLogic_uid="#uid#"
+     data-version="#version#"
+
+     style="width:#width# !important; height:#height# !important; #style#;
+            position: absolute; top:0; left:0; right:0; bottom:0;
+            display: flex; flex-direction: column; overflow: hidden;">
     <center class="widget-name" style="flex: 0 0 auto; font-size: 0.9em;">
         <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
         <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
@@ -67,9 +73,9 @@
         <span>Powered by jeeHistoGraph v#coreVersion# for #version# #message#</span>
     </div>
 
-    <script>
+<script>
         try {
-            Highcharts.setOptions({ time: { useUTC: false } });
+            //Highcharts.setOptions({ time: { useUTC: false } });
 
             const uid = '#uid#';
             const nbGraphs = parseInt('#nbGraphs#') || 0;
@@ -78,11 +84,30 @@
             window.charts = window.charts || {};
             #chart_scripts#
 
-        } catch(e) { console.error('Erreur Highcharts:', e); }
+        } catch(e) { 
+            console.error('Erreur Highcharts jeeHistoGraph:', e); 
+        }
 
+        var urlParams = new URLSearchParams(window.location.search);
+        var pageParam = urlParams.get('p');
+        var isDesign = (pageParam === 'plan');  // 'plan' = Design, 'dashboard' = Dashboard
+
+        if (isDesign) {
+            // $('.eqLogic[data-eqLogic_uid=#uid#] .graphs-container > div').css('width', '100%').css('height', '100%');
+        }
+
+        // Gestion du bouton refresh (inchangé, mais il déclenchera un nouveau render avec détection)
         if ('#refresh_id#' != '') {
+
+            // Log pour debug (visible dans console navigateur)
+            console.log('jeeHistoGraph: Mode détecté = ' + (isDesign ? 'Design (plan)' : 'Dashboard'));
+
             $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
-                jeedom.cmd.execute({ id: '#refresh_id#' });
+                if (!isDesign) {
+                    jeedom.cmd.execute({ id: '#refresh_id#' , value: { mode: isDesign ? 'design' : 'dashboard' } });
+                } else {
+                    jeedom.cmd.execute({ id: '#refresh_id#' , value: { mode: isDesign ? 'design' : 'dashboard' } });
+                }
             });
         } else {
             $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove();

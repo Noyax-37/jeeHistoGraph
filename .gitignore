@@ -12,3 +12,5 @@ docs/Gemfile.lock
 docs/.sass-cache/
 .remote-sync.json
 .vscode
+
+core/template/dashboard/cmd.info.string.jeeHistoGraph.html

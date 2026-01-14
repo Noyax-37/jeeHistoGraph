@@ -117,7 +117,6 @@ class jeeHistoGraph extends eqLogic {
  }
   // Fonction exécutée automatiquement avant la sauvegarde (création ou mise à jour) de l'équipement
   public function preSave() {
-
   }
 
 
@@ -217,15 +216,24 @@ public static function config() {
 // Permet de modifier l'affichage du widget (également utilisable par les commandes)
 public function toHtml($_version = 'dashboard', $eqLogic = null) {
     //log::add(__CLASS__, 'debug', "toHtml called for version: {$_version} and for eqlogic: " . ($eqLogic ? $eqLogic->getName() : 'self'));
-        
     if (!is_object($eqLogic)) {
         $eqLogic = $this;
     }
+
     $replace = $eqLogic->preToHtml($_version);
     if (!is_array($replace)) {
         return $replace;
     }
 
+/*    if ($mode == 'design') {
+        log::add(__CLASS__, 'debug', "Design mode detected for equipment: '{$eqLogic->getName()}' (ID: {$eqLogic->getId()})");
+        $replace['#width#'] = '100%';
+        $replace['#height#'] = '100%';
+    } else {
+        log::add(__CLASS__, 'debug', "Dashboard mode detected for equipment: '{$eqLogic->getName()}' (ID: {$eqLogic->getId()})");
+    }
+*/
+//    log::add(__CLASS__, 'debug', "Generating HTML for equipment: '{$eqLogic->getName()}' (ID: {$eqLogic->getId()}) version: {$_version} replace: " . print_r($replace['#panelLink#'], true));
 
     $version = jeedom::versionAlias($_version);
     $nbGraphs = max(1, min(4, $eqLogic->getConfiguration('nbGraphs', 1)));
@@ -841,6 +849,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$years}") . ",
+                            showInNavigator: true,
                             borderColor: " . json_encode($color) . ",
                             step: {$stairStepKey},
                             type: " . json_encode($finalCurveType) . ",
@@ -850,6 +859,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 valueSuffix: " . json_encode(' ' .$unite) . "
                             },
                             yAxis: {$axisIndex},
+
                             stacking: '$stackingOption',
                             dataGrouping: { {$dataGroupingJS}
                                 dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
@@ -893,6 +903,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
+                            showInNavigator: true,
                             borderColor: " . json_encode($color) . ",
                             step: {$stairStepKey},
                             type: " . json_encode($finalCurveType) . ",
@@ -922,6 +933,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
                     $seriesJS .= "{
                         name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                        showInNavigator: true,
                         borderColor: " . json_encode($color) . ",
                         step: {$stairStepKey},
                         {$colorJS}
@@ -1144,6 +1156,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
         $chartScripts .= "
         window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
+            time: {
+                useUTC: true
+            },
             chart: {
                 type: '$graphType',
                 zooming: {
@@ -1213,6 +1228,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     groupPadding:0.1,
                     pointPadding:0,
                     fillOpacity: 0.1,
+                    connectNulls: false,
+                    turboThreshold: 0                    
                 },
             },
             series: [{$seriesJS}]
@@ -1259,6 +1276,8 @@ class jeeHistoGraphCmd extends cmd {
   // Exécution d'une commande
   public function execute($_options = array()) {
     $eqLogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
+    $mode = $_options['mode'];
+    log::add('jeeHistoGraph', 'debug', "prehtml => " . print_r($eqLogic->pretoHtml('dashboard'), true));
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
       case 'refresh': // LogicalId de la commande rafraîchir
         log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
@@ -1272,4 +1291,6 @@ class jeeHistoGraphCmd extends cmd {
 
   /* * **********************Getteur Setteur*************************** */
 }
+
+
 ?>

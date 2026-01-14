@@ -11,6 +11,9 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.04
+- correction d'un bug d'affichage des dates
+
 # v2.03
  - correction du refresh widget qui ne fonctionnait plus
  
