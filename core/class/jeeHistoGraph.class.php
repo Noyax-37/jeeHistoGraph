@@ -1329,6 +1329,37 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         ";
     }
 
+    $syncCrosshairsJS = "";
+    if ($nbGraphs = 2) {
+        $syncCrosshairJS = "
+        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
+        ";    
+    } else if ($nbGraphs = 3) {
+        $syncCrosshairJS = "
+        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
+        ";    
+    } else if ($nbGraphs = 4) {
+        $syncCrosshairJS = "
+        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g4_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g4_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g4_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
+        syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});";    
+    }
+
     $chartScripts .= "// Function to synchronize crosshairs
         function syncCrosshair(chartFrom, chartTo) {
         Highcharts.addEvent(chartFrom.container, 'mousemove', function (e) {
@@ -1347,8 +1378,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
 
         // Synchronize crosshairs between the two charts
-        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});";    
+        $syncCrosshairJS
+    ";    
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
