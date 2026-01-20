@@ -269,9 +269,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $chartScripts = '';
 
     $defaultHightchartColors = [ "#2caffe", "#544fc5", "#00e272", "#fe6a35", "#6b8abc", "#d568fb", "#2ee0ca", "#fa4b42", "#feb56a", "#91e8e1" ];
+    
         
     for ($g = 1; $g <= $nbGraphs; $g++) {
         // Type du graphique
+        $alignThresholdsJS = 'true';
         $graphType = $eqLogic->getConfiguration("graph{$g}_type", 'line');
         $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
         $stackingOption = $eqLogic->getConfiguration("stacking_graph{$g}", 'null');
@@ -645,6 +647,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $limitHisto = 300;
                     }
                 }
+
+                if ($stackingOptionEnabled && (!is_null($stackingOption) || $stackingOption != 'null')) {
+                    $alignThresholdsJS = 'false';
+                }
+
+                log::add(__CLASS__, 'debug', "alignThresholdsJS $alignThresholdsJS stackingOptionEnabled $stackingOptionEnabled stackingOption $stackingOption finalCurveType $finalCurveType ");
+
 
                 $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
                 if ($manualUnit !== '') {
@@ -1245,7 +1254,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 useUTC: true
             },
             chart: {
-                alignThresholds: true,
+                alignThresholds: $alignThresholdsJS,
                 type: '$graphType',
                 zooming: {
                     mouseWheel: true,
@@ -1360,7 +1369,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
         syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});";    
     }
-    $message .= "Graph(s) affiché(s): {$nbGraphs}. ";
+    
     if ($nbGraphs >= 2) {
         $chartScripts .= "// Function to synchronize crosshairs
             function syncCrosshair(chartFrom, chartTo) {
