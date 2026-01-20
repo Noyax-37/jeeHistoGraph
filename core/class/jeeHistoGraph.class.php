@@ -1329,7 +1329,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         ";
     }
 
-    $syncCrosshairsJS = "";
+    $syncCrosshairJS = "";
+    
     if ($nbGraphs = 2) {
         $syncCrosshairJS = "
         syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
