@@ -110,6 +110,19 @@ function jeeHistoGraph_update() {
                             $eqLogic   ->setConfiguration($key, $newValue);
                         }
                     }
+                    if (substr($key,-4) =="_nom"){
+                        if ($value != ""){
+                            if (version_compare('2.04', $actualVersion, '<=')){ //met à jour la case à cocher d'affichage si la version avant mise à jour est <=2.04
+                                $decomp=explode("_",$key);
+                                $graph=explode("graph",$decomp[0])[1];
+                                $index=(explode("index",$decomp[1])[1]);
+                                $curve = intval($index) < 10 ? $index[-1] : $index;
+                                $newDisplayKey="display_graph".$graph."_curve".$curve;
+                                log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating display configuration key: {$newDisplayKey} to value: 1 because {$key} is set to '{$value}'");
+                                $eqLogic   ->setConfiguration($newDisplayKey, 1);
+                            }
+                        }
+                    }
                     continue;
                 }
                 log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' removing obsolete configuration key: {$key} with value: " . json_encode($value));

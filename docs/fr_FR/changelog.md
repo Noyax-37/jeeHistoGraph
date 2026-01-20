@@ -11,6 +11,13 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.05
+- ajout de l'option d'affichage ou non de la courbe d'un graph et non plus dépendant de l'attibution d'un libellé
+- ajout de maxi / mini par unité (valeurs communes à toutes les courbes d'une même unité sur un même graphique)
+- ajout d'une option de seuil d'attention (ligne horizontale fixe) par courbe (même couleur que la courbe)
+- couleur par défaut de highchart définies avec les couleurs actuelles (verion non à jour dans jeedom)
+- possibilité de reporter les crosshairs entre graphiques, il faut au moins sélectionner 2 graphiques affichés pour que l'option soit active
+
 # v2.04
 - correction d'un bug d'affichage des dates
 

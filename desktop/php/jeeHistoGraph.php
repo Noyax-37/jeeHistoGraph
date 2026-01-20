@@ -81,9 +81,16 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 		z-index: 10;
 	}
 
-	.sticky-left-2 {
+	.sticky-left-1 {
 		position: sticky;
 		left: 80px;
+		background-color: rgb(var(--panel-bg-color));
+		z-index: 10;
+	}
+
+	.sticky-left-2 {
+		position: sticky;
+		left: 120px;
 		background-color: rgb(var(--panel-bg-color));
 		z-index: 10;
 	}
@@ -312,6 +319,26 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								</div>
 
 								<div class="form-group">
+									<label class="col-sm-6 control-label">{{Reporter les crosshairs entre graphique: }}
+										<sup>
+											<i class="fas fa-question-circle tooltips" title="{{reporter les lignes verticales et horizontales qui suivent la position de la souris entre tous les graphiques sélectionnés}}"></i>
+										</sup>
+									</label>
+									<div class="col-sm-1"> G1 :
+										<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph1_crosshair">
+									</div>
+									<div class="col-sm-1"> G2 :
+										<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph2_crosshair">
+									</div>
+									<div class="col-sm-1"> G3 :
+										<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph3_crosshair">
+									</div>
+									<div class="col-sm-1"> G4 :
+										<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph4_crosshair">
+									</div>
+								</div>
+
+								<div class="form-group">
 									<label class="col-sm-3 control-label"></label>
 									<div class="col-sm-6">
 										<br>
@@ -334,6 +361,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Explications succinctes}}:</label>
 								<br><br>
 								<label class="col-lg-12 control-label pull-left">{{Nombre de graphique(s): }}{{choisir le nombre de graphique voulu à afficher, de 1 à 4 }}</label>
+								<br><br>
+								<label class="col-lg-12 control-label pull-left">{{Reporter les crosshairs : reporter les lignes qui suivent le pointeur de la souris sur les graphiques sélectionnés. La réciproque est vraie}}</label>
 								<br><br>
 								<label class="col-lg-12 control-label pull-left">{{Disposition des graphiques: choisir la disposition des grphiques en fonction du nombre }}</label>
 								<label class="col-lg-12 control-label pull-left">{{- **Automatique** : s'adapte selon le nombre. Tout l'espace pour 1 graphique, l'un au dessus de l'autre pour 2, 2 petits en haut 1 qui prend l'espace en bas si 3 et 2x2 pour 4.}}</label>
@@ -902,7 +931,16 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<thead>
 													<tr>
 														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th>
-														<th class="text-center sticky-left-2" style="width: 140px;">{{Libellé}}</th>
+														<th class="text-center sticky-left-1" style="width: 40px;">{{Aff?}}
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Cochez pour afficher la courbe dans le graphique}}"></i>
+															</sup>
+														</th>
+														<th class="text-center sticky-left-2" style="width: 140px;">{{Libellé}}
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Nom de la courbe dans le graphique, laisser vide pour utiliser le nom de la commande}}"></i>
+															</sup>
+														</th>
 														<th class="text-center" style="width: 400px;">{{Commande}}</th>
 														<th class="text-center" style="width: 400px;">
 															<div>{{Type de courbe par défaut (ci-dessous) ou par courbe}}</div>
@@ -965,6 +1003,23 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														</th>
 														<th class="text-center" style="width: 60px;">{{Unité}}</th>
 														<th class="text-center" style="width: 60px;">{{Coef}}</th>
+														<th class="text-center" style="width: 60px;">{{Mini}}
+																<sup>
+																	<i class="fas fa-question-circle tooltips" title="{{Attention, cette valeur s'applique à TOUTES les courbes ayant la même unité. 
+																		Si plusieurs valeurs sont saisies pour la même unité alors c'est la plus petite qui est conservée}}"></i>
+																</sup>
+														</th>
+														<th class="text-center" style="width: 60px;">{{Maxi}}
+																<sup>
+																	<i class="fas fa-question-circle tooltips" title="{{Attention, cette valeur s'applique à TOUTES les courbes ayant la même unité. 
+																		Si plusieurs valeurs sont saisies pour la même unité alors c'est la plus grande qui est conservée}}"></i>
+																</sup>
+														</th>
+														<th class="text-center" style="width: 60px;">{{Seuil}}
+																<sup>
+																	<i class="fas fa-question-circle tooltips" title="{{Définit un seuil d'attention (ligne horizontale fixe)}}"></i>
+																</sup>
+														</th>
 													</tr>
 												</thead>
 												<tbody>
@@ -973,6 +1028,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													?>
 													<tr>
 														<td class="text-center sticky-left">{{Courbe <?= $index ?>}}</td>
+														<td class="text-center sticky-left-1">
+															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="display_graph<?= $g ?>_curve<?= $i ?>">
+														</td>
 														<td class="sticky-left-2"><input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/></td>
 														<td>
 															<div class="input-group">
@@ -1023,6 +1081,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														<td><input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></td>
 														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>"></td>
 														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>"></td>
+														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="mini" title="Valeur mini" data-l1key="configuration" data-l2key="graph<?= $g ?>_mini<?= $i ?>"></td>
+														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="maxi" title="Valeur maxi" data-l1key="configuration" data-l2key="graph<?= $g ?>_maxi<?= $i ?>"></td>
+														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="seuil" title="Seuil d'attention" data-l1key="configuration" data-l2key="graph<?= $g ?>_plotlines<?= $i ?>"></td>
 													</tr>
 													<?php } ?>
 												</tbody>
@@ -1068,9 +1129,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<br/><br><br>
 								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Tableau des courbes}}</label>
 								<br/><br>
-								<label class="col-lg-12 control-label pull-left">{{Attention: si le libellé de la courbe n'est pas complété alors elle ne s'affichera pas même si la commande existe}}</label>
 								<label class="col-lg-12 control-label pull-left">{{courbe: information purement indicative donnant le numéro de la courbe}}</label>
-								<label class="col-lg-12 control-label pull-left">{{libellé: nom donné à la courbe, obligatoire pour qu'elle puisse s'afficher}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Afficher: affiche ou non la courbe}}</label>
+								<label class="col-lg-12 control-label pull-left">{{libellé: nom donné à la courbe}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Type de courbe : permet de choisir individuellement le type de courbe ou d'appliquer le paramètre global du graphique. Tous les types ne peuvent pas être mixés.}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Empilement: permet de positionner les courbes l'une au dessus de l'autre. Choisir d'abord le type d'empilement souhaité (normal ou en %) puis cocher les cases}}</label>
 								<label class="col-lg-12 control-label pull-left">{{*** ATTENTION 1: positionner les courbes à empiler les unes après les autres sinon cela ne fonctionnera pas}}</label>
@@ -1085,10 +1146,13 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<label class="col-lg-12 control-label pull-left">{{Commande: sélectionner ici la commande qui servira à alimenter les données de la courbe}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Unité : permet d'ajouter une unité si la commande n'en dispose pas ou de transformer l'unité en fonction du coefficient (passage des W en kW par exemple)}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Coefficient: permet d'appliquer un coefficient aux valeurs de la commande pour passer d'une unité à une autre. Des coefficients négatifs peuvent être appliqués}}</label>
-								
+								<label class="col-lg-12 control-label pull-left">{{mini: valeur minimale des données à afficher. Attention, cette valeur s'applique à TOUTES les courbes ayant la même unité. 
+																					Si plusieurs valeurs sont saisies pour la même unité alors c'est la plus petite qui est conservée}}</label>
+								<label class="col-lg-12 control-label pull-left">{{maxi: valeur maximale des données à afficher. Attention, cette valeur s'applique à TOUTES les courbes ayant la même unité. 
+																					Si plusieurs valeurs sont saisies pour la même unité alors c'est la plus grande qui est conservée}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Seuil: permet de définir un seuil d'attention (ligne horizontale fixe, aura la même couleur que la courbe)}}</label>								
 							</div>
 						</div>						
-
 					</fieldset>
 				</form>
 			</div>

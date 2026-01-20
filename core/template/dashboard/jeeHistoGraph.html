@@ -4,8 +4,7 @@
      data-eqLogic_uid="#uid#"
      data-version="#version#"
 
-     style="width:#width# !important; height:#height# !important; #style#;
-            position: absolute; top:0; left:0; right:0; bottom:0;
+     style="width:#width#; height:#height#; #style#;
             display: flex; flex-direction: column; overflow: hidden;">
     <center class="widget-name" style="flex: 0 0 auto; font-size: 0.9em;">
         <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
@@ -18,8 +17,9 @@
 <style>
     .jeeHistoGraph .graphs-container { 
         flex: 1; min-height: 0; overflow: hidden; 
-        display: grid; gap: 8px; padding: 4px; box-sizing: border-box; 
+        display: grid; gap: 8px; padding: 4px; box-sizing: border-box;
     }
+
 
     /* Layout automatique */
     .jeeHistoGraph .graphs-container.layout-auto { grid-template: 1fr / 1fr; }
@@ -75,11 +75,6 @@
 
 <script>
         try {
-            //Highcharts.setOptions({ time: { useUTC: false } });
-
-            const uid = '#uid#';
-            const nbGraphs = parseInt('#nbGraphs#') || 0;
-            const now = Date.now();
 
             window.charts = window.charts || {};
             #chart_scripts#
@@ -88,26 +83,9 @@
             console.error('Erreur Highcharts jeeHistoGraph:', e); 
         }
 
-        var urlParams = new URLSearchParams(window.location.search);
-        var pageParam = urlParams.get('p');
-        var isDesign = (pageParam === 'plan');  // 'plan' = Design, 'dashboard' = Dashboard
-
-        if (isDesign) {
-            // $('.eqLogic[data-eqLogic_uid=#uid#] .graphs-container > div').css('width', '100%').css('height', '100%');
-        }
-
-        // Gestion du bouton refresh (inchangé, mais il déclenchera un nouveau render avec détection)
         if ('#refresh_id#' != '') {
-
-            // Log pour debug (visible dans console navigateur)
-            console.log('jeeHistoGraph: Mode détecté = ' + (isDesign ? 'Design (plan)' : 'Dashboard'));
-
             $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
-                if (!isDesign) {
-                    jeedom.cmd.execute({ id: '#refresh_id#' , value: { mode: isDesign ? 'design' : 'dashboard' } });
-                } else {
-                    jeedom.cmd.execute({ id: '#refresh_id#' , value: { mode: isDesign ? 'design' : 'dashboard' } });
-                }
+                jeedom.cmd.execute({ id: '#refresh_id#'});
             });
         } else {
             $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove();

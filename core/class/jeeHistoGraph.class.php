@@ -152,7 +152,11 @@ public static function config() {
                     ["delai_histo", 1], 
                     ["date_debut_histo", ''], 
                     ["date_debut_histo_2dates", ''],
-                    ["date_fin_histo_2dates", '']
+                    ["date_fin_histo_2dates", ''],
+                    ["graph1_crosshair", 0],
+                    ["graph2_crosshair", 0],
+                    ["graph3_crosshair", 0],
+                    ["graph4_crosshair", 0]
                 ];
     for ($g = 1; $g <= 4; $g++) {
         $config[] = ["graph{$g}_type", 'line'];
@@ -207,6 +211,10 @@ public static function config() {
             $config[] = ["graph{$g}_coef{$i}", ""];
             $config[] = ["graph{$g}_curve{$i}_stairStep", 0];
             $config[] = ["graph{$g}_curve{$i}_variation", 0];
+            $config[] = ["display_graph{$g}_curve{$i}", 0];
+            $config[] = ["graph{$g}_mini{$i}", ""];
+            $config[] = ["graph{$g}_maxi{$i}", ""];
+            $config[] = ["graph{$g}_plotlines{$i}", ""];
         }
     }
     return $config;
@@ -225,16 +233,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         return $replace;
     }
 
-/*    if ($mode == 'design') {
-        log::add(__CLASS__, 'debug', "Design mode detected for equipment: '{$eqLogic->getName()}' (ID: {$eqLogic->getId()})");
-        $replace['#width#'] = '100%';
-        $replace['#height#'] = '100%';
-    } else {
-        log::add(__CLASS__, 'debug', "Dashboard mode detected for equipment: '{$eqLogic->getName()}' (ID: {$eqLogic->getId()})");
-    }
-*/
-//    log::add(__CLASS__, 'debug', "Generating HTML for equipment: '{$eqLogic->getName()}' (ID: {$eqLogic->getId()}) version: {$_version} replace: " . print_r($replace['#panelLink#'], true));
-
     $version = jeedom::versionAlias($_version);
     $nbGraphs = max(1, min(4, $eqLogic->getConfiguration('nbGraphs', 1)));
     $replace['#nbGraphs#'] = $nbGraphs;
@@ -249,11 +247,29 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $dateDebutGraph1date = $eqLogic->getConfiguration("date_debut_histo");
     $dateDebutGraph2Dates = $eqLogic->getConfiguration("date_debut_histo_2dates");
     $dateFinGraph2Dates = $eqLogic->getConfiguration("date_fin_histo_2dates");
+    $crosshair[1] = $eqLogic->getConfiguration("graph1_crosshair", '0') == '1' ? 'true' : 'false';
+    $crosshair[2] = $eqLogic->getConfiguration("graph2_crosshair", '0') == '1' ? 'true' : 'false';
+    $crosshair[3] = $eqLogic->getConfiguration("graph3_crosshair", '0') == '1' ? 'true' : 'false';
+    $crosshair[4] = $eqLogic->getConfiguration("graph4_crosshair", '0') == '1' ? 'true' : 'false';
+    $cross = 0;
+    for ($g = 1; $g <= $nbGraphs; $g++) {
+        if ($crosshair[$g] == 'true') {
+            $cross += 1;
+        }
+    }
+    if ($cross < 2) {
+        $crosshair[1] = 'false';
+        $crosshair[2] = 'false';
+        $crosshair[3] = 'false';
+        $crosshair[4] = 'false';
+    }
 
 
     $graphContainers = '';
     $chartScripts = '';
 
+    $defaultHightchartColors = [ "#2caffe", "#544fc5", "#00e272", "#fe6a35", "#6b8abc", "#d568fb", "#2ee0ca", "#fa4b42", "#feb56a", "#91e8e1" ];
+        
     for ($g = 1; $g <= $nbGraphs; $g++) {
         // Type du graphique
         $graphType = $eqLogic->getConfiguration("graph{$g}_type", 'line');
@@ -429,39 +445,76 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $recordData = [];
 
         $first = false;
-
+        $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
+        //log::add(__CLASS__, 'debug', "Crosshair for Equipment: '{$nameEqpmnt}' Graph {$g}: {$crosshair}");
+                
         // Collecter les unités en premier pour définir les axes Y
         $units = [];
+        $mini = [];
+        $maxi = [];
+        $plot = [];
+        $colorYAxis = [];
         for ($i = 1; $i <= 10; $i++) {
-            $index = str_pad($i, 2, '0', STR_PAD_LEFT);
-            $cmdKey = "graph{$g}_cmdGraphe{$index}";
-            $nomKey = "graph{$g}_index{$index}_nom";
-            $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
-            $indexNom = $eqLogic->getConfiguration($nomKey);
-            
-            if (empty($indexNom) || empty($cmdGraphe)) {
-                continue;
-            }
+            $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
+            if ($displayCurve != '0') {
+                $index = str_pad($i, 2, '0', STR_PAD_LEFT);
+                $cmdKey = "graph{$g}_cmdGraphe{$index}";
+                $nomKey = "graph{$g}_index{$index}_nom";
+                $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
+                $indexNom = $eqLogic->getConfiguration($nomKey);
+                $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
+                $miniValue = $eqLogic->getConfiguration("graph{$g}_mini{$i}", '');
+                $maxiValue = $eqLogic->getConfiguration("graph{$g}_maxi{$i}", '');
+                $plotlines = $eqLogic->getConfiguration("graph{$g}_plotlines{$i}", '') == '' ? 'null' : floatval($eqLogic->getConfiguration("graph{$g}_plotlines{$i}"));
+                $colorHighchartsCurve = $defaultHightchartColors[($i-1)];
+                $colorCurve = $eqLogic->getConfiguration("graph{$g}_color{$i}", $colorHighchartsCurve);
+                $colorPlotlines = $defaultColors == 1 ? $colorHighchartsCurve : $colorCurve;
 
-            if (!$first){
-                $first = true;
-            } else {
-                if ($compareType == 'prev_year' || $compareType == 'prev_year_month'){
+                if ($displayCurve == '0' || empty($cmdGraphe)) {
                     continue;
                 }
-            }
 
-            $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
-            if (is_object($cmd)) {
-                $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ' '));
-                if ($manualUnit !== '') {
-                    $unite = $manualUnit;
+                if (!$first){
+                    $first = true;
                 } else {
-                    $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : ' ';
+                    if ($compareType == 'prev_year' || $compareType == 'prev_year_month'){
+                        continue;
+                    }
                 }
-                $units[] = $unite;
+
+                $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
+                if (is_object($cmd)) {
+                    $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ' '));
+                    if ($manualUnit !== '') {
+                        $unite = $manualUnit;
+                    } else {
+                        $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : ' ';
+                    }
+                    $units[] = $unite;
+                    $unit = ($unite == ' ' || $unite == '') ? 'sans' : $unite;
+                    $plot[$unit] .= "
+                    {
+                        id: {$i},
+                        dashStyle: 'longdashdot',
+                        color: '$colorPlotlines',
+                        value: $plotlines,
+                        width: 2
+                    },";
+                    if (!isset($colorYAxis[$unit])) {
+                        $colorYAxis[$unit] = $colorPlotlines;
+                    }
+                   
+                    if (!isset($mini[$unite]) || ($miniValue!= '' && $miniValue < $mini[$unite])) {
+                        $mini[$unite] = $miniValue;
+                    }
+                    if (!isset($maxi[$unite]) || ($maxiValue != '' && $maxiValue > $maxi[$unite])) {
+                        $maxi[$unite] = $maxiValue;
+                    }
+                    $indexNom = empty($indexNom) ? $cmd->getName() : $indexNom;
+                }
             }
         }
+
 
         $uniqueUnits = array_values(array_unique(array_filter($units)));
         $unitToAxis = [];
@@ -472,17 +525,26 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
         $nbAxes   = count($uniqueUnits);
 
+        log::add(__CLASS__, 'debug', "mini = ". json_encode($mini) . " maxi = ". json_encode($maxi));
 
         // construire les axes Y
         $showYAxis = $eqLogic->getConfiguration("graph{$g}_show_yAxis", 1);
+        $visible = $showYAxis ? 'true' : 'false';
         $alternateYAxis = $eqLogic->getConfiguration("graph{$g}_alternate_yAxis", 1);
         $position = 'true'; // commencer à droite
         $yAxisJS = 'yAxis: [';
+        $z = 5;
         foreach ($uniqueUnits as $idx => $u) {
+            $unit = ($u == ' ' || $u == '') ? 'sans' : $u;
             $offset = $idx * 20;
-            $visible = $showYAxis ? 'true' : 'false';
+            $YaxisColor  = $colorYAxis[$unit];
+            $crossHairColor  = $crosshair[$g] == 'false' ? $colorYAxis[$unit] : '';
+            $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
             $align = ($position == 'false' && $alternateYAxis == 1) ? 'right' : 'left';
             $yAxisJS .= "{
+                plotLines: [ " . (isset($plot[$unit]) ? $plot[$unit] : '') . " ],
+                max: " . (isset($maxi[$u]) && $maxi[$u] !== '' ? floatval($maxi[$u]) : 'null') . ",
+                min: " . (isset($mini[$u]) && $mini[$u] !== '' ? floatval($mini[$u]) : 'null') . ",
                 visible: {$visible},
                 opposite: {$position},
                 offset: {$offset},
@@ -491,21 +553,30 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     align: '{$align}',
                     x: 8,
                     y: 4,
-                    style: { fontSize: '11px' },
+                    style: { 
+                        fontSize: '11px',
+                        color: '$YaxisColor'
+                    },
                     " . ($nbAxes > 1 ? "useHTML: true,
                     formatter: function () {
                         return '<div style=\"transform: rotate(-45deg); transform-origin: left center; margin-top: 15px; white-space: nowrap;\">' + this.value + ' {$u}</div>';
                     }" : "") . "
                 },
-                crosshair: [{
+                crosshair: {
                     width: " . ($showYAxis ? '1' : '0') . ",
+                    color: '$crossHairColor',
                     dashStyle: 'Dash',
-                    zIndex: 5
-                }]                
+                    zIndex: $z,
+                    enabled: true,
+                    snap: $cros,
+                }                
             },";
+            $z += 1;
             $position = ($position == 'true' && $alternateYAxis == 1) ? 'false' : 'true'; // alterner gauche/droite
         }
-        $yAxisJS .= '],';
+        $yAxisJS .= "],";
+        
+        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Y Axis JS: " . $yAxisJS);
 
         $first = false; // Reset for second loop
         $nbSeries = 0;
@@ -522,14 +593,20 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $stackingOption = ($stackingOptionEnabled) ? $stackingOption : null; 
             $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
             $indexNom = $eqLogic->getConfiguration($nomKey);
-            $color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
-            $colorJS = $defaultColors == 1 ? '' : "color: " . json_encode($color) . ",";
+            
+            $colorHighchartsCurve = $defaultHightchartColors[($i-1)];
+            $colorCurve = $eqLogic->getConfiguration("graph{$g}_color{$i}", $colorHighchartsCurve);
+            $color = $defaultColors == 1 ? $colorHighchartsCurve : $colorCurve;
+
+            //$color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
+
+            $colorJS = "color: " . json_encode($color) . ",";
             $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
             $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
             $variation = $eqLogic->getConfiguration("graph{$g}_curve{$i}_variation", 0) ? true : false;
-
-
-            if (empty($indexNom) || empty($cmdGraphe)) {
+            $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
+            
+            if ($displayCurve == '0' || empty($cmdGraphe)) {
                 continue;
             }
 
@@ -550,6 +627,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $listeHisto = ''; 
             $cmdId = '';
             if (is_object($cmd)) {
+                $indexNom = empty($indexNom) ? $cmd->getName() : $indexNom;
                 $finalCurveType = $curveTypeOverride;
                 if ($finalCurveType === 'inherit_curve') {
                     $finalCurveType = $graphType;
@@ -1154,6 +1232,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }";
         }
 
+        $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
+        $xAxisJS .= "
+            crosshair: {
+                enabled: true,
+                snap: $cros,
+            },";
 
         $chartScripts .= "
         window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
@@ -1161,6 +1245,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 useUTC: true
             },
             chart: {
+                alignThresholds: true,
                 type: '$graphType',
                 zooming: {
                     mouseWheel: true,
@@ -1235,11 +1320,35 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             },
             series: [{$seriesJS}]
         });
-        setTimeout(() => window.chart_g{$g} && window.chart_g{$g}.reflow(), 50);
+        setTimeout(() => {
+          if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {
+            window.chart_g{$g}_id{$eqLogic->getId()}.reflow()
+          }
+        }, 50);
         {$cmdUpdateJS}
         ";
     }
 
+    $chartScripts .= "// Function to synchronize crosshairs
+        function syncCrosshair(chartFrom, chartTo) {
+        Highcharts.addEvent(chartFrom.container, 'mousemove', function (e) {
+            const xVal = chartFrom.xAxis[0].toValue(e.chartX);
+            const yVal = chartFrom.yAxis[0].toValue(e.chartY);
+            const xPixel = chartTo.xAxis[0].toPixels(xVal);
+            const yPixel = chartTo.yAxis[0].toPixels(yVal);
+            
+            e.chartX = xPixel;
+            e.chartY = yPixel;
+
+            // Draw crosshairs only on the target chart
+            chartTo.xAxis[0].drawCrosshair(e)
+            chartTo.yAxis[0].drawCrosshair(e)
+        })
+        }
+
+        // Synchronize crosshairs between the two charts
+        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
+        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});";    
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
@@ -1277,7 +1386,6 @@ class jeeHistoGraphCmd extends cmd {
   // Exécution d'une commande
   public function execute($_options = array()) {
     $eqLogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
-    $mode = $_options['mode'];
     log::add('jeeHistoGraph', 'debug', "prehtml => " . print_r($eqLogic->pretoHtml('dashboard'), true));
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
       case 'refresh': // LogicalId de la commande rafraîchir
