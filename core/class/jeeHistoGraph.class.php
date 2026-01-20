@@ -1331,12 +1331,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
     $syncCrosshairJS = "";
     
-    if ($nbGraphs = 2) {
+    if ($nbGraphs == 2) {
         $syncCrosshairJS = "
         syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
         syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
         ";    
-    } else if ($nbGraphs = 3) {
+    } else if ($nbGraphs == 3) {
         $syncCrosshairJS = "
         syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
         syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});
@@ -1345,7 +1345,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
         syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
         ";    
-    } else if ($nbGraphs = 4) {
+    } else if ($nbGraphs == 4) {
         $syncCrosshairJS = "
         syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
         syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});
@@ -1360,27 +1360,31 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
         syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});";    
     }
+    $message .= "Graph(s) affiché(s): {$nbGraphs}. ";
+    if ($nbGraphs >= 2) {
+        $chartScripts .= "// Function to synchronize crosshairs
+            function syncCrosshair(chartFrom, chartTo) {
+            Highcharts.addEvent(chartFrom.container, 'mousemove', function (e) {
+                const xVal = chartFrom.xAxis[0].toValue(e.chartX);
+                const yVal = chartFrom.yAxis[0].toValue(e.chartY);
+                const xPixel = chartTo.xAxis[0].toPixels(xVal);
+                const yPixel = chartTo.yAxis[0].toPixels(yVal);
+                
+                e.chartX = xPixel;
+                e.chartY = yPixel;
 
-    $chartScripts .= "// Function to synchronize crosshairs
-        function syncCrosshair(chartFrom, chartTo) {
-        Highcharts.addEvent(chartFrom.container, 'mousemove', function (e) {
-            const xVal = chartFrom.xAxis[0].toValue(e.chartX);
-            const yVal = chartFrom.yAxis[0].toValue(e.chartY);
-            const xPixel = chartTo.xAxis[0].toPixels(xVal);
-            const yPixel = chartTo.yAxis[0].toPixels(yVal);
-            
-            e.chartX = xPixel;
-            e.chartY = yPixel;
+                // Draw crosshairs only on the target chart
+                chartTo.xAxis[0].drawCrosshair(e)
+                chartTo.yAxis[0].drawCrosshair(e)
+            })
+            }
 
-            // Draw crosshairs only on the target chart
-            chartTo.xAxis[0].drawCrosshair(e)
-            chartTo.yAxis[0].drawCrosshair(e)
-        })
-        }
-
-        // Synchronize crosshairs between the two charts
-        $syncCrosshairJS
-    ";    
+            // Synchronize crosshairs between the two charts
+            $syncCrosshairJS
+        ";    
+    } else {
+        $chartScripts .= "// No crosshair synchronization needed for a single graph.";
+    }
 
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
