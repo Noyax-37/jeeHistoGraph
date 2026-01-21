@@ -167,7 +167,7 @@ public static function config() {
         $config[] = ["date_debut_histo_2dates_graph{$g}", ""];
         $config[] = ["date_fin_histo_2dates_graph{$g}", ''];
         $config[] = ["graph{$g}_bg_transparent", 1];
-        $config[] = ["graph{$g}_bg_color", ""];
+        $config[] = ["graph{$g}_bg_couleur", ""];
         $config[] = ["graph{$g}_bg_gradient_enabled", 0];
         $config[] = ["graph{$g}_bg_gradient_start", ""];
         $config[] = ["graph{$g}_bg_gradient_end", ""];
@@ -296,9 +296,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             // Si 3D activé, on désactive la barre de navigation
             $configNavigatorEnabled = 'false';
             $configBarreEnabled = 'false';
-            //$configButtonsEnabled = 'false';
         }
-        // $configNavigatorEnabled = 'true';
+        //$configNavigatorEnabled = 'true';
+        //$configBarreEnabled = 'true';
         $config3DAlpha = (int)$eqLogic->getConfiguration("graph{$g}_3D_alpha", 15);
         $config3DBeta = (int)$eqLogic->getConfiguration("graph{$g}_3D_beta", 15);
         $config3DDepth = (int)$eqLogic->getConfiguration("graph{$g}_3D_depth", 25);
@@ -322,6 +322,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $bgTransparent = $eqLogic->getConfiguration("graph{$g}_bg_transparent", 1);
 
         $plotBgCode = "null"; // par défaut = pas de fond (transparent)
+        $plotBgCode3d = "'#ffffff60'";
+        $plotBgmini = "80"; // atténuation pour les côtés des graphs 3d
 
         if (!$bgTransparent) {
             $useGradient = $eqLogic->getConfiguration("graph{$g}_bg_gradient_enabled", 0);
@@ -342,14 +344,15 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     270 => ['x1' => 1, 'y1' => 0, 'x2' => 0, 'y2' => 0],  // droite → gauche
                     315 => ['x1' => 1, 'y1' => 1, 'x2' => 0, 'y2' => 0],
                 ];
-                $dir = $angles[$angle] ?? $angles[90];
-
+                $dir = $angles[$angle];
+                
                 $plotBgCode = "{ linearGradient: { x1: {$dir['x1']}, y1: {$dir['y1']}, x2: {$dir['x2']}, y2: {$dir['y2']} }, stops: [[0, '$start'], [1, '$end']] }";
-
+                $plotBgCode3d = "{ linearGradient: { x1: {$dir['x1']}, y1: {$dir['y1']}, x2: {$dir['x2']}, y2: {$dir['y2']} }, stops: [[0, '" . $start .  $plotBgmini . "'], [1, '" . $end . $plotBgmini . "']] }";
             } else {
                 // Couleur unie
-                $bgColor = $eqLogic->getConfiguration("graph{$g}_bg_color", '#ffffff');
+                $bgColor = $eqLogic->getConfiguration("graph{$g}_bg_couleur", '#ffffff');
                 $plotBgCode = "'$bgColor'";
+                $plotBgCode3d = "'" . $bgColor . $plotBgmini . "'";
             }
         }
 
@@ -534,7 +537,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $visible = $showYAxis ? 'true' : 'false';
         $alternateYAxis = $eqLogic->getConfiguration("graph{$g}_alternate_yAxis", 1);
         $position = 'true'; // commencer à droite
-        $yAxisJS = 'yAxis: [';
+        $yAxisJS = '';
         $z = 5;
         foreach ($uniqueUnits as $idx => $u) {
             $unit = ($u == ' ' || $u == '') ? 'sans' : $u;
@@ -571,12 +574,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     zIndex: $z,
                     enabled: true,
                     snap: $cros,
-                }                
+                }
             },";
             $z += 1;
             $position = ($position == 'true' && $alternateYAxis == 1) ? 'false' : 'true'; // alterner gauche/droite
         }
-        $yAxisJS .= "],";
+        
         
         log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Y Axis JS: " . $yAxisJS);
 
@@ -652,7 +655,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $alignThresholdsJS = 'false';
                 }
 
-                log::add(__CLASS__, 'debug', "alignThresholdsJS $alignThresholdsJS stackingOptionEnabled $stackingOptionEnabled stackingOption $stackingOption finalCurveType $finalCurveType ");
+                // log::add(__CLASS__, 'debug', "alignThresholdsJS $alignThresholdsJS stackingOptionEnabled $stackingOptionEnabled stackingOption $stackingOption finalCurveType $finalCurveType ");
 
 
                 $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
@@ -758,7 +761,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $listeHisto = array_slice($listeHisto, -$limitHisto);
                         $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la courbe '{$indexNom}'.";
                     }
-                    $yAxisJS .= "yAxis: {visible: false},";
+                    $yAxisJS .= "visible: false";
                 } else {
 
                     //$recordData = [];
@@ -975,11 +978,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                     month: ['%B', 'De %B', ' à %B'],
                                     year: ['%Y', 'De %Y', ' à %Y']
                                 ";
-                    $navigatorJS =    "{ 
+                    $navigatorJS =    " 
                         enabled: $navigatorEnabled,
                         baseSeries: $baseSeries,
                         margin: 1
-                        }";
+                        ";
                 }
 
                 if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
@@ -1011,10 +1014,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'day', count: 7, text: '1s' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
-                    $navigatorJS =    "{ 
+                    $navigatorJS =    " 
                         enabled: $configNavigatorEnabled,
                         margin: 1
-                        }";
+                        ";
                 }
 
                 if ($compareType == 'none'){
@@ -1063,10 +1066,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             month: ['%B %Y', 'De %B', ' à %B %Y'],
                             year: ['%Y', 'De %Y', ' à %Y']
                                                 ";
-                    $navigatorJS =    "{ 
+                    $navigatorJS =    " 
                         enabled: $configNavigatorEnabled,
                         margin: 1
-                        }";
+                        ";
                     $xAxisJS .=  "
                                 labels: {
                                     skew3d: true,
@@ -1187,7 +1190,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
 
         
-        $rangeSelectorJS = "{
+        $rangeSelectorJS = "
             enabled: {$configButtonsEnabled},
             selected: 6,
             inputEnabled: false,
@@ -1199,7 +1202,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 x: {$xRangeSelectorButtonPosition},
                 y: {$yRangeSelectorButtonPosition},
             }
-        }";
+        ";
 
         // === DÉTECTION TIMELINE ET FORCAGE DU TYPE ===
         $isTimeline = false;
@@ -1234,11 +1237,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
                     },";
             }
-            $navigatorJS =    "{ 
+            $navigatorJS =    " 
                 enabled: $configNavigatorEnabled,
                 margin: 20,
                 {$xAxisNavigatorJS}
-            }";
+            ";
         }
 
         $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
@@ -1248,21 +1251,18 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 snap: $cros,
             },";
 
+        
+        if ($config3DEnabled != 'true'){
+            $plotBackgroundColorJS = "{$plotBgCode}";
+        } else {
+            $plotBackgroundColorJS = "'transparent'";
+        }
+        //$plotBackgroundColorJS = "{$plotBgCode}";
+
         $chartScripts .= "
         window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
-            time: {
-                useUTC: true
-            },
             chart: {
                 alignThresholds: $alignThresholdsJS,
-                type: '$graphType',
-                zooming: {
-                    mouseWheel: true,
-                    type: '{$zoomType}',
-                },                
-                backgroundColor: 'transparent',
-                plotBackgroundColor: {$plotBgCode},
-                spacing: [10, 0, 10, 0],
                 inverted: {$inverted},
                 options3d: {
                     enabled: {$config3DEnabled},
@@ -1271,12 +1271,76 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     depth: {$config3DDepth},
                     viewDistance: {$config3DViewDistance},
                     fitToPlot: true,
-                    axisLabelPosition: 'auto'
-                }                
+                    axisLabelPosition: 'auto',
+                    frame: {
+                        visible: 'auto',
+                        top: {
+                            color: {$plotBgCode3d},
+                            visible: 'auto'
+                        },
+                        bottom: {
+                            color: {$plotBgCode3d},
+                            visible: 'auto'
+                        },
+                        front: {
+                            color: {$plotBgCode},
+                            visible: 'auto'
+                        },
+                        back: {
+                            color: {$plotBgCode},
+                            visible: 'auto',
+                        },
+                        left: {
+                            color: {$plotBgCode3d},
+                            visible: 'auto'
+                        },
+                        right: {
+                            color: {$plotBgCode3d},
+                            visible: 'auto'
+                        },
+                    }                    
+                },
+                panning: true,
+                panKey: 'shift',                
+                plotBackgroundColor: $plotBackgroundColorJS,
+                spacing: [10, 0, 10, 0],
+                type: '$graphType',
+                zooming: {
+                    mouseWheel: true,
+                    type: '{$zoomType}',
+                },                
             },
+            credits: { enabled: false },
             exporting: {
                 enabled: true,
+                fallbackToExportServer: false,
+                libURL: '/3rdparty/highstock/lib',
+                local: true,
             },
+            legend: { 
+                enabled: {$showLegend},
+            },
+            navigator: { 
+                {$navigatorJS}
+                },
+            plotOptions: {
+                series: {
+                    stacking: '$stackingOption',
+                    groupPadding:0.1,
+                    pointPadding:0,
+                    fillOpacity: 0.1,
+                    connectNulls: false,
+                    turboThreshold: 0                    
+                },
+            },
+            rangeSelector: {
+                {$rangeSelectorJS}
+                },
+            scrollbar: {
+                margin: 10,
+                enabled: {$configBarreEnabled}
+            },
+            series: [{$seriesJS}],
             title: { 
                 floating: false,
                 margin: 0,
@@ -1289,22 +1353,15 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     color: 'rgb(100, 100, 100)' 
                 }
             },
-            xAxis: { {$xAxisJS} },
-            {$yAxisJS}
-            credits: { enabled: false },
-            legend: { 
-                enabled: {$showLegend},
-            },
-            rangeSelector: {$rangeSelectorJS},
-            navigator: {$navigatorJS},
-            scrollbar: {
-                margin: 10,
-                enabled: {$configBarreEnabled}
+            time: {
+                useUTC: true
             },
             tooltip: {
                 enabled: $tooltipEnabled,
                 xDateFormat: '{$xDateFormatJS}',
-                dateTimeLabelFormats: { {$dateTimeLabelFormats} },
+                dateTimeLabelFormats: { 
+                    {$dateTimeLabelFormats} 
+                    },
                 backgroundColor: 'rgb(var(--bg-color))',
                 useHTML: true,
                 useHTML: true,
@@ -1317,17 +1374,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 shared: $sharedJS,
                 valueDecimals: 2,
             },
-            plotOptions: {
-                series: {
-                    stacking: '$stackingOption',
-                    groupPadding:0.1,
-                    pointPadding:0,
-                    fillOpacity: 0.1,
-                    connectNulls: false,
-                    turboThreshold: 0                    
+            xAxis: {
+                showLastLabel: true,
+                {$xAxisJS}
                 },
-            },
-            series: [{$seriesJS}]
+            yAxis: [ {$yAxisJS} ],
         });
         setTimeout(() => {
           if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {

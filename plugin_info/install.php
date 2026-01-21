@@ -74,7 +74,7 @@ function jeeHistoGraph_update() {
         if (version_compare($version, $actualVersion, '<')) {
             $decode = $eqLogic->getConfiguration();
             foreach ($decode as $key => $value) {
-                if (in_array($key, $config)) {
+                if (in_array($key, $config) || substr($key, -9) == "_bg_color") {
                     if ($key == "graph1_typeRegroup" || $key == "graph2_typeRegroup" || $key == "graph3_typeRegroup" || $key == "graph4_typeRegroup") {
                         // Migration des anciennes valeurs de typeRegroup
                         switch ($value) {
@@ -95,6 +95,12 @@ function jeeHistoGraph_update() {
                             $eqLogic   ->setConfiguration($key, $newValue);
                         }
                     }
+                    if (substr($key, -9) == "_bg_color"){
+                        $newKey = substr($key, 0, 10) . "couleur";
+                        $eqLogic   ->setConfiguration($newKey, $value);
+                        $eqLogic   ->setConfiguration($key, null);
+                        log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} to new key: {$newKey} with value: {$value}");
+                    }
                     if ($key == "graphLayout"){
                         // Migration des anciennes valeurs de graphLayout
                         switch ($value) {
@@ -110,9 +116,9 @@ function jeeHistoGraph_update() {
                             $eqLogic   ->setConfiguration($key, $newValue);
                         }
                     }
-                    if (substr($key,-4) =="_nom"){
+                    if (substr($key,-4) == "_nom"){
                         if ($value != ""){
-                            if (version_compare('2.04', $actualVersion, '<=')){ //met à jour la case à cocher d'affichage si la version avant mise à jour est <=2.04
+                            if (version_compare('2.04', $actualVersion, '>=')){ //met à jour la case à cocher d'affichage si la version avant mise à jour est <=2.04
                                 $decomp=explode("_",$key);
                                 $graph=explode("graph",$decomp[0])[1];
                                 $index=(explode("index",$decomp[1])[1]);
@@ -129,6 +135,7 @@ function jeeHistoGraph_update() {
                 $eqLogic   ->setConfiguration($key, null);
             }
 
+            $decode = $eqLogic->getConfiguration();
             foreach( $configs as $key ) {
                 if (!isset($decode[$key[0]])) {
                     log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' adding new configuration key: {$key[0]} with default value: " . json_encode($key[1]));

@@ -691,14 +691,22 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 			-->
 										<div class="form-group">
-											<label class="col-sm-6 control-label">{{Permettre zoom par souris axe des x : }}</label>
+											<label class="col-sm-6 control-label">{{Permettre zoom par souris axe des x : }}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{une fois le zoom réalisé on peut naviguer dans le graphique en maintenant shift enfoncé + bouton gauche de la souris}}"></i>
+												</sup>
+											</label>
 											<div class="col-sm-1">
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_zoom_axe_x" checked>
 											</div>
 										</div>
 
 										<div class="form-group">
-											<label class="col-sm-6 control-label">{{Permettre zoom par souris axe des y : }}</label>
+											<label class="col-sm-6 control-label">{{Permettre zoom par souris axe des y : }}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{une fois le zoom réalisé on peut naviguer dans le graphique en maintenant shift enfoncé + bouton gauche de la souris}}"></i>
+												</sup>
+											</label>
 											<div class="col-sm-1">
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_zoom_axe_y" checked>
 											</div>
@@ -715,7 +723,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<div class="col-lg-12 bgColorInput">
 												<label class="col-sm-7 control-label">{{Couleur unie}}</label>
 												<div class="col-sm-2">
-													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_color" value="#ffffff">
+													<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_bg_couleur" value="#ffffff">
 												</div>
 											</div>
 
@@ -1309,7 +1317,7 @@ $(function() {
 $(document).on('change', '[data-l2key^="graph"][data-l2key$="_bg_transparent"]', function() {
     const $checkbox = $(this);
     const graphNum = $checkbox.data('l2key').match(/graph(\d)_bg_transparent/)[1];
-    const $colorInput = $checkbox.closest('.form-group').find('[data-l2key="graph' + graphNum + '_bg_color"]').closest('.bgColorInput');
+    const $colorInput = $checkbox.closest('.form-group').find('[data-l2key="graph' + graphNum + '_bg_couleur"]').closest('.bgColorInput');
     
     if ($checkbox.is(':checked')) {
         $colorInput.hide();
@@ -1323,7 +1331,7 @@ $('#bt_resetAllBg').on('click', function() {
     $('.graphConfig:visible').each(function() {
         const graphNum = $(this).data('graph');
         const $checkbox = $(this).find('[data-l2key="graph' + graphNum + '_bg_transparent"]');
-        const $colorInput = $(this).find('[data-l2key="graph' + graphNum + '_bg_color"]').closest('.bgColorInput');
+        const $colorInput = $(this).find('[data-l2key="graph' + graphNum + '_bg_couleur"]').closest('.bgColorInput');
         
         $checkbox.prop('checked', true).trigger('change');
         $colorInput.hide();
