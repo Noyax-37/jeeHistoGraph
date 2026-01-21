@@ -25,9 +25,11 @@ function jeeHistoGraph_install() {
 // Fonction exécutée automatiquement après la mise à jour du plugin
 function jeeHistoGraph_update() {
 
+    $updateToLog = "jeeHistoGraphUpdate";
+
     $data = json_decode(file_get_contents(dirname(__FILE__) . '/info.json'), true);
     if (!is_array($data)) {
-        log::add('jeeHistoGraph','warning',__('Impossible de décoder le fichier info.json (non bloquant ici)', __FILE__));
+        log::add('jeeHistoGraphUpdate','warning',__('Impossible de décoder le fichier info.json (non bloquant ici)', __FILE__));
     }
 
     try {
@@ -35,16 +37,24 @@ function jeeHistoGraph_update() {
         config::save('version', $core_version, 'jeeHistoGraph');
     } catch (\Exception $e) {
         $core_version = '0.0';
-        log::add('jeeHistoGraph','warning',__('Pas de version de plugin (non bloquant ici)', __FILE__));
+        log::add('jeeHistoGraphUpdate','warning',__('Pas de version de plugin (non bloquant ici)', __FILE__));
     }
 
     message::add('jeeHistoGraph', __('Installation du plugin jeeHistoGraph en cours...', __FILE__));
     log::add('jeeHistoGraph','debug','jeeHistoGraph_install');
     log::add('jeeHistoGraph','info','**********************************************************');
     log::add('jeeHistoGraph','info',__('********** Installation du plugin jeeHistoGraph **********', __FILE__));
+    log::add('jeeHistoGraph','info',__('**** Voir log jeeHistoGraphUpdate pour plus de détail ****', __FILE__));
     log::add('jeeHistoGraph','info','**********************************************************');
     log::add('jeeHistoGraph','info','**         Core version    : '. $core_version. str_repeat(" ",27-strlen($core_version)) . '**');
     log::add('jeeHistoGraph','info','**********************************************************');
+
+    log::add('jeeHistoGraphUpdate','debug','jeeHistoGraph_install');
+    log::add('jeeHistoGraphUpdate','info','**********************************************************');
+    log::add('jeeHistoGraphUpdate','info',__('********** Installation du plugin jeeHistoGraph **********', __FILE__));
+    log::add('jeeHistoGraphUpdate','info','**********************************************************');
+    log::add('jeeHistoGraphUpdate','info','**         Core version    : '. $core_version. str_repeat(" ",27-strlen($core_version)) . '**');
+    log::add('jeeHistoGraphUpdate','info','**********************************************************');
 
     message::add('jeeHistoGraph', __('Mise à jour de la configuration des équipements jeeHistoGraph en cours...', __FILE__));   
     $configs = jeeHistoGraph::config();
@@ -52,11 +62,11 @@ function jeeHistoGraph_update() {
 
         $refresh = $eqLogic->getCmd('action', 'refresh');
         if (!is_object($refresh)) {
-            log::add("jeeHistoGraph", "debug", "création de refresh pour {$eqLogic->getName()}");
+            log::add('jeeHistoGraphUpdate', "debug", "création de refresh pour {$eqLogic->getName()}");
             $refresh = new jeeHistoGraphCmd();
             $refresh->setName(__('Rafraichir', __FILE__));
         } else {
-            log::add("jeeHistoGraph", "debug", "refresh existe pour l'eqlogiq {$eqLogic->getName()}");
+            log::add('jeeHistoGraphUpdate','debug', "refresh existe pour l'eqlogiq {$eqLogic->getName()}");
         }
         $refresh->setEqLogic_id($eqLogic->getId());
         $refresh->setLogicalId('refresh');
@@ -70,7 +80,7 @@ function jeeHistoGraph_update() {
         }
         $version = $eqLogic->getConfiguration('version', '0.0');
         $actualVersion = config::byKey('version', 'jeeHistoGraph', '0.0', true);
-        log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' current config version: {$version}, new plugin version: {$actualVersion}");
+        log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' current config version: {$version}, new plugin version: {$actualVersion}");
         if (version_compare($version, $actualVersion, '<')) {
             $decode = $eqLogic->getConfiguration();
             foreach ($decode as $key => $value) {
@@ -91,7 +101,7 @@ function jeeHistoGraph_update() {
                                 $newValue = $value;
                         }
                         if ($newValue != $value) {
-                            log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} from value: {$value} to new value: {$newValue}");
+                            log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} from value: {$value} to new value: {$newValue}");
                             $eqLogic   ->setConfiguration($key, $newValue);
                         }
                     }
@@ -99,7 +109,7 @@ function jeeHistoGraph_update() {
                         $newKey = substr($key, 0, 10) . "couleur";
                         $eqLogic   ->setConfiguration($newKey, $value);
                         $eqLogic   ->setConfiguration($key, null);
-                        log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} to new key: {$newKey} with value: {$value}");
+                        log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} to new key: {$newKey} with value: {$value}");
                     }
                     if ($key == "graphLayout"){
                         // Migration des anciennes valeurs de graphLayout
@@ -112,7 +122,7 @@ function jeeHistoGraph_update() {
                                 $newValue = $value;
                         }
                         if ($newValue != $value) {
-                            log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} from value: {$value} to new value: {$newValue}");
+                            log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} from value: {$value} to new value: {$newValue}");
                             $eqLogic   ->setConfiguration($key, $newValue);
                         }
                     }
@@ -124,21 +134,21 @@ function jeeHistoGraph_update() {
                                 $index=(explode("index",$decomp[1])[1]);
                                 $curve = intval($index) < 10 ? $index[-1] : $index;
                                 $newDisplayKey="display_graph".$graph."_curve".$curve;
-                                log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating display configuration key: {$newDisplayKey} to value: 1 because {$key} is set to '{$value}'");
+                                log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating display configuration key: {$newDisplayKey} to value: 1 because {$key} is set to '{$value}'");
                                 $eqLogic   ->setConfiguration($newDisplayKey, 1);
                             }
                         }
                     }
                     continue;
                 }
-                log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' removing obsolete configuration key: {$key} with value: " . json_encode($value));
+                log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' removing obsolete configuration key: {$key} with value: " . json_encode($value));
                 $eqLogic   ->setConfiguration($key, null);
             }
 
             $decode = $eqLogic->getConfiguration();
             foreach( $configs as $key ) {
                 if (!isset($decode[$key[0]])) {
-                    log::add('jeeHistoGraph', 'debug', "EqLogic: '{$eqLogic->getName()}' adding new configuration key: {$key[0]} with default value: " . json_encode($key[1]));
+                    log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' adding new configuration key: {$key[0]} with default value: " . json_encode($key[1]));
                     $eqLogic   ->setConfiguration($key[0], $key[1]);
                 }
             }

@@ -530,7 +530,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
         $nbAxes   = count($uniqueUnits);
 
-        log::add(__CLASS__, 'debug', "mini = ". json_encode($mini) . " maxi = ". json_encode($maxi));
+        //log::add(__CLASS__, 'debug', "mini = ". json_encode($mini) . " maxi = ". json_encode($maxi));
 
         // construire les axes Y
         $showYAxis = $eqLogic->getConfiguration("graph{$g}_show_yAxis", 1);
@@ -581,7 +581,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
         
         
-        log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Y Axis JS: " . $yAxisJS);
+        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Y Axis JS: " . $yAxisJS);
 
         $first = false; // Reset for second loop
         $nbSeries = 0;
@@ -808,6 +808,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
                             }
                         }
+                    }
+                    $key = strtotime($endTime . 'UTC') * 1000;
+                    if (!array_key_exists($key, $listeHisto)) { // permet d'afficher l'axe X jusqu'au dernier jour de la période si les données ne vont pas jusqu'à $enTime (affichage d'une courbe interrompue)
+                        $listeHisto[] = [strtotime($endTime . 'UTC') * 1000, null];
+                        $message .= "add last value null at " . strtotime($endTime . 'UTC');
                     }
 
                 }
