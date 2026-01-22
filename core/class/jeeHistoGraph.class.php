@@ -315,6 +315,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $zoomType = 'none';
         }
 
+        $xAxisMinJS = 'undefined';
+        $xAxisMaxJS = 'undefined';
+        
+
         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
         
 
@@ -374,6 +378,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateFinGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateFinGraph));
                 $actualisation = false;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
                 break;
             case 'deDate':
@@ -381,12 +387,16 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'nbJours':
                 $delai = ($global) ? $delaiGraph : intval($eqLogic->getConfiguration("delai_histo_graph{$g}"));
                 $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 $actualisation = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
@@ -395,29 +405,39 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 break;
             case 'dWeek':
                 $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dMonth':
                 $startTime = date("Y-m-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dYear':
                 $startTime = date("Y-01-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dAll':
                 $startTime = date("1970-01-01 00:00:00");
                 $endTime = date("Y-m-d H:i:s", time());
                 $actualisation = true;
+                $xAxisMinJS = 'undefined';
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             default:
@@ -547,6 +567,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
             $align = ($position == 'false' && $alternateYAxis == 1) ? 'right' : 'left';
             $yAxisJS .= "{
+                endOnTick: false,
                 plotLines: [ " . (isset($plot[$unit]) ? $plot[$unit] : '') . " ],
                 max: " . (isset($maxi[$u]) && $maxi[$u] !== '' ? floatval($maxi[$u]) : 'null') . ",
                 min: " . (isset($mini[$u]) && $mini[$u] !== '' ? floatval($mini[$u]) : 'null') . ",
@@ -745,11 +766,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
 
                         if ($refPrec) {
-                            $description = $previousLabel . ' → ' . $label . ' le ' . date('d/m/Y à H:i:s', $ts/1000);
+                            $description = $previousLabel . ' → ' . $label . ' le ' . gmdate('d/m/Y à H:i:s', $ts/1000);
                         } else {
                             $description = 'Le ' . date('d/m/Y à H:i:s', $ts/1000);
                         }
-
+                        
                         $listeHisto[] = [
                             'x' => $ts,
                             'name' => $indexNom,           // nom de la série (ou de l'événement)
@@ -761,7 +782,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $listeHisto = array_slice($listeHisto, -$limitHisto);
                         $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la courbe '{$indexNom}'.";
                     }
-                    $yAxisJS .= "visible: false";
+                    $yAxisJS = "{ visible: false }";
                 } else {
 
                     //$recordData = [];
@@ -786,7 +807,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
                             $listeHisto[] = [$ts,  $valueHisto * $coef];
                         } elseif ($compareType == 'prev_year') {
-                            $recordDate = new DateTime($record->getDatetime());
+                            $recordDate = new DateTime($record->getDatetime() . ' UTC');
                             $recordYear = (int)$recordDate->format('Y');
                             $recordMonth = (int)$recordDate->format('m');
                             if ($recordMonth < $monthToStart) {
@@ -798,7 +819,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             $ts = $adjustedDate->getTimestamp() * 1000;
                             $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
                         } elseif ($compareType == 'prev_year_month') {
-                            $recordDate = new DateTime($record->getDatetime());
+                            $recordDate = new DateTime($record->getDatetime() . ' UTC');
                             $recordYear = (int)$recordDate->format('Y');
                             $recordMonth = (int)$recordDate->format('m');
                             if ($recordMonth == $compareMonth) {
@@ -809,12 +830,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             }
                         }
                     }
-                    $key = strtotime($endTime . 'UTC') * 1000;
-                    if (!array_key_exists($key, $listeHisto)) { // permet d'afficher l'axe X jusqu'au dernier jour de la période si les données ne vont pas jusqu'à $enTime (affichage d'une courbe interrompue)
-                        $listeHisto[] = [strtotime($endTime . 'UTC') * 1000, null];
-                        $message .= "add last value null at " . strtotime($endTime . 'UTC');
-                    }
-
                 }
 
                 $cmdId = str_replace('#', '', $cmdGraphe);
@@ -988,6 +1003,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         baseSeries: $baseSeries,
                         margin: 1
                         ";
+                    //$xAxisMinJS = strtotime($year . '-01-01 00:00:00 UTC') * 1000;
+                    //$xAxisMaxJS = strtotime($year . '-12-31 00:00:00 UTC') * 1000;
+                    $xAxisMinJS = 'undefined';
+                    $xAxisMaxJS = 'undefined';
                 }
 
                 if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
@@ -1023,7 +1042,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         enabled: $configNavigatorEnabled,
                         margin: 1
                         ";
+                    $xAxisMinJS = 'undefined';
+                    $xAxisMaxJS = 'undefined';
                 }
+
 
                 if ($compareType == 'none'){
                     //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
@@ -1092,12 +1114,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLocaleMs = Math.floor(new Date().getTime()/1000 + (60*60)) * 1000; 
+                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
                                 const y = parseFloat(_options.display_value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                    const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
-                                    const dateObj = new Date(dateLocaleMs);
+                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                    const series = chart.series[{$nbSeries}-1];
+                                    const dateObj = new Date(new Date(_options.valueDate).getTime());
                                     const valeur = y + ' {$unite}';
                                     
                                     // Récupérer le label du dernier point existant (si il y en a un)
@@ -1114,12 +1137,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                                             dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
 
                                     series.addPoint({
-                                        x: dateLocaleMs,
+                                        x: dateLastValue,
                                         name: '{$indexNom}',
                                         label: valeur,
                                         description: dateFormatee 
                                     }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                    console.log('Points nouveaux :', series.points);
                                 };
                             });
                         }\n";
@@ -1127,12 +1149,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLocaleMs = Math.floor(new Date().getTime()/1000 + (60*60)) * 1000; 
+                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
                                 const y = parseFloat(_options.display_value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                    const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
-                                    const dateObj = new Date(dateLocaleMs);
+                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                    const series = chart.series[{$nbSeries}-1];
+                                    const dateObj = new Date();
                                     const valeur = y + ' {$unite}';
                                     
                                     const dateFormatee = 'Le ' + 
@@ -1141,7 +1164,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                                             dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
 
                                     series.addPoint({
-                                        x: dateLocaleMs,
+                                        x: dateLastValue,
                                         name: '{$indexNom}',
                                         label: valeur,
                                         description: dateFormatee 
@@ -1157,13 +1180,18 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $cmdUpdateJS .= "
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                            const dateLocaleMs = Math.floor(new Date().getTime()/1000 + (60*60)) * 1000;
+                            debug = true;
+                            const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
                             let currentRawValue = parseFloat(_options.value) * {$coef};
 
                             const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
                             if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
                                 const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
+
+                                if (debug){console.log(_options);}
+                                if (debug){console.log(_options.valueDate);}
+                                if (debug){console.log(window.chart_g{$g}_id{$eqLogic->getId()});}
 
                                 // Récupère la dernière valeur brute stockée (ou null si première fois)
                                 let lastRawValue = series.userOptions?.lastRawValue ?? null;
@@ -1179,9 +1207,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 }
 
                                 // Ajout du point
-                                series.addPoint([dateLocaleMs, yToAdd], true, false, true);
-                                console.log('Points nouveaux : ' + yToAdd + ' Série : ' + {$nbSeries} + ' _options.unit: ' + _options.unit);
-                                console.log(_options);
+                                series.addPoint([dateLastValue, yToAdd], true, false, true);
                                 
                                 // Sauvegarde la valeur brute pour la prochaine mise à jour
                                 if (!series.userOptions) series.userOptions = {};
@@ -1327,7 +1353,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             },
             navigator: { 
                 {$navigatorJS}
-                },
+            },
             plotOptions: {
                 series: {
                     stacking: '$stackingOption',
@@ -1381,9 +1407,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             },
             xAxis: {
                 showLastLabel: true,
+                min: $xAxisMinJS,
+                max: $xAxisMaxJS,
                 {$xAxisJS}
                 },
-            yAxis: [ {$yAxisJS} ],
+            yAxis: [ 
+                {$yAxisJS} 
+                ],
         });
         setTimeout(() => {
           if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {

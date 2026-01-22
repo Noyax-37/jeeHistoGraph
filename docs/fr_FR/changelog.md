@@ -11,10 +11,15 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.07
+- correction d'une erreur de saisie qui empéchait les graph de type timeline de s'afficher
+- correction pour l'heure des graphiques de comparaison temporelle (oubli lors du passage en V2.04)
+- meilleure gestion des fins de courbes sans données
+- corrections de plusieurs problèmes de dates
+
 # v2.06
 - meilleure gestion des fonds en couleur pour les graphiques 3D
 - réorganisation du code, plus lisible pour moi mais invisible pour l'utilisateur
-
 
 # v2.05
 - ajout de l'option d'affichage ou non de la courbe d'un graph et non plus dépendant de l'attibution d'un libellé
