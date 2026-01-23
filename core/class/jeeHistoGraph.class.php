@@ -517,14 +517,16 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     }
                     $units[] = $unite;
                     $unit = ($unite == ' ' || $unite == '') ? 'sans' : $unite;
-                    $plot[$unit] .= "
-                    {
-                        id: {$i},
-                        dashStyle: 'longdashdot',
-                        color: '$colorPlotlines',
-                        value: $plotlines,
-                        width: 2
-                    },";
+                    if (!isset($plot[$unit])){
+                        $plot[$unit] = "
+                        {
+                            id: {$i},
+                            dashStyle: 'longdashdot',
+                            color: '$colorPlotlines',
+                            value: $plotlines,
+                            width: 2
+                        },";
+                    }
                     if (!isset($colorYAxis[$unit])) {
                         $colorYAxis[$unit] = $colorPlotlines;
                     }
@@ -567,7 +569,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
             $align = ($position == 'false' && $alternateYAxis == 1) ? 'right' : 'left';
             $yAxisJS .= "{
-                endOnTick: false,
                 plotLines: [ " . (isset($plot[$unit]) ? $plot[$unit] : '') . " ],
                 max: " . (isset($maxi[$u]) && $maxi[$u] !== '' ? floatval($maxi[$u]) : 'null') . ",
                 min: " . (isset($mini[$u]) && $mini[$u] !== '' ? floatval($mini[$u]) : 'null') . ",
@@ -1180,23 +1181,22 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $cmdUpdateJS .= "
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                            debug = true;
-                            const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
-                            let currentRawValue = parseFloat(_options.value) * {$coef};
-
-                            const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
-
+                            
+                            debug = false;
+                            
                             if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
+
+                                const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
+
                                 const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
-
+                                let currentRawValue = _options.display_value;
                                 if (debug){console.log(_options);}
-                                if (debug){console.log(_options.valueDate);}
-                                if (debug){console.log(window.chart_g{$g}_id{$eqLogic->getId()});}
-
+                                
                                 // Récupère la dernière valeur brute stockée (ou null si première fois)
                                 let lastRawValue = series.userOptions?.lastRawValue ?? null;
 
-                                let yToAdd = currentRawValue; // par défaut : valeur brute
+                                let yToAdd = currentRawValue * {$coef}; // par défaut : valeur brute
 
                                 if (variation) {
                                     if (lastRawValue !== null) {
@@ -1205,6 +1205,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                         yToAdd = 0; // premier point en mode variation
                                     }
                                 }
+                                if (debug){console.log('yToAdd: ', yToAdd);}
 
                                 // Ajout du point
                                 series.addPoint([dateLastValue, yToAdd], true, false, true);
