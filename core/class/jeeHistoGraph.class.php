@@ -632,6 +632,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
             $variation = $eqLogic->getConfiguration("graph{$g}_curve{$i}_variation", 0) ? true : false;
             $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
+            $coef = 1;
             
             if ($displayCurve == '0' || empty($cmdGraphe)) {
                 continue;
@@ -769,7 +770,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         if ($refPrec) {
                             $description = $previousLabel . ' → ' . $label . ' le ' . gmdate('d/m/Y à H:i:s', $ts/1000);
                         } else {
-                            $description = 'Le ' . date('d/m/Y à H:i:s', $ts/1000);
+                            $description = 'Le ' . gmdate('d/m/Y à H:i:s', $ts/1000);
                         }
                         
                         $listeHisto[] = [
@@ -781,7 +782,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     }
                     if (count($listeHisto) > $limitHisto) {
                         $listeHisto = array_slice($listeHisto, -$limitHisto);
-                        $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la courbe '{$indexNom}'.";
+                        $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la timeline '{$indexNom}'.";
                     }
                     $yAxisJS = "{ visible: false }";
                 } else {
@@ -1116,7 +1117,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                                 const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
-                                const y = parseFloat(_options.display_value);
+                                const y = parseFloat(_options.value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
                                     const chart = window.chart_g{$g}_id{$eqLogic->getId()};
@@ -1151,12 +1152,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                                 const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
-                                const y = parseFloat(_options.display_value);
+                                const y = parseFloat(_options.value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
                                     const chart = window.chart_g{$g}_id{$eqLogic->getId()};
                                     const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date();
+                                    const dateObj = new Date(new Date(_options.valueDate).getTime());
                                     const valeur = y + ' {$unite}';
                                     
                                     const dateFormatee = 'Le ' + 
@@ -1170,7 +1171,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                         label: valeur,
                                         description: dateFormatee 
                                     }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                    console.log('Points nouveaux :', series.points);
                                 };
                             });
                         }\n";
@@ -1190,8 +1190,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
                                 const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
-                                let currentRawValue = _options.display_value;
-                                if (debug){console.log(_options);}
+                                let currentRawValue = _options.value;
+                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit);}
                                 
                                 // Récupère la dernière valeur brute stockée (ou null si première fois)
                                 let lastRawValue = series.userOptions?.lastRawValue ?? null;

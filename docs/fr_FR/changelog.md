@@ -11,6 +11,10 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.08
+- corection erreur affichage de certaines valeurs en update
+- correction erreur d'affichage des dates pour certaines configurations de la timeline
+
 # v2.07
 - correction d'une erreur de saisie qui empéchait les graph de type timeline de s'afficher
 - correction pour l'heure des graphiques de comparaison temporelle (oubli lors du passage en V2.04)
