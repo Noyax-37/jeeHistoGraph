@@ -360,8 +360,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
         }
 
-        $uid = $replace['#uid#'];
-        $containerId = "graphContainer{$uid}_{$g}";
+        $id = $replace['#id#'];
+        $containerId = "graphContainer{$id}_{$g}";
         $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 98%; margin: 0 1% 0 1%;\"></div>";
         $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
         $global = false;
@@ -1063,6 +1063,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         tooltip: {
                             pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
                         },
+                        //marker: { symbol: 'square' },
                         dateTimeLabelFormats: {
                             millisecond: [
                                 '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
@@ -1116,13 +1117,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
                                     const chart = window.chart_g{$g}_id{$eqLogic->getId()};
                                     const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.valueDate).getTime());
+                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
                                     const valeur = y + ' {$unite}';
                                     
                                     // Récupérer le label du dernier point existant (si il y en a un)
@@ -1151,13 +1152,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
                                     const chart = window.chart_g{$g}_id{$eqLogic->getId()};
                                     const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.valueDate).getTime());
+                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
                                     const valeur = y + ' {$unite}';
                                     
                                     const dateFormatee = 'Le ' + 
@@ -1182,16 +1183,17 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             
-                            debug = false;
+                            debug = true;
                             
                             if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
 
                                 const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
                                 const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
                                 let currentRawValue = _options.value;
-                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit);}
+                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
+                                if (debug){console.log('options: ', _options);}
                                 
                                 // Récupère la dernière valeur brute stockée (ou null si première fois)
                                 let lastRawValue = series.userOptions?.lastRawValue ?? null;
@@ -1292,6 +1294,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         //$plotBackgroundColorJS = "{$plotBgCode}";
 
         $chartScripts .= "
+$(document).ready(function() {        
         window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
             chart: {
                 alignThresholds: $alignThresholdsJS,
@@ -1416,11 +1419,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 {$yAxisJS} 
                 ],
         });
+$(window).trigger('resize'); // Simule un resize pour forcer le reflow
+});        
         setTimeout(() => {
           if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {
             window.chart_g{$g}_id{$eqLogic->getId()}.reflow()
           }
-        }, 50);
+        }, 50);       
         {$cmdUpdateJS}
         ";
     }

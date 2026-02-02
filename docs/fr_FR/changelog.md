@@ -12,6 +12,10 @@ Lien vers:
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
 # v2.08
+- corection défaut d'affichage des valeurs identiques en update
+- ajout de l'option "simples points" pour le type de courbe
+
+# v2.08
 - corection erreur affichage de certaines valeurs en update
 - correction erreur d'affichage des dates pour certaines configurations de la timeline
 

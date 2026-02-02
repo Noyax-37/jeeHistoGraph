@@ -960,6 +960,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																	<option value="area">{{Aire}}</option>
 																	<option value="column">{{Colonne}}</option>
 																	<option value="bar">{{Barre}}</option>
+																	<option value="scatter">{{Simples points}}</option>
 																	<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
 																</select>
 															</div>
@@ -1055,6 +1056,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<option value="area">{{Aire}}</option>
 																<option value="column">{{Colonne}}</option>
 																<option value="bar">{{Barre}}</option>
+																<option value="scatter">{{Simples points}}</option>
 															</select>
 														</td>
 														<td class="text-center checkbox-cell">
