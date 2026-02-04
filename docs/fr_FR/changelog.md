@@ -16,6 +16,7 @@ Lien vers:
 - correction pour l'affichage des crosshairs entre graphiques
 - ajout de la possibilité de bloquer les updates automatiques des graphiques (les graphiques avec une date de fin définie ne se mettent pas à jour automatiquement, cette option permet de bloquer les updates pour les graphiques sans date de fin)
 - ajout d'une option pour garder ou pousser dehors les premières données lors d'un update
+- ajout d'options supplémentaires pour le range selector (dernières 30 secondes, 1 minute, 5 minutes, 15 minutes)
 
 # v2.10
 - ajout de l'ordre d'affichage des courbes dans le tableau de configuration
