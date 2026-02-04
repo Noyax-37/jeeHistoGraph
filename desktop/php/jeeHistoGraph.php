@@ -81,16 +81,24 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 		z-index: 10;
 	}
 
-	.sticky-left-1 {
+	.sticky-left-10 {
 		position: sticky;
 		left: 80px;
 		background-color: rgb(var(--panel-bg-color));
 		z-index: 10;
 	}
 
-	.sticky-left-2 {
+	.sticky-left-20 {
 		position: sticky;
-		left: 120px;
+		text-align: center;
+		left: 130px;
+		background-color: rgb(var(--panel-bg-color));
+		z-index: 10;
+	}
+
+	.sticky-left-30 {
+		position: sticky;
+		left: 170px;
 		background-color: rgb(var(--panel-bg-color));
 		z-index: 10;
 	}
@@ -275,6 +283,13 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<option value="nbJours">{{en nombre de jours}}</option>
 												<option value="deDate">{{à partir d'une date}}</option>
 												<option value="deDateAdate">{{entre 2 dates}}</option>
+												<option disabled="disabled">_____</option>
+												<option value="dLast5Min">{{Dernières 5 minute}}</option>
+												<option value="dLast15Min">{{Dernières 15 minutes}}</option>
+												<option value="dLast30Min">{{Dernières 30 minutes}}</option>
+												<option value="dLastHour">{{Dernière heure}}</option>
+												<option value="dLast6Hours">{{Dernières 6 heures}}</option>
+												<option value="dLast12Hours">{{Dernières 12 heures}}</option>
 												<option disabled="disabled">_____</option>
 												<option value="dDay">{{Aujourd'hui}}</option>
 												<option value="dWeek">{{Cette semaine}}</option>
@@ -787,6 +802,13 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													<option value="deDate">{{À partir d'une date}}</option>
 													<option value="deDateAdate">{{Entre 2 dates}}</option>
 													<option disabled="disabled">_____</option>
+													<option value="dLast5Min">{{Dernières 5 minute}}</option>
+													<option value="dLast15Min">{{Dernières 15 minutes}}</option>
+													<option value="dLast30Min">{{Dernières 30 minutes}}</option>
+													<option value="dLastHour">{{Dernière heure}}</option>
+													<option value="dLast6Hours">{{Dernières 6 heures}}</option>
+													<option value="dLast12Hours">{{Dernières 12 heures}}</option>
+													<option disabled="disabled">_____</option>
 													<option value="dDay">{{Aujourd'hui}}</option>
 													<option value="dWeek">{{Cette semaine}}</option>
 													<option value="dMonth">{{Ce mois}}</option>
@@ -938,19 +960,25 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											<table class="table table-bordered table-condensed" style="width: 100%; table-layout: fixed;">
 												<thead>
 													<tr>
-														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th>
-														<th class="text-center sticky-left-1" style="width: 40px;">{{Aff?}}
+														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th> 		<!-- 1 -->
+														<th class="text-center sticky-left-10" style="width: 50px;">{{Ordre}}		<!-- 2 -->
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Ordre d'affichage des courbes dans le graphique}}"></i>
+															</sup>
+
+														</th>
+														<th class="text-center sticky-left-20" style="width: 40px;">{{Aff?}} 		<!-- 3 -->
 															<sup>
 																<i class="fas fa-question-circle tooltips" title="{{Cochez pour afficher la courbe dans le graphique}}"></i>
 															</sup>
 														</th>
-														<th class="text-center sticky-left-2" style="width: 140px;">{{Libellé}}
+														<th class="text-center sticky-left-30" style="width: 140px;">{{Libellé}} 		<!-- 4 -->
 															<sup>
 																<i class="fas fa-question-circle tooltips" title="{{Nom de la courbe dans le graphique, laisser vide pour utiliser le nom de la commande}}"></i>
 															</sup>
 														</th>
-														<th class="text-center" style="width: 400px;">{{Commande}}</th>
-														<th class="text-center" style="width: 400px;">
+														<th class="text-center" style="width: 400px;">{{Commande}}</th> 		<!-- 5 -->
+														<th class="text-center" style="width: 400px;"> 							<!-- 6 -->
 															<div>{{Type de courbe par défaut (ci-dessous) ou par courbe}}</div>
 															<div>
 																<select class="eqLogicAttr form-control graphTypeSelect" data-l1key="configuration" data-l2key="graph<?= $g ?>_type" id="graphType<?= $g ?>">
@@ -960,11 +988,12 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																	<option value="area">{{Aire}}</option>
 																	<option value="column">{{Colonne}}</option>
 																	<option value="bar">{{Barre}}</option>
+																	<option value="scatter">{{Simples points}}</option>
 																	<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
 																</select>
 															</div>
 														</th>
-														<th class="text-center" style="width: 120px;">
+														<th class="text-center" style="width: 120px;"> 		<!-- 7 -->
 															<div>{{Empilement}}
 																<sup>
 																	<i class="fas fa-question-circle tooltips" title="{{Courbe à inclure dans l'empilement après avoir choisi le type}}"></i>
@@ -978,23 +1007,23 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																</select>
 															</div>															
 														</th>
-														<th class="text-center" style="width: 130px;">{{Affichage des données}}</th>
-														<th class="text-center" style="width: 130px;">{{Opération à appliquer}}												
+														<th class="text-center" style="width: 130px;">{{Affichage des données}}</th> 		<!-- 8 -->
+														<th class="text-center" style="width: 130px;">{{Opération à appliquer}} 			<!-- 9 -->												
 															<sup>
 																<i class="fas fa-question-circle tooltips" title="{{N'a aucun effet si l'affichage des données est sur 'Toutes'}}"></i>
 															</sup>
 														</th>
-														<th class="text-center" style="width: 60px;">{{Esc.}}														
+														<th class="text-center" style="width: 60px;">{{Esc.}}		 						<!-- 10 -->												
 															<sup>
 																<i class="fas fa-question-circle tooltips" title="{{Courbe en escalier, ne fonctionne pas avec tous les types de courbe}}"></i>
 															</sup>
 														</th>
-														<th class="text-center" style="width: 60px;">{{Var.}}														
+														<th class="text-center" style="width: 60px;">{{Var.}}								 		<!-- 11 -->						
 															<sup>
 																<i class="fas fa-question-circle tooltips" title="{{Variation}}"></i>
 															</sup>
 														</th>
-														<th class="text-center" style="width: 60px;">
+														<th class="text-center" style="width: 60px;"> 				<!-- 12 -->
 															<div>
 																{{Couleur}}
 																<sup>
@@ -1009,21 +1038,21 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_default_color">
 															</div>
 														</th>
-														<th class="text-center" style="width: 60px;">{{Unité}}</th>
-														<th class="text-center" style="width: 60px;">{{Coef}}</th>
-														<th class="text-center" style="width: 60px;">{{Mini}}
+														<th class="text-center" style="width: 60px;">{{Unité}}</th> 		<!-- 13 -->
+														<th class="text-center" style="width: 60px;">{{Coef}}</th> 			<!-- 14 -->
+														<th class="text-center" style="width: 60px;">{{Mini}} 				<!-- 15 -->
 																<sup>
 																	<i class="fas fa-question-circle tooltips" title="{{Attention, cette valeur s'applique à TOUTES les courbes ayant la même unité. 
 																		Si plusieurs valeurs sont saisies pour la même unité alors c'est la plus petite qui est conservée}}"></i>
 																</sup>
 														</th>
-														<th class="text-center" style="width: 60px;">{{Maxi}}
+														<th class="text-center" style="width: 60px;">{{Maxi}} 				<!-- 16 -->
 																<sup>
 																	<i class="fas fa-question-circle tooltips" title="{{Attention, cette valeur s'applique à TOUTES les courbes ayant la même unité. 
 																		Si plusieurs valeurs sont saisies pour la même unité alors c'est la plus grande qui est conservée}}"></i>
 																</sup>
 														</th>
-														<th class="text-center" style="width: 60px;">{{Seuil}}
+														<th class="text-center" style="width: 60px;">{{Seuil}} 				<!-- 17 -->
 																<sup>
 																	<i class="fas fa-question-circle tooltips" title="{{Définit un seuil d'attention (ligne horizontale fixe)}}"></i>
 																</sup>
@@ -1035,18 +1064,23 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														$index = str_pad($i, 2, '0', STR_PAD_LEFT);
 													?>
 													<tr>
-														<td class="text-center sticky-left">{{Courbe <?= $index ?>}}</td>
-														<td class="text-center sticky-left-1">
+														<td class="text-center sticky-left">{{Courbe <?= $index ?>}}</td> 		<!-- 1 -->
+														<td class="sticky-left-10">								<!-- 2 -->
+															<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_order" placeholder="..."/>
+														</td>
+														<td class="text-center sticky-left-20">				<!-- 3 -->
 															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="display_graph<?= $g ?>_curve<?= $i ?>">
 														</td>
-														<td class="sticky-left-2"><input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/></td>
-														<td>
+														<td class="sticky-left-30">					<!-- 4 -->
+															<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/>
+														</td>
+														<td>											<!-- 5 -->
 															<div class="input-group">
 																<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_cmdGraphe<?= $index ?>">
 																<a class="btn btn-default listEquipementInfo cursor input-group-addon" data-input="graph<?= $g ?>_cmdGraphe<?= $index ?>"><i class="fas fa-list-alt"></i></a>
 															</div>
 														</td>
-														<td>
+														<td>										<!-- 6 -->
 															<select class="eqLogicAttr form-control curveTypeSelect<?= $g ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_type">
 																<option value="inherit_curve" selected>{{Config globale}}</option>
 																<option value="line">{{Ligne}}</option>
@@ -1055,12 +1089,13 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<option value="area">{{Aire}}</option>
 																<option value="column">{{Colonne}}</option>
 																<option value="bar">{{Barre}}</option>
+																<option value="scatter">{{Simples points}}</option>
 															</select>
 														</td>
-														<td class="text-center checkbox-cell">
+														<td class="text-center checkbox-cell">		<!-- 7 -->
 															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="stacking_graph<?= $g ?>_curve<?= $i ?>">
 														</td>
-														<td>
+														<td>									<!-- 8 -->
 															<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_regroup">
 																<option value="aucun">{{Toutes}}</option>
 																<option value="minute">{{par minute}}</option>
@@ -1071,7 +1106,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<option value="year">{{par année}}</option>
 															</select>
 														</td>
-														<td>
+														<td>							<!-- 9 -->
 															<select class="eqLogicAttr form-control graphTypeRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_typeRegroup">
 																<option value="aucun">{{Pas d'opération}}</option>
 																<option value="average">{{moyenne}}</option>
@@ -1080,18 +1115,30 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<option value="high">{{maxi}}</option>
 															</select>
 														</td>
-														<td class="text-center checkbox-cell">
+														<td class="text-center checkbox-cell">		<!-- 10 -->
 															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_stairStep">
 														</td>
-														<td class="text-center checkbox-cell">
+														<td class="text-center checkbox-cell">		<!-- 11 -->
 															<input type="checkbox" class="eqLogicAttr VariationCheckbox" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_variation">
 														</td>
-														<td><input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500"></td>
-														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>"></td>
-														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>"></td>
-														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="mini" title="Valeur mini" data-l1key="configuration" data-l2key="graph<?= $g ?>_mini<?= $i ?>"></td>
-														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="maxi" title="Valeur maxi" data-l1key="configuration" data-l2key="graph<?= $g ?>_maxi<?= $i ?>"></td>
-														<td><input type="text" class="eqLogicAttr configKey form-control" placeholder="seuil" title="Seuil d'attention" data-l1key="configuration" data-l2key="graph<?= $g ?>_plotlines<?= $i ?>"></td>
+														<td>							<!-- 12 -->
+															<input type="color" class="eqLogicAttr configKey inputColor" id="favcolor_g<?= $g ?>_c<?= $i ?>" data-l1key="configuration" data-l2key="graph<?= $g ?>_color<?= $i ?>" value="#FF4500">
+														</td>
+														<td>				<!-- 13 -->
+															<input type="text" class="eqLogicAttr configKey form-control" placeholder="Unité" title="A compléter si besoin de changement d unité, laisser vide sinon" data-l1key="configuration" data-l2key="graph<?= $g ?>_unite<?= $i ?>">
+														</td>
+														<td>			<!-- 14 -->
+															<input type="text" class="eqLogicAttr configKey form-control" placeholder="coef" title="coefficient à appliquer" data-l1key="configuration" data-l2key="graph<?= $g ?>_coef<?= $i ?>">
+														</td>
+														<td>		<!-- 15 -->
+															<input type="text" class="eqLogicAttr configKey form-control" placeholder="mini" title="Valeur mini" data-l1key="configuration" data-l2key="graph<?= $g ?>_mini<?= $i ?>">
+														</td>
+														<td>		<!-- 16 -->
+															<input type="text" class="eqLogicAttr configKey form-control" placeholder="maxi" title="Valeur maxi" data-l1key="configuration" data-l2key="graph<?= $g ?>_maxi<?= $i ?>">
+														</td>
+														<td>		<!-- 17 -->
+															<input type="text" class="eqLogicAttr configKey form-control" placeholder="seuil" title="Seuil d'attention" data-l1key="configuration" data-l2key="graph<?= $g ?>_plotlines<?= $i ?>">
+														</td>
 													</tr>
 													<?php } ?>
 												</tbody>
@@ -1114,6 +1161,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<br/><br><br><br>
 								<legend><label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Explications succinctes}}:</label></legend>
 								<br><br>
+								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Paramètres généraux des courbes}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Ordre: }}{{permet de définir l'ordre d'affichage des courbes sur le graphique. Attention: si 2 courbes ont le même numéro alors la deuxième sera affichée en dernier}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Titre du graphique: }}{{facultatif, donner un nom à votre graphique }}</label>
 								<label class="col-lg-12 control-label pull-left">{{Afficher le titre, la légende: }}{{afficher ou non ces infos sur votre graphique}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Positionnement du titre si affiché: }}{{choisir l'emplacement du titre sur le graphique}}</label>

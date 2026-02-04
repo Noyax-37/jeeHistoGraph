@@ -200,6 +200,7 @@ public static function config() {
         $config[] = ["graph{$g}_default_color", 0];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
+            $config[] = ["graph{$g}_curve{$i}_order", $i];
             $config[] = ["graph{$g}_index{$index}_nom", ''];
             $config[] = ["graph{$g}_curve{$i}_type", "inherit_curve"];
             $config[] = ["stacking_graph{$g}_curve{$i}", 0];
@@ -282,12 +283,19 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
         $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
+        $xTitlePosition = $titleAlign == 'right' ? -30 : 0;
         $chartOrStock = 'StockChart';
         $inverted = 'false';
         $tooltipEnabled = 'true';
-        $xRangeSelectorButtonPosition = 0;
-        $yRangeSelectorButtonPosition = $showTitle ? ($titleAlign == 'left' ? 0 : -30) : 0; // remonte les boutons sauf si titre non affiché ou affiché à gauche
 
+        // Position des boutons zoom et reset zoom
+        $titleAlign = $showTitle ? $titleAlign : 'center'; // si pas de titre
+        $buttonAxisAlign = $titleAlign == 'left' ? 'right' : 'left';
+        $xRangeSelectorButtonPosition = $titleAlign == 'left' ? -40 : 0;
+        $yRangeSelectorButtonPosition = $showTitle ? -30 : 0; // remonte les boutons sauf si titre non affiché
+        $xZoomResetButtonPosition = $titleAlign == 'left' ? -70 : 70;
+        $yZoomResetButtonPosition = $showTitle ? -35 : 0;
+        
         $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
         $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
         $configButtonsEnabled = $eqLogic->getConfiguration("graph{$g}_buttons", 0) ? 'true' : 'false';
@@ -297,6 +305,25 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $configNavigatorEnabled = 'false';
             $configBarreEnabled = 'false';
         }
+
+        if ($configNavigatorEnabled == 'false' && $configBarreEnabled == 'false') { // si ni barre ni navigator, on force la barre invisible pour permettre le scroll
+            $configBarreEnabled = 'true';
+            $scrollbarConfig = "
+                enabled: true,
+                height: 0,          // hauteur nulle = invisible
+                margin: -999,       // ou -50 selon la version
+                barBackgroundColor: 'transparent',
+                trackBackgroundColor: 'transparent',
+                buttonBackgroundColor: 'transparent',
+                buttonArrowColor: 'transparent'
+            ";
+        } else {
+            $scrollbarConfig = "
+                enabled: {$configBarreEnabled},
+                margin: 10
+            ";
+        }
+
         //$configNavigatorEnabled = 'true';
         //$configBarreEnabled = 'true';
         $config3DAlpha = (int)$eqLogic->getConfiguration("graph{$g}_3D_alpha", 15);
@@ -360,8 +387,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             }
         }
 
-        $uid = $replace['#uid#'];
-        $containerId = "graphContainer{$uid}_{$g}";
+        $id = $replace['#id#'];
+        $containerId = "graphContainer{$id}_{$g}";
         $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 98%; margin: 0 1% 0 1%;\"></div>";
         $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
         $global = false;
@@ -399,6 +426,54 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 $actualisation = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                break;
+            case 'dLast5Min':
+                $startTime = date("Y-m-d H:i:s", time() - 5 * 60);
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 5 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                break;
+            case 'dLast15Min':
+                $startTime = date("Y-m-d H:i:s", time() - 15 * 60);
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 15 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                break;
+            case 'dLast30Min':
+                $startTime = date("Y-m-d H:i:s", time() - 30 * 60);
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 30 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                break;
+            case 'dLastHour':
+                $startTime = date("Y-m-d H:i:s", time() - 60 * 60);
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last hour for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                break;
+            case 'dLast6Hours':
+                $startTime = date("Y-m-d H:i:s", time() - 6 * 60 * 60);
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 6 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                break;
+            case 'dLast12Hours':
+                $startTime = date("Y-m-d H:i:s", time() - 12 * 60 * 60);
+                $endTime = date("Y-m-d H:i:s", time());
+                $actualisation = true;
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 12 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dDay':
                 $startTime = date("Y-m-d 00:00:00", time());
@@ -610,8 +685,15 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
         $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
         
+        $checkOrderingUsed = [];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
+            $affOrdering = intval($eqLogic->getConfiguration("graph{$g}_curve{$i}_order", ''));
+            if (in_array($affOrdering, $checkOrderingUsed) || $affOrdering == '') {
+                // ordre déjà utilisé, forcer à la fin
+                $affOrdering = 10 + $i;
+            }
+            $checkOrderingUsed[] = $affOrdering;
             $cmdKey = "graph{$g}_cmdGraphe{$index}";
             $nomKey = "graph{$g}_index{$index}_nom";
             $colorKey = "graph{$g}_color{$i}";
@@ -925,6 +1007,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $dataLabelsOverlap = $eqLogic->getConfiguration("graph{$g}_dataLabels_overlaps", 0) ? 'true' : 'false';
                 $seriesJS .= "{
                         name: " . json_encode($indexNom) . ",
+                        index: {$affOrdering},
                         type: 'timeline',
                         pointInterval: 24 * 3600 * 1000,
                         data: " . json_encode($listeHisto) . ", 
@@ -962,6 +1045,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$years}") . ",
+                            index: {$affOrdering},
                             showInNavigator: true,
                             borderColor: " . json_encode($color) . ",
                             step: {$stairStepKey},
@@ -1020,6 +1104,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
+                            index: {$affOrdering},
                             showInNavigator: true,
                             borderColor: " . json_encode($color) . ",
                             step: {$stairStepKey},
@@ -1053,6 +1138,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
                     $seriesJS .= "{
                         name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                        index: {$affOrdering},
                         showInNavigator: true,
                         borderColor: " . json_encode($color) . ",
                         step: {$stairStepKey},
@@ -1063,6 +1149,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         tooltip: {
                             pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
                         },
+                        //marker: { symbol: 'square' },
                         dateTimeLabelFormats: {
                             millisecond: [
                                 '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
@@ -1116,13 +1203,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
                                     const chart = window.chart_g{$g}_id{$eqLogic->getId()};
                                     const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.valueDate).getTime());
+                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
                                     const valeur = y + ' {$unite}';
                                     
                                     // Récupérer le label du dernier point existant (si il y en a un)
@@ -1151,13 +1238,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
                                 
                                 if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
                                     const chart = window.chart_g{$g}_id{$eqLogic->getId()};
                                     const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.valueDate).getTime());
+                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
                                     const valeur = y + ' {$unite}';
                                     
                                     const dateFormatee = 'Le ' + 
@@ -1182,16 +1269,17 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             
-                            debug = false;
+                            debug = true;
                             
                             if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                const dateLastValue = new Date(_options.valueDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
 
                                 const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
                                 const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
                                 let currentRawValue = _options.value;
-                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit);}
+                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
+                                if (debug){console.log('options: ', _options);}
                                 
                                 // Récupère la dernière valeur brute stockée (ou null si première fois)
                                 let lastRawValue = series.userOptions?.lastRawValue ?? null;
@@ -1209,6 +1297,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                                 // Ajout du point
                                 series.addPoint([dateLastValue, yToAdd], true, false, true);
+
+                     
                                 
                                 // Sauvegarde la valeur brute pour la prochaine mise à jour
                                 if (!series.userOptions) series.userOptions = {};
@@ -1231,6 +1321,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             dropdown: 'always',
             {$buttonJS},
             buttonPosition: {
+                align: '$buttonAxisAlign',
                 x: {$xRangeSelectorButtonPosition},
                 y: {$yRangeSelectorButtonPosition},
             }
@@ -1292,6 +1383,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         //$plotBackgroundColorJS = "{$plotBgCode}";
 
         $chartScripts .= "
+$(document).ready(function() {        
         window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
             chart: {
                 alignThresholds: $alignThresholdsJS,
@@ -1340,6 +1432,19 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 zooming: {
                     mouseWheel: true,
                     type: '{$zoomType}',
+                    resetButton: {
+                        position: {
+                            align: '$buttonAxisAlign',
+                            verticalAlign: 'top',
+                            x: $xZoomResetButtonPosition,
+                            y: $yZoomResetButtonPosition,
+                        },
+                        theme: {
+                            style: {
+                                fontSize: '10px',
+                            }, 
+                        }
+                    }                    
                 },                
             },
             credits: { enabled: false },
@@ -1369,8 +1474,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 {$rangeSelectorJS}
                 },
             scrollbar: {
-                margin: 10,
-                enabled: {$configBarreEnabled}
+                {$scrollbarConfig}
             },
             series: [{$seriesJS}],
             title: { 
@@ -1379,6 +1483,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 y: 5,
                 text: '{$titleGraph}', 
                 align: '{$titleAlign}',
+                x: $xTitlePosition,
                 height: 10,
                 style: { 
                     fontWeight: 'bold', 
@@ -1416,11 +1521,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 {$yAxisJS} 
                 ],
         });
+        $(window).trigger('resize'); // Simule un resize pour forcer le reflow
+    });        
         setTimeout(() => {
           if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {
             window.chart_g{$g}_id{$eqLogic->getId()}.reflow()
           }
-        }, 50);
+        }, 50);       
         {$cmdUpdateJS}
         ";
     }
