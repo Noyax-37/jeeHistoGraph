@@ -11,7 +11,12 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
-# v2.08
+# v2.10
+- ajout de l'ordre d'affichage des courbes dans le tableau de configuration
+- meilleur placement de la liste de zoom et du bouton "reset zoom" 
+- ajout de nouvelles options de période prédéfinies pour le zoom rapide (dernières 5 min, 15 min, 30 min, 1h, 6h, 12h)
+
+# v2.09
 - corection défaut d'affichage des valeurs identiques en update
 - ajout de l'option "simples points" pour le type de courbe
 
