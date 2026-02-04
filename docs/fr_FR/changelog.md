@@ -11,6 +11,12 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.11
+- correction de l'update des courbeslorsqu'on change l'ordre d'affichage
+- correction pour l'affichage des crosshairs entre graphiques
+- ajout de la possibilité de bloquer les updates automatiques des graphiques (les graphiques avec une date de fin définie ne se mettent pas à jour automatiquement, cette option permet de bloquer les updates pour les graphiques sans date de fin)
+- ajout d'une option pour garder ou pousser dehors les premières données lors d'un update
+
 # v2.10
 - ajout de l'ordre d'affichage des courbes dans le tableau de configuration
 - meilleur placement de la liste de zoom et du bouton "reset zoom" 

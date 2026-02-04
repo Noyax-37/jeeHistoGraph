@@ -198,6 +198,8 @@ public static function config() {
         $config[] = ["graph{$g}_zoom_axe_y", 1];
         $config[] = ["graph{$g}_title_align", 'center'];
         $config[] = ["graph{$g}_default_color", 0];
+        $config[] = ["graph{$g}_update_enabled", 1];
+        $config[] = ["graph{$g}_update_append", 0];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_curve{$i}_order", $i];
@@ -283,6 +285,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
         $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
+        $updateEnabled = $eqLogic->getConfiguration("graph{$g}_update_enabled", 1) ? true : false;
+        $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'false' : 'true';
         $xTitlePosition = $titleAlign == 'right' ? -30 : 0;
         $chartOrStock = 'StockChart';
         $inverted = 'false';
@@ -396,7 +400,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $periodeHistoGraph = $periodeHisto;
             $global = true;
         }
-        $actualisation = false;
+        $actualisation = $updateEnabled;
         $endTime = null;
         switch ($periodeHistoGraph) {
             case 'deDateAdate':
@@ -413,7 +417,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -424,13 +427,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
-                $actualisation = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast5Min':
                 $startTime = date("Y-m-d H:i:s", time() - 5 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 5 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -438,7 +439,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dLast15Min':
                 $startTime = date("Y-m-d H:i:s", time() - 15 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 15 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -446,7 +446,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dLast30Min':
                 $startTime = date("Y-m-d H:i:s", time() - 30 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 30 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -454,7 +453,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dLastHour':
                 $startTime = date("Y-m-d H:i:s", time() - 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last hour for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -462,7 +460,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dLast6Hours':
                 $startTime = date("Y-m-d H:i:s", time() - 6 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 6 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -470,7 +467,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dLast12Hours':
                 $startTime = date("Y-m-d H:i:s", time() - 12 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 12 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -478,7 +474,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dDay':
                 $startTime = date("Y-m-d 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
@@ -486,7 +481,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dWeek':
                 $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -494,7 +488,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dMonth':
                 $startTime = date("Y-m-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -502,7 +495,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dYear':
                 $startTime = date("Y-01-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -510,7 +502,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             case 'dAll':
                 $startTime = date("1970-01-01 00:00:00");
                 $endTime = date("Y-m-d H:i:s", time());
-                $actualisation = true;
                 $xAxisMinJS = 'undefined';
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -691,12 +682,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $affOrdering = intval($eqLogic->getConfiguration("graph{$g}_curve{$i}_order", ''));
             if (in_array($affOrdering, $checkOrderingUsed) || $affOrdering == '') {
                 // ordre déjà utilisé, forcer à la fin
-                $affOrdering = 10 + $i;
+                $affOrdering += 10;
             }
             $checkOrderingUsed[] = $affOrdering;
             $cmdKey = "graph{$g}_cmdGraphe{$index}";
             $nomKey = "graph{$g}_index{$index}_nom";
-            $colorKey = "graph{$g}_color{$i}";
+            //$colorKey = "graph{$g}_color{$i}";
             $curveTypeKey = "graph{$g}_curve{$i}_type";
             $stackingOptionEnabled = $eqLogic->getConfiguration("stacking_graph{$g}_curve{$i}", 0) ? true : false;
             $stackingOption = ($stackingOptionEnabled) ? $stackingOption : null; 
@@ -1030,6 +1021,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
                     $cmdUpdateJS = '';
                     $nbSeries = count($recordData);
+                    $affOrdering = $nbSeries;
                     if ($nbSeries > 2) {
                         $baseSeries = 1;
                         $navigatorEnabled = $configNavigatorEnabled;
@@ -1039,7 +1031,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     }
                     $actualisation = false;
                     foreach ($recordData as $year => $data) {
-                        if ($year == $currentYear) $actualisation = true; // ne pas mettre à jour si pas l'année courante
+                        if ($year == $currentYear) {
+                            $actualisation = $updateEnabled; // ne pas mettre à jour si pas l'année courante
+                            $updateAppend = 'false';
+                        }
+
                         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         if ($rolling){
                             $years = $year . '.' . (substr($year,2,2) + 1);
@@ -1102,8 +1098,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $actualisation = false;
                     $cmdUpdateJS = '';
                     $nbSeries = count($recordData);
+                    $affOrdering = $nbSeries;
                     foreach ($recordData as $year => $data) {
-                        if ($compareMonth == $currentMonth && $year == $currentYear) $actualisation = true; // ne pas mettre à jour si pas le mois courant de l'année courante
+                        if ($compareMonth == $currentMonth && $year == $currentYear){
+                            $actualisation = $updateEnabled; // ne pas mettre à jour si pas le mois courant de l'année courante
+                            $updateAppend = 'false';
+                        } 
                         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
@@ -1209,31 +1209,35 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
                                 
-                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
-                                    const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
-                                    const valeur = y + ' {$unite}';
-                                    
-                                    // Récupérer le label du dernier point existant (si il y en a un)
-                                    let previousLabel = '';
-                                    const points = series.points;
-                                    if (points.length > 0) {
-                                        const lastPoint = points[points.length - 1];
-                                        previousLabel = lastPoint.label || '';
+                                if (window.chart_g{$g}_id{$eqLogic->getId()}){
+                                    for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
+                                        if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[s].userOptions.index === {$affOrdering}) {
+                                            const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                            const series = chart.series[s];
+                                            const dateObj = new Date(new Date(_options.collectDate).getTime());
+                                            const valeur = y + ' {$unite}';
+                                            
+                                            // Récupérer le label du dernier point existant (si il y en a un)
+                                            let previousLabel = '';
+                                            const points = series.points;
+                                            if (points.length > 0) {
+                                                const lastPoint = points[points.length - 1];
+                                                previousLabel = lastPoint.label || '';
+                                            }
+
+                                            const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
+                                                                    dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                                    ' à ' + 
+                                                                    dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+
+                                            series.addPoint({
+                                                x: dateLastValue,
+                                                name: '{$indexNom}',
+                                                label: valeur,
+                                                description: dateFormatee 
+                                            }, true, $updateAppend, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                        };
                                     }
-
-                                    const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
-                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
-                                                            ' à ' + 
-                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
-
-                                    series.addPoint({
-                                        x: dateLastValue,
-                                        name: '{$indexNom}',
-                                        label: valeur,
-                                        description: dateFormatee 
-                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
                                 };
                             });
                         }\n";
@@ -1244,23 +1248,27 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
                                 
-                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
-                                    const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
-                                    const valeur = y + ' {$unite}';
-                                    
-                                    const dateFormatee = 'Le ' + 
-                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
-                                                            ' à ' + 
-                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+                                if (window.chart_g{$g}_id{$eqLogic->getId()}){
+                                    for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
+                                        if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[s].userOptions.index === {$affOrdering}) {
+                                            const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                            const series = chart.series[{$nbSeries}-1];
+                                            const dateObj = new Date(new Date(_options.collectDate).getTime());
+                                            const valeur = y + ' {$unite}';
+                                            
+                                            const dateFormatee = 'Le ' + 
+                                                                    dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                                    ' à ' + 
+                                                                    dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
 
-                                    series.addPoint({
-                                        x: dateLastValue,
-                                        name: '{$indexNom}',
-                                        label: valeur,
-                                        description: dateFormatee 
-                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                            series.addPoint({
+                                                x: dateLastValue,
+                                                name: '{$indexNom}',
+                                                label: valeur,
+                                                description: dateFormatee 
+                                            }, true, $updateAppend, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                        };
+                                    };
                                 };
                             });
                         }\n";
@@ -1268,45 +1276,53 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     //log::add(__CLASS__, 'debug', "graph{$g} nbseries: {$nbSeries}");
                 } else {
                     $var = $variation ? 'true':'false';
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: $nbSeries series - affOrdering: {$affOrdering}"); 
                     $cmdUpdateJS .= "
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             
-                            debug = true;
+                            debug = false;
                             
-                            if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
+                            if (window.chart_g{$g}_id{$eqLogic->getId()}){
+                                for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
+                                    if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[s].userOptions.index === {$affOrdering}) {
+                                        if(debug){console.log('test: ', window.chart_g{$g}_id{$eqLogic->getId()}.series);}
+                                        
+                                        const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
 
-                                const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
+                                        const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
-                                const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
-                                let currentRawValue = _options.value;
-                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
-                                if (debug){console.log('options: ', _options);}
-                                
-                                // Récupère la dernière valeur brute stockée (ou null si première fois)
-                                let lastRawValue = series.userOptions?.lastRawValue ?? null;
+                                        const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[s];
+                                        if (debug){console.log('series: ', series);}
+                                        let currentRawValue = _options.value;
+                                        if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
+                                        if (debug){console.log('options: ', _options);}
+                                        
+                                        // Récupère la dernière valeur brute stockée (ou null si première fois)
+                                        let lastRawValue = series.userOptions?.lastRawValue ?? null;
 
-                                let yToAdd = currentRawValue * {$coef}; // par défaut : valeur brute
+                                        let yToAdd = currentRawValue * {$coef}; // par défaut : valeur brute
 
-                                if (variation) {
-                                    if (lastRawValue !== null) {
-                                        yToAdd = currentRawValue - lastRawValue; // vrai delta
-                                    } else {
-                                        yToAdd = 0; // premier point en mode variation
-                                    }
-                                }
-                                if (debug){console.log('yToAdd: ', yToAdd);}
+                                        if (variation) {
+                                            if (lastRawValue !== null) {
+                                                yToAdd = currentRawValue - lastRawValue; // vrai delta
+                                            } else {
+                                                yToAdd = 0; // premier point en mode variation
+                                            }
+                                        }
+                                        if (debug){console.log('yToAdd: ', yToAdd);}
 
-                                // Ajout du point
-                                series.addPoint([dateLastValue, yToAdd], true, false, true);
+                                        // Ajout du point
+                                        series.addPoint([dateLastValue, yToAdd], true, $updateAppend, true);
 
-                     
-                                
-                                // Sauvegarde la valeur brute pour la prochaine mise à jour
-                                if (!series.userOptions) series.userOptions = {};
-                                series.userOptions.lastRawValue = currentRawValue;
-                            }
+                            
+                                        
+                                        // Sauvegarde la valeur brute pour la prochaine mise à jour
+                                        if (!series.userOptions) series.userOptions = {};
+                                        series.userOptions.lastRawValue = currentRawValue;
+                                    };
+                                };
+                            };
                         });
                     }\n";
                 }
@@ -1386,206 +1402,221 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         //$plotBackgroundColorJS = "{$plotBgCode}";
 
         $chartScripts .= "
-$(document).ready(function() {        
-        window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
-            chart: {
-                alignThresholds: $alignThresholdsJS,
-                inverted: {$inverted},
-                options3d: {
-                    enabled: {$config3DEnabled},
-                    alpha: {$config3DAlpha},
-                    beta: {$config3DBeta},
-                    depth: {$config3DDepth},
-                    viewDistance: {$config3DViewDistance},
-                    fitToPlot: true,
-                    axisLabelPosition: 'auto',
-                    frame: {
-                        visible: 'auto',
-                        top: {
-                            color: {$plotBgCode3d},
-                            visible: 'auto'
+            $(document).ready(function() {        
+                    window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
+                        chart: {
+                            alignThresholds: $alignThresholdsJS,
+                            inverted: {$inverted},
+                            options3d: {
+                                enabled: {$config3DEnabled},
+                                alpha: {$config3DAlpha},
+                                beta: {$config3DBeta},
+                                depth: {$config3DDepth},
+                                viewDistance: {$config3DViewDistance},
+                                fitToPlot: true,
+                                axisLabelPosition: 'auto',
+                                frame: {
+                                    visible: 'auto',
+                                    top: {
+                                        color: {$plotBgCode3d},
+                                        visible: 'auto'
+                                    },
+                                    bottom: {
+                                        color: {$plotBgCode3d},
+                                        visible: 'auto'
+                                    },
+                                    front: {
+                                        color: {$plotBgCode},
+                                        visible: 'auto'
+                                    },
+                                    back: {
+                                        color: {$plotBgCode},
+                                        visible: 'auto',
+                                    },
+                                    left: {
+                                        color: {$plotBgCode3d},
+                                        visible: 'auto'
+                                    },
+                                    right: {
+                                        color: {$plotBgCode3d},
+                                        visible: 'auto'
+                                    },
+                                }                    
+                            },
+                            panning: true,
+                            panKey: 'shift',                
+                            plotBackgroundColor: $plotBackgroundColorJS,
+                            spacing: [10, 0, 10, 0],
+                            type: '$graphType',
+                            zooming: {
+                                mouseWheel: true,
+                                type: '{$zoomType}',
+                                resetButton: {
+                                    position: {
+                                        align: '$buttonAxisAlign',
+                                        verticalAlign: 'top',
+                                        x: $xZoomResetButtonPosition,
+                                        y: $yZoomResetButtonPosition,
+                                    },
+                                    theme: {
+                                        style: {
+                                            fontSize: '10px',
+                                        }, 
+                                    }
+                                }                    
+                            },                
                         },
-                        bottom: {
-                            color: {$plotBgCode3d},
-                            visible: 'auto'
+                        credits: { enabled: false },
+                        exporting: {
+                            enabled: true,
+                            fallbackToExportServer: false,
+                            libURL: '/3rdparty/highstock/lib',
+                            local: true,
                         },
-                        front: {
-                            color: {$plotBgCode},
-                            visible: 'auto'
+                        legend: { 
+                            enabled: {$showLegend},
                         },
-                        back: {
-                            color: {$plotBgCode},
-                            visible: 'auto',
+                        navigator: { 
+                            {$navigatorJS}
                         },
-                        left: {
-                            color: {$plotBgCode3d},
-                            visible: 'auto'
+                        plotOptions: {
+                            series: {
+                                stacking: '$stackingOption',
+                                groupPadding:0.1,
+                                pointPadding:0,
+                                fillOpacity: 0.1,
+                                connectNulls: false,
+                                turboThreshold: 0                    
+                            },
                         },
-                        right: {
-                            color: {$plotBgCode3d},
-                            visible: 'auto'
+                        rangeSelector: {
+                            {$rangeSelectorJS}
+                            },
+                        scrollbar: {
+                            {$scrollbarConfig}
                         },
-                    }                    
-                },
-                panning: true,
-                panKey: 'shift',                
-                plotBackgroundColor: $plotBackgroundColorJS,
-                spacing: [10, 0, 10, 0],
-                type: '$graphType',
-                zooming: {
-                    mouseWheel: true,
-                    type: '{$zoomType}',
-                    resetButton: {
-                        position: {
-                            align: '$buttonAxisAlign',
-                            verticalAlign: 'top',
-                            x: $xZoomResetButtonPosition,
-                            y: $yZoomResetButtonPosition,
+                        series: [{$seriesJS}],
+                        title: { 
+                            floating: false,
+                            margin: 0,
+                            y: 5,
+                            text: '{$titleGraph}', 
+                            align: '{$titleAlign}',
+                            x: $xTitlePosition,
+                            height: 10,
+                            style: { 
+                                fontWeight: 'bold', 
+                                color: 'rgb(100, 100, 100)' 
+                            }
                         },
-                        theme: {
+                        time: {
+                            useUTC: true
+                        },
+                        tooltip: {
+                            enabled: $tooltipEnabled,
+                            xDateFormat: '{$xDateFormatJS}',
+                            dateTimeLabelFormats: { 
+                                {$dateTimeLabelFormats} 
+                                },
+                            backgroundColor: 'rgb(var(--bg-color))',
+                            useHTML: true,
+                            useHTML: true,
+                            shadow: true,
                             style: {
-                                fontSize: '10px',
-                            }, 
-                        }
-                    }                    
-                },                
-            },
-            credits: { enabled: false },
-            exporting: {
-                enabled: true,
-                fallbackToExportServer: false,
-                libURL: '/3rdparty/highstock/lib',
-                local: true,
-            },
-            legend: { 
-                enabled: {$showLegend},
-            },
-            navigator: { 
-                {$navigatorJS}
-            },
-            plotOptions: {
-                series: {
-                    stacking: '$stackingOption',
-                    groupPadding:0.1,
-                    pointPadding:0,
-                    fillOpacity: 0.1,
-                    connectNulls: false,
-                    turboThreshold: 0                    
-                },
-            },
-            rangeSelector: {
-                {$rangeSelectorJS}
-                },
-            scrollbar: {
-                {$scrollbarConfig}
-            },
-            series: [{$seriesJS}],
-            title: { 
-                floating: false,
-                margin: 0,
-                y: 5,
-                text: '{$titleGraph}', 
-                align: '{$titleAlign}',
-                x: $xTitlePosition,
-                height: 10,
-                style: { 
-                    fontWeight: 'bold', 
-                    color: 'rgb(100, 100, 100)' 
-                }
-            },
-            time: {
-                useUTC: true
-            },
-            tooltip: {
-                enabled: $tooltipEnabled,
-                xDateFormat: '{$xDateFormatJS}',
-                dateTimeLabelFormats: { 
-                    {$dateTimeLabelFormats} 
-                    },
-                backgroundColor: 'rgb(var(--bg-color))',
-                useHTML: true,
-                useHTML: true,
-                shadow: true,
-                style: {
-                    color: 'rgb(var(--contrast-color))',
-                },
-                headerFormat: '{$headerFormatJS}',
-                split: $splitJS,
-                shared: $sharedJS,
-                valueDecimals: 2,
-            },
-            xAxis: {
-                showLastLabel: true,
-                min: $xAxisMinJS,
-                max: $xAxisMaxJS,
-                {$xAxisJS}
-                },
-            yAxis: [ 
-                {$yAxisJS} 
-                ],
-        });
-        $(window).trigger('resize'); // Simule un resize pour forcer le reflow
-    });        
-        setTimeout(() => {
-          if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {
-            window.chart_g{$g}_id{$eqLogic->getId()}.reflow()
-          }
-        }, 50);       
-        {$cmdUpdateJS}
-        ";
+                                color: 'rgb(var(--contrast-color))',
+                            },
+                            headerFormat: '{$headerFormatJS}',
+                            split: $splitJS,
+                            shared: $sharedJS,
+                            valueDecimals: 2,
+                        },
+                        xAxis: {
+                            showLastLabel: true,
+                            min: $xAxisMinJS,
+                            max: $xAxisMaxJS,
+                            {$xAxisJS}
+                            },
+                        yAxis: [ 
+                            {$yAxisJS} 
+                            ],
+                    });
+                    $(window).trigger('resize'); // Simule un resize pour forcer le reflow
+                });        
+                    setTimeout(() => {
+                    if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {
+                        window.chart_g{$g}_id{$eqLogic->getId()}.reflow()
+                    }
+                    }, 50);       
+                    {$cmdUpdateJS}
+                    ";
     }
 
     $syncCrosshairJS = "";
     
     if ($nbGraphs == 2) {
         $syncCrosshairJS = "
-        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
+        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
         ";    
     } else if ($nbGraphs == 3) {
         $syncCrosshairJS = "
-        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
+        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');    
         ";    
     } else if ($nbGraphs == 4) {
         $syncCrosshairJS = "
-        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g1_id{$eqLogic->getId()}, window.chart_g4_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g2_id{$eqLogic->getId()}, window.chart_g4_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g3_id{$eqLogic->getId()}, window.chart_g4_id{$eqLogic->getId()});
-        syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g1_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g2_id{$eqLogic->getId()});    
-        syncCrosshair(window.chart_g4_id{$eqLogic->getId()}, window.chart_g3_id{$eqLogic->getId()});";    
+        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g4_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g4_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g4_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g4_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g4_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g4_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');
+        ";    
     }
     
     if ($nbGraphs >= 2) {
         $chartScripts .= "// Function to synchronize crosshairs
-            function syncCrosshair(chartFrom, chartTo) {
-            Highcharts.addEvent(chartFrom.container, 'mousemove', function (e) {
-                const xVal = chartFrom.xAxis[0].toValue(e.chartX);
-                const yVal = chartFrom.yAxis[0].toValue(e.chartY);
-                const xPixel = chartTo.xAxis[0].toPixels(xVal);
-                const yPixel = chartTo.yAxis[0].toPixels(yVal);
-                
-                e.chartX = xPixel;
-                e.chartY = yPixel;
+            function syncCrosshair(chartFromId, chartToId) {
+                // Fonction de synchronisation protégée
+                function trySync() {
+                    const from = window[chartFromId];
+                    const to   = window[chartToId];
 
-                // Draw crosshairs only on the target chart
-                chartTo.xAxis[0].drawCrosshair(e)
-                chartTo.yAxis[0].drawCrosshair(e)
-            })
+                    if (!from || !to || !from.container || !to.container) {
+                        // Au moins un des deux charts n'est pas prêt
+                        setTimeout(trySync, 300);   // on réessaie dans 300ms
+                        return;
+                    }
+
+                    // Les deux existent → on peut synchroniser
+                    Highcharts.addEvent(from.container, 'mousemove', function(e) {
+                        const xVal   = from.xAxis[0].toValue(e.chartX);
+                        const xPixel = to.xAxis[0].toPixels(xVal);
+
+                        // On simule l'événement pour l'autre graphique
+                        const simulatedEvent = {
+                            chartX: xPixel,
+                            chartY: e.chartY
+                        };
+
+                        to.xAxis[0].drawCrosshair(simulatedEvent);
+                        to.yAxis.forEach(axis => axis.drawCrosshair(simulatedEvent));
+                    });
+                }
+
+                trySync();
             }
 
-            // Synchronize crosshairs between the two charts
             $syncCrosshairJS
         ";    
     } else {
