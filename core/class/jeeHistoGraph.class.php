@@ -984,6 +984,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 }
             } else {
                 $buttonJS = "buttons: [
+                            { type: 'second', count: 30, text: '30s' },
+                            { type: 'minute', count: 1, text: '1m' },
+                            { type: 'minute', count: 5, text: '5m' },
+                            { type: 'minute', count: 15, text: '15m' },
                             { type: 'minute', count: 30, text: '30m' },
                             { type: 'hour', count: 1, text: '1h' },
                             { type: 'day', count: 1, text: '1j' },
@@ -1333,7 +1337,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         
         $rangeSelectorJS = "
             enabled: {$configButtonsEnabled},
-            selected: 6,
+            selected: 26,
             inputEnabled: false,
             floating: true,
             allButtonsEnabled: true,
