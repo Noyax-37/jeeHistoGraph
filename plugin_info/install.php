@@ -144,18 +144,21 @@ function jeeHistoGraph_update() {
                 log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' removing obsolete configuration key: {$key} with value: " . json_encode($value));
                 $eqLogic   ->setConfiguration($key, null);
             }
+        }
 
-            $decode = $eqLogic->getConfiguration();
-            foreach( $configs as $key ) {
-                if (!isset($decode[$key[0]])) {
-                    log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' adding new configuration key: {$key[0]} with default value: " . json_encode($key[1]));
-                    $eqLogic   ->setConfiguration($key[0], $key[1]);
-                }
+        $eqLogic   ->save();
+
+        $decode = $eqLogic->getConfiguration();
+        foreach( $configs as $key ) {
+            if (!isset($decode[$key[0]])) {
+                log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' adding new configuration key: {$key[0]} with default value: " . json_encode($key[1]));
+                $eqLogic   ->setConfiguration($key[0], $key[1]);
             }
+        }
 
-            $eqLogic   ->setConfiguration('version', $actualVersion);
-            $eqLogic   ->save();
-        } 
+        $eqLogic   ->setConfiguration('version', $actualVersion);
+        $eqLogic   ->save();
+        
     }
     
 
