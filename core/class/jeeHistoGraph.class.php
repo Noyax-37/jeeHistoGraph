@@ -748,7 +748,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $chartOrStock = 'chart';
                     $refPrec = $eqLogic->getConfiguration("graph{$g}_show_refPrec", 1) ? true : false;
                     $inverted = $eqLogic->getConfiguration("graph{$g}_inverted", 1) ? 'true' : 'false';
-                    if ($inverted== 'true') $xRangeSelectorButtonPosition = -60;
+                    if ($inverted== 'true') {
+                        $xRangeSelectorButtonPosition = $titleAlign == 'left' ? -40 : -70;
+                        $xZoomResetButtonPosition = $titleAlign == 'left' ? -120 : 0;
+                    }
                     $tooltipEnabled = $eqLogic->getConfiguration("graph{$g}_tooltip_enabled", 1) ? 'true' : 'false';
                     $limitHisto = intval($eqLogic->getConfiguration("graph{$g}_nbPointsTimeLine", 300));
                     if ($limitHisto <= 0 || $limitHisto > 300) {
