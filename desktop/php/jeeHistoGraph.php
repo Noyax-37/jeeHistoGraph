@@ -818,7 +818,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												</select>
 											</div>
 										</div>
-									
+
 										<div class="col-sm-2">
 
 										</div>
@@ -848,6 +848,26 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<input type="datetime-local" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="date_fin_histo_2dates_graph<?= $g ?>">
 											</div>
 										</div>
+
+										</br>
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Permettre update des courbes:}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Si coché, les courbes des graphiques s'actualisent automatiquement lorsque de nouvelles données sont disponibles.}}"></i></sup>
+											</label>
+											<div class="col-sm-5">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_update_enabled" checked>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Lors d'un update des courbes, ajouter les nouvelles données au graph:}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Si décoché, la dernière donnée arrivée va chasser la première (conserve la période sélectionnée). Si coché, le graphique va s'agrandir avec les nouvelles données.}}"></i></sup>
+											</label>
+											<div class="col-sm-5">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_update_append">
+											</div>
+										</div>
+
+
 									</div>
 
 									<!-- Regroupements / comparaisons -->
