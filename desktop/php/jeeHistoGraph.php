@@ -290,6 +290,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<option value="dLastHour">{{Dernière heure}}</option>
 												<option value="dLast6Hours">{{Dernières 6 heures}}</option>
 												<option value="dLast12Hours">{{Dernières 12 heures}}</option>
+												<option value="dLast24Hours">{{Dernières 24 heures}}</option>
 												<option disabled="disabled">_____</option>
 												<option value="dDay">{{Aujourd'hui}}</option>
 												<option value="dWeek">{{Cette semaine}}</option>
@@ -808,6 +809,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													<option value="dLastHour">{{Dernière heure}}</option>
 													<option value="dLast6Hours">{{Dernières 6 heures}}</option>
 													<option value="dLast12Hours">{{Dernières 12 heures}}</option>
+													<option value="dLast24Hours">{{Dernières 24 heures}}</option>
 													<option disabled="disabled">_____</option>
 													<option value="dDay">{{Aujourd'hui}}</option>
 													<option value="dWeek">{{Cette semaine}}</option>
@@ -860,10 +862,12 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 										</div>
 										<div class="form-group">
 											<label class="col-sm-6 control-label">{{Lors d'un update des courbes, ajouter les nouvelles données au graph:}}
-												<sup><i class="fas fa-question-circle tooltips" title="{{Si décoché, la dernière donnée arrivée va chasser la première (conserve la période sélectionnée). Si coché, le graphique va s'agrandir avec les nouvelles données.}}"></i></sup>
+												<sup><i class="fas fa-question-circle tooltips" title="{{Pas actif pour toutes les périodes. Si décoché, la dernière donnée arrivée va chasser la première 
+																											(ne conserve pas forcément la période sélectionnée par exemple quand les historiques ont été lissés). 
+																											Si coché, le graphique va s'agrandir avec les nouvelles données.}}"></i></sup>
 											</label>
 											<div class="col-sm-5">
-												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_update_append">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_update_append" checked>
 											</div>
 										</div>
 
@@ -1196,6 +1200,10 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 								<br/><br><br>
 								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Gestion de la période à afficher}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Période d'affichage : applique la période du paramètre choisi sur la page "équipement" ou le personnalise pour ce graphique}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Permettre update des courbes: }}{{si coché, les courbes des graphiques s'actualisent automatiquement lorsque de nouvelles données sont disponibles}}</label>
+								<label class="col-lg-12 control-label pull-left">{{Lors d'un update des courbes, ajouter les nouvelles données au graph: }}{{si décoché, la dernière donnée arrivée va chasser la première 
+																						(ne conserve pas forcément la période sélectionnée par exemple quand les historiques ont été lissés). 
+																						Si coché, le graphique va s'agrandir avec les nouvelles données}}</label>
 								<br/><br><br>
 								<label class="col-lg-12 control-label pull-left" style="text-decoration:underline">{{Gestion des comparaisons par période pour une même commande}}</label>
 								<label class="col-lg-12 control-label pull-left">{{Comparaison temporelle : permet de comparer d'une année sur l'autre soit la totalité de l'année soit un mois en particulier pour une commande disposant de plusieurs années d'enregistrement}}</label>
@@ -1656,6 +1664,85 @@ $(document).on('change', '[data-l2key$="_3D_enabled"]', function() {
 
 // Appliquer l'état actuel au chargement
 $('[data-l2key$="_3D_enabled"]').trigger('change');
+
+
+// ------------------------------------------------------------------
+// Forcer "update_append = true + disabled" quand période = dLastXXX
+// ------------------------------------------------------------------
+function updateAppendBehavior(graphNum) {
+    // 1. Sélecteur de période du graphique
+    const $selectGraph = $(`.eqLogicAttr[data-l2key="periode_histo_graph${graphNum}"]`);
+    let periodeValue = $selectGraph.val();
+
+    // 2. Si "global" → on prend la valeur du select général
+    if (periodeValue === 'global') {
+        const $selectGlobal = $(`.eqLogicAttr[data-l2key="periode_histo"]`);
+        periodeValue = $selectGlobal.val() || 'nbJours'; // fallback si vide
+    }
+
+    // 3. Est-ce une période "dLast..." ?
+    const isLastPeriod = periodeValue && periodeValue.startsWith('dLast');
+
+    // 4. La case "Ajouter les nouvelles données au graph"
+    const $checkbox = $(`.eqLogicAttr[data-l1key="configuration"][data-l2key="graph${graphNum}_update_append"]`);
+
+    // 5. La ligne complète (pour griser un peu + éventuellement ajouter un texte)
+    const $formGroup = $checkbox.closest('.form-group');
+    const $label = $formGroup.find('.control-label');
+
+    if (!isLastPeriod) {
+        // Forcer : coché + désactivé
+        $checkbox
+            .prop({
+                checked: true,
+                disabled: true
+            })
+            .trigger('change');
+
+        $formGroup.css('opacity', 0.65);
+    } else {
+        // Retour à la normale : réactiver, sans forcer la coche
+        $checkbox.prop('disabled', false);
+        $formGroup.css('opacity', 1);
+    }
+}
+
+// ────────────────────────────────────────────────
+// Déclencheurs
+// ────────────────────────────────────────────────
+
+// Changement sur le select global → impacte tous les graphiques en "global"
+$(document).on('change', '.eqLogicAttr[data-l2key="periode_histo"]', function() {
+    // On met à jour TOUS les graphiques qui sont sur "global"
+    $('.periodeSelect').each(function() {
+        const val = $(this).val();
+        if (val === 'global') {
+            const graphNum = $(this).data('l2key').match(/periode_histo_graph(\d+)/)?.[1];
+            if (graphNum) {
+                updateAppendBehavior(graphNum);
+            }
+        }
+    });
+});
+
+// Changement sur n'importe quel select de graphique
+$(document).on('change', '.periodeSelect', function() {
+    const graphNum = $(this).data('l2key').match(/periode_histo_graph(\d+)/)?.[1];
+    if (graphNum) {
+        updateAppendBehavior(graphNum);
+    }
+});
+
+// Au chargement de la page → appliquer l’état actuel
+$(function() {
+    // Déclenche d’abord le global (au cas où)
+    $('.eqLogicAttr[data-l2key="periode_histo"]').trigger('change');
+    
+    // Puis chaque graphique individuellement
+    $('.periodeSelect').each(function() {
+        $(this).trigger('change');
+    });
+});
 
 </script>
 

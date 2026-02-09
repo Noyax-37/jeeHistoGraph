@@ -286,7 +286,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
         $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
         $updateEnabled = $eqLogic->getConfiguration("graph{$g}_update_enabled", 1) ? true : false;
-        $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'false' : 'true';
+        $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'true' : 'false';
         $xTitlePosition = $titleAlign == 'right' ? -30 : 0;
         $chartOrStock = 'StockChart';
         $inverted = 'false';
@@ -402,6 +402,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         }
         $actualisation = $updateEnabled;
         $endTime = null;
+        $delta = 0;
         switch ($periodeHistoGraph) {
             case 'deDateAdate':
                 $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_2dates_graph{$g}", date("Y-m-d H:i:s", time()));
@@ -430,6 +431,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast5Min':
+                $delta = 5 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 5 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -437,6 +439,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 5 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast15Min':
+                $delta = 15 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 15 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -444,6 +447,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 15 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast30Min':
+                $delta = 30 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 30 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -451,6 +455,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 30 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLastHour':
+                $delta = 60 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -458,6 +463,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last hour for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast6Hours':
+                $delta = 6 * 60 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 6 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -465,11 +471,20 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 6 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast12Hours':
+                $delta = 12 * 60 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 12 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 12 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                break;
+            case 'dLast24Hours':
+                $delta = 24 * 60 * 60 * 1000;
+                $startTime = date("Y-m-d H:i:s", time() - 24 * 60 * 60);
+                $endTime = date("Y-m-d H:i:s", time());
+                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 24 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dDay':
                 $startTime = date("Y-m-d 00:00:00", time());
@@ -983,19 +998,35 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     default:
                 }
             } else {
-                $buttonJS = "buttons: [
-                            { type: 'second', count: 30, text: '30s' },
-                            { type: 'minute', count: 1, text: '1m' },
-                            { type: 'minute', count: 5, text: '5m' },
-                            { type: 'minute', count: 15, text: '15m' },
-                            { type: 'minute', count: 30, text: '30m' },
-                            { type: 'hour', count: 1, text: '1h' },
-                            { type: 'day', count: 1, text: '1j' },
-                            { type: 'day', count: 7, text: '1s' },
-                            { type: 'day', count: 30, text: '1m' },
-                            { type: 'day', count: 365, text: '1an' },
-                            { type: 'all', text: 'Tout' }
-                        ]";
+                if ($delta!=0){
+                    $buttonJS = "buttons: [
+                                        { type: 'second', count: 30, text: '30s' },
+                                        { type: 'minute', count: 1, text: '1m' },
+                                        { type: 'minute', count: 5, text: '5m' },
+                                        { type: 'minute', count: 15, text: '15m' },
+                                        { type: 'minute', count: 30, text: '30m' },
+                                        { type: 'hour', count: 1, text: '1h' },
+                                        { type: 'day', count: 1, text: '1j' },
+                                        { type: 'day', count: 7, text: '1s' },
+                                        { type: 'day', count: 30, text: '1m' },
+                                        { type: 'day', count: 365, text: '1an' },
+                                        { type: 'all', text: 'Tout' }
+                                    ]";
+                } else {
+                    $buttonJS = "buttons: [
+                                { type: 'second', count: 30, text: '30s' },
+                                { type: 'minute', count: 1, text: '1m' },
+                                { type: 'minute', count: 5, text: '5m' },
+                                { type: 'minute', count: 15, text: '15m' },
+                                { type: 'minute', count: 30, text: '30m' },
+                                { type: 'hour', count: 1, text: '1h' },
+                                { type: 'day', count: 1, text: '1j' },
+                                { type: 'day', count: 7, text: '1s' },
+                                { type: 'day', count: 30, text: '1m' },
+                                { type: 'day', count: 365, text: '1an' },
+                                { type: 'all', text: 'Tout' }
+                            ]";
+                }
             }
 
             $axisIndex = $unitToAxis[$unite] ?? 0;
@@ -1036,7 +1067,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $actualisation = false;
                     foreach ($recordData as $year => $data) {
                         if ($year == $currentYear) {
-                            $actualisation = $updateEnabled; // ne pas mettre à jour si pas l'année courante
+                            $actualisation = $updateEnabled; // mettre à jour si année courante
                             $updateAppend = 'false';
                         }
 
@@ -1105,7 +1136,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $affOrdering = $nbSeries;
                     foreach ($recordData as $year => $data) {
                         if ($compareMonth == $currentMonth && $year == $currentYear){
-                            $actualisation = $updateEnabled; // ne pas mettre à jour si pas le mois courant de l'année courante
+                            $actualisation = $updateEnabled; // mettre à jour si le mois courant de l'année courante
                             $updateAppend = 'false';
                         } 
                         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
@@ -1234,13 +1265,53 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                                                     ' à ' + 
                                                                     dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
 
-                                            series.addPoint({
-                                                x: dateLastValue,
-                                                name: '{$indexNom}',
-                                                label: valeur,
-                                                description: dateFormatee 
-                                            }, true, $updateAppend, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                        };
+                                            if ({$updateAppend} === false) {
+                                                // Calcul des nouvelles extrêmes avant d'ajouter le point
+                                                const xAxis = series.xAxis;
+                                                const currentMin = xAxis.min;
+                                                const newMin = dateLastValue - {$delta};
+                                                const newMax = dateLastValue;
+                                                
+                                                // Ajout du point
+                                                series.addPoint({
+                                                    x: dateLastValue,
+                                                    name: '{$indexNom}',
+                                                    label: valeur,
+                                                    description: dateFormatee 
+                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                                
+                                                // Suppression des points obsolètes (plus anciens que newMin)
+                                                const data = series.data;
+                                                
+                                                while (data.length > 0 && data[0].x < newMin) {
+                                                    series.removePoint(0, false);
+                                                }
+                                                
+                                                // Décalage de la période d'affichage
+                                                //xAxis.setExtremes(newMin, newMax);
+                                                
+                                                // Mise à jour du navigator si présent
+                                                const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
+                                                if (graphnavigator) {
+                                                    if (debug){console.log('Décalage de la période d\'affichage pour le navigator');}
+                                                    //graphnavigator.xAxis.setExtremes(newMin, newMax);
+                                                    //graphnavigator.render();
+                                                }
+                                                
+                                                // Redraw final pour appliquer tous les changements en une fois
+                                                //window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
+                                            } else {
+                                                // Sinon, on ajoute normalement (le point sera ajouté à la fin de la série)
+                                                series.addPoint({
+                                                    x: dateLastValue,
+                                                    name: '{$indexNom}',
+                                                    label: valeur,
+                                                    description: dateFormatee 
+                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                            }
+
+
+                                       };
                                     }
                                 };
                             });
@@ -1265,12 +1336,53 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                                                     ' à ' + 
                                                                     dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
 
-                                            series.addPoint({
-                                                x: dateLastValue,
-                                                name: '{$indexNom}',
-                                                label: valeur,
-                                                description: dateFormatee 
-                                            }, true, $updateAppend, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+
+                                            if ({$updateAppend} === false) {
+                                                // Calcul des nouvelles extrêmes avant d'ajouter le point
+                                                const xAxis = series.xAxis;
+                                                const currentMin = xAxis.min;
+                                                const newMin = dateLastValue - {$delta};
+                                                const newMax = dateLastValue;
+                                                
+                                                // Ajout du point
+                                                series.addPoint({
+                                                    x: dateLastValue,
+                                                    name: '{$indexNom}',
+                                                    label: valeur,
+                                                    description: dateFormatee 
+                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                                
+                                                // Suppression des points obsolètes (plus anciens que newMin)
+                                                const data = series.data;
+                                                
+                                                while (data.length > 0 && data[0].x < newMin) {
+                                                    series.removePoint(0, false);
+                                                }
+                                                
+                                                // Décalage de la période d'affichage
+                                                //xAxis.setExtremes(newMin, newMax);
+                                                
+                                                // Mise à jour du navigator si présent
+                                                const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
+                                                if (graphnavigator) {
+                                                    if (debug){console.log('Décalage de la période d\'affichage pour le navigator');}
+                                                    //graphnavigator.xAxis.setExtremes(newMin, newMax);
+                                                    //graphnavigator.render();
+                                                }
+                                                
+                                                // Redraw final pour appliquer tous les changements en une fois
+                                                //window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
+                                            } else {
+                                                // Sinon, on ajoute normalement (le point sera ajouté à la fin de la série)
+                                                series.addPoint({
+                                                    x: dateLastValue,
+                                                    name: '{$indexNom}',
+                                                    label: valeur,
+                                                    description: dateFormatee 
+                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                            }
+
+
                                         };
                                     };
                                 };
@@ -1285,7 +1397,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             
-                            debug = false;
+                            debug = true;
                             
                             if (window.chart_g{$g}_id{$eqLogic->getId()}){
                                 for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
@@ -1316,10 +1428,46 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                         }
                                         if (debug){console.log('yToAdd: ', yToAdd);}
 
-                                        // Ajout du point
-                                        series.addPoint([dateLastValue, yToAdd], true, $updateAppend, true);
-
-                            
+                                        if ({$updateAppend} === false) {
+                                            // Calcul des nouvelles extrêmes avant d'ajouter le point
+                                            // const xAxis = series.xAxis;
+                                            // const currentMin = xAxis.min;
+                                            const newMin = dateLastValue - {$delta};
+                                            const newMax = dateLastValue;
+                                            
+                                            // Ajout du point
+                                            //series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
+                                            
+                                            // Suppression des points obsolètes (plus anciens que newMin)
+                                            const data = series.data;
+                                            
+                                            while (data.length > 0 && data[0].x < newMin) {
+                                                series.removePoint(0, false);
+                                            }
+                                            
+                                            //series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
+                                            
+                                            // Décalage de la période d'affichage
+                                            //xAxis.setExtremes(newMin, newMax);
+                                            
+                                            // Mise à jour du navigator si présent
+                                            const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
+                                            if (graphnavigator) {
+                                                if (debug){console.log('Décalage de la période d\'affichage pour le navigator');}
+                                                //graphnavigator.xAxis.setExtremes(newMin, newMax);
+                                                //graphnavigator.render();
+                                            }
+                                            
+                                            // Redraw final pour appliquer tous les changements en une fois
+                                            //window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
+                                            
+                                            
+                                        } else {
+                                            // Sinon, on ajoute normalement (le point sera ajouté à la fin de la série)
+                                            // series.addPoint([dateLastValue, yToAdd], true, false, true);
+                                        }
+                                        
+                                        series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
                                         
                                         // Sauvegarde la valeur brute pour la prochaine mise à jour
                                         if (!series.userOptions) series.userOptions = {};
@@ -1481,8 +1629,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             enabled: {$showLegend},
                         },
                         navigator: { 
-                            {$navigatorJS}
-                        },
+                            {$navigatorJS},
+                            },
                         plotOptions: {
                             series: {
                                 stacking: '$stackingOption',
