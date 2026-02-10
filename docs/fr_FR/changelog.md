@@ -11,6 +11,11 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.20
+- meilleure gestion des mises à jour automatiques des graphiques
+- modification pour modifier l'ordre des séries => maintenant c'est du glisser / déposer à la souris
+- correction du bug du naigator qui rétrécissait lors des mises à jour automatiques des graphiques avec maintien de la période d'affichage (en v2.12)
+
 # v2.12
 - gestion des mises à jour automatiques des graphiques améliorée, reste un problème avec le 'navigator' qui rétrécit lorsque les données sont mises à jour avec maintient de la période d'affichage 
 

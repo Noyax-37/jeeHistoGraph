@@ -415,6 +415,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
                 break;
             case 'deDate':
+                $updateAppend = 'true';
                 $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = date("Y-m-d H:i:s", time());
@@ -423,6 +424,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'nbJours':
+                $updateAppend = 'true';
                 $delai = ($global) ? $delaiGraph : intval($eqLogic->getConfiguration("delai_histo_graph{$g}"));
                 $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
@@ -487,6 +489,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 24 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dDay':
+                $updateAppend = 'true';
                 $startTime = date("Y-m-d 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
@@ -494,6 +497,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
                 break;
             case 'dWeek':
+                $updateAppend = 'true';
                 $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -501,6 +505,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dMonth':
+                $updateAppend = 'true';
                 $startTime = date("Y-m-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -508,6 +513,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dYear':
+                $updateAppend = 'true';
                 $startTime = date("Y-01-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
@@ -515,6 +521,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dAll':
+                $updateAppend = 'true';
                 $startTime = date("1970-01-01 00:00:00");
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = 'undefined';
@@ -691,15 +698,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
         $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
         
-        $checkOrderingUsed = [];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
-            $affOrdering = intval($eqLogic->getConfiguration("graph{$g}_curve{$i}_order", ''));
-            if (in_array($affOrdering, $checkOrderingUsed) || $affOrdering == '') {
-                // ordre déjà utilisé, forcer à la fin
-                $affOrdering += 10;
-            }
-            $checkOrderingUsed[] = $affOrdering;
             $cmdKey = "graph{$g}_cmdGraphe{$index}";
             $nomKey = "graph{$g}_index{$index}_nom";
             //$colorKey = "graph{$g}_color{$i}";
@@ -945,7 +945,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             month: ['%B %Y', 'De %B', ' à %B %Y'],
                             year: ['%Y', 'De %Y', ' à %Y']
                                                 ";
-
+            $selectedRangeSelectorButton = 26;
             if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
                 switch ($regroup) {
                     case 'minute':
@@ -959,6 +959,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'day', count: 365, text: '1an' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
+                        $selectedRangeSelectorButton = 6;
                         break;
                     case 'hour':
                         $buttonJS = "buttons: [
@@ -968,6 +969,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'day', count: 365, text: '1an' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
+                        $selectedRangeSelectorButton = 4;
                         break;
                     case 'day':
                         $buttonJS = "buttons: [
@@ -976,6 +978,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'day', count: 365, text: '1an' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
+                        $selectedRangeSelectorButton = 3;
                         break;
                     case 'week':
                         $buttonJS = "buttons: [
@@ -983,34 +986,50 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'day', count: 365, text: '1an' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
+                        $selectedRangeSelectorButton = 2;
                         break;
                     case 'month':
                         $buttonJS = "buttons: [
                                             { type: 'day', count: 365, text: '1an' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
+                        $selectedRangeSelectorButton = 1;
                         break;
                     case 'year':
                         $buttonJS = "buttons: [
                                             { type: 'all', text: 'Tout' }
                                         ]";
+                        $selectedRangeSelectorButton = 0;
                         break;
                     default:
                 }
             } else {
                 if ($delta!=0){
+                    $selectedRangeSelectorButton = 2;
                     $buttonJS = "buttons: [
                                         { type: 'second', count: 30, text: '30s' },
-                                        { type: 'minute', count: 1, text: '1m' },
-                                        { type: 'minute', count: 5, text: '5m' },
-                                        { type: 'minute', count: 15, text: '15m' },
-                                        { type: 'minute', count: 30, text: '30m' },
-                                        { type: 'hour', count: 1, text: '1h' },
-                                        { type: 'day', count: 1, text: '1j' },
-                                        { type: 'day', count: 7, text: '1s' },
-                                        { type: 'day', count: 30, text: '1m' },
-                                        { type: 'day', count: 365, text: '1an' },
-                                        { type: 'all', text: 'Tout' }
+                                        { type: 'minute', count: 1, text: '1m' },";
+                    if ($delta >= 6*60*1000) {
+                        $buttonJS .= "{ type: 'minute', count: 5, text: '5m' },";
+                        $selectedRangeSelectorButton = 3;
+                    }
+                    if ($delta >= 16*60*1000) {
+                        $buttonJS .= "{ type: 'minute', count: 15, text: '15m' },";
+                        $selectedRangeSelectorButton = 4;
+                    }
+                    if ($delta >= 31*60*1000) {
+                        $buttonJS .= "{ type: 'minute', count: 30, text: '30m' },";
+                        $selectedRangeSelectorButton = 5;
+                    }
+                    if ($delta >= 61*60*1000) {
+                        $buttonJS .= "{ type: 'hour', count: 1, text: '1h' },";
+                        $selectedRangeSelectorButton = 6;
+                    }
+                    if ($delta >= 12*60*60*1000) {
+                        $buttonJS .= "{ type: 'hour', count: 12, text: '12h' },";
+                        $selectedRangeSelectorButton = 7;
+                    }
+                    $buttonJS .=        "{ type: 'all', text: 'Tout' }
                                     ]";
                 } else {
                     $buttonJS = "buttons: [
@@ -1026,6 +1045,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 { type: 'day', count: 365, text: '1an' },
                                 { type: 'all', text: 'Tout' }
                             ]";
+                    $selectedRangeSelectorButton = 10;
                 }
             }
 
@@ -1036,7 +1056,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $dataLabelsOverlap = $eqLogic->getConfiguration("graph{$g}_dataLabels_overlaps", 0) ? 'true' : 'false';
                 $seriesJS .= "{
                         name: " . json_encode($indexNom) . ",
-                        index: {$affOrdering},
                         type: 'timeline',
                         pointInterval: 24 * 3600 * 1000,
                         data: " . json_encode($listeHisto) . ", 
@@ -1056,7 +1075,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
                     $cmdUpdateJS = '';
                     $nbSeries = count($recordData);
-                    $affOrdering = $nbSeries;
                     if ($nbSeries > 2) {
                         $baseSeries = 1;
                         $navigatorEnabled = $configNavigatorEnabled;
@@ -1079,7 +1097,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$years}") . ",
-                            index: {$affOrdering},
                             showInNavigator: true,
                             borderColor: " . json_encode($color) . ",
                             step: {$stairStepKey},
@@ -1133,7 +1150,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $actualisation = false;
                     $cmdUpdateJS = '';
                     $nbSeries = count($recordData);
-                    $affOrdering = $nbSeries;
                     foreach ($recordData as $year => $data) {
                         if ($compareMonth == $currentMonth && $year == $currentYear){
                             $actualisation = $updateEnabled; // mettre à jour si le mois courant de l'année courante
@@ -1142,7 +1158,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
-                            index: {$affOrdering},
                             showInNavigator: true,
                             borderColor: " . json_encode($color) . ",
                             step: {$stairStepKey},
@@ -1163,6 +1178,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'day', count: 7, text: '1s' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
+                    $selectedRangeSelectorButton = 1;
                     $navigatorJS =    " 
                         enabled: $configNavigatorEnabled,
                         margin: 1
@@ -1176,7 +1192,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
                     $seriesJS .= "{
                         name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
-                        index: {$affOrdering},
                         showInNavigator: true,
                         borderColor: " . json_encode($color) . ",
                         step: {$stairStepKey},
@@ -1232,10 +1247,31 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
             }
             
+            $appendJS = '';
             //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} cmdId= {$cmdId} actualisation= " . ($actualisation ? 'true' : 'false'));
             if ($cmdId and $actualisation) {
                 //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} graphtype= {$graphType}");
                 //log::add(__CLASS__, 'debug', "{$graphType} data: " . json_encode($listeHisto));
+                if ($updateAppend === 'false') {
+                    $appendJS = "if (window.chart_g{$g}_id{$eqLogic->getId()}){
+                        for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
+                            const seriesToUPdate = window.chart_g{$g}_id{$eqLogic->getId()}.series[s];
+                            const newMin = dateLastValue - {$delta};
+                            const newMax = dateLastValue;
+                            const dataToUpdate = seriesToUPdate.data;
+                            while (dataToUpdate.length > 0 && dataToUpdate[0].x < newMin) {
+                                dataToUpdate[0].remove(false);
+                            }
+                            //const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
+                            //if (graphnavigator) {
+                                //if (debug){console.log('Décalage de la période d\'affichage pour le navigator', graphnavigator);}
+                                //graphnavigator.zoomedMin = 0;
+                                //graphnavigator.render();
+                            //}
+                        }
+                    }";
+                }
+
                 if ($graphType == 'timeline') {
                     if ($refPrec){
                         $cmdUpdateJS .= "
@@ -1244,75 +1280,34 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
                                 
-                                if (window.chart_g{$g}_id{$eqLogic->getId()}){
-                                    for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
-                                        if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[s].userOptions.index === {$affOrdering}) {
-                                            const chart = window.chart_g{$g}_id{$eqLogic->getId()};
-                                            const series = chart.series[s];
-                                            const dateObj = new Date(new Date(_options.collectDate).getTime());
-                                            const valeur = y + ' {$unite}';
-                                            
-                                            // Récupérer le label du dernier point existant (si il y en a un)
-                                            let previousLabel = '';
-                                            const points = series.points;
-                                            if (points.length > 0) {
-                                                const lastPoint = points[points.length - 1];
-                                                previousLabel = lastPoint.label || '';
-                                            }
+                                {$appendJS}
+                                
 
-                                            const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
-                                                                    dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
-                                                                    ' à ' + 
-                                                                    dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
-
-                                            if ({$updateAppend} === false) {
-                                                // Calcul des nouvelles extrêmes avant d'ajouter le point
-                                                const xAxis = series.xAxis;
-                                                const currentMin = xAxis.min;
-                                                const newMin = dateLastValue - {$delta};
-                                                const newMax = dateLastValue;
-                                                
-                                                // Ajout du point
-                                                series.addPoint({
-                                                    x: dateLastValue,
-                                                    name: '{$indexNom}',
-                                                    label: valeur,
-                                                    description: dateFormatee 
-                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                                
-                                                // Suppression des points obsolètes (plus anciens que newMin)
-                                                const data = series.data;
-                                                
-                                                while (data.length > 0 && data[0].x < newMin) {
-                                                    series.removePoint(0, false);
-                                                }
-                                                
-                                                // Décalage de la période d'affichage
-                                                //xAxis.setExtremes(newMin, newMax);
-                                                
-                                                // Mise à jour du navigator si présent
-                                                const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
-                                                if (graphnavigator) {
-                                                    if (debug){console.log('Décalage de la période d\'affichage pour le navigator');}
-                                                    //graphnavigator.xAxis.setExtremes(newMin, newMax);
-                                                    //graphnavigator.render();
-                                                }
-                                                
-                                                // Redraw final pour appliquer tous les changements en une fois
-                                                //window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
-                                            } else {
-                                                // Sinon, on ajoute normalement (le point sera ajouté à la fin de la série)
-                                                series.addPoint({
-                                                    x: dateLastValue,
-                                                    name: '{$indexNom}',
-                                                    label: valeur,
-                                                    description: dateFormatee 
-                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                            }
-
-
-                                       };
+                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                    const series = chart.series[{$nbSeries}-1];
+                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
+                                    const valeur = y + ' {$unite}';
+                                    
+                                    // Récupérer le label du dernier point existant (si il y en a un)
+                                    let previousLabel = '';
+                                    const points = series.points;
+                                    if (points.length > 0) {
+                                        const lastPoint = points[points.length - 1];
+                                        previousLabel = lastPoint.label || '';
                                     }
+
+                                    const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
+                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                            ' à ' + 
+                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+
+                                    series.addPoint({
+                                        x: dateLastValue,
+                                        name: '{$indexNom}',
+                                        label: valeur,
+                                        description: dateFormatee 
+                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
                                 };
                             });
                         }\n";
@@ -1322,69 +1317,26 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                                 const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
                                 const y = parseFloat(_options.value);
+
+                                {$appendJS}
                                 
-                                if (window.chart_g{$g}_id{$eqLogic->getId()}){
-                                    for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
-                                        if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[s].userOptions.index === {$affOrdering}) {
-                                            const chart = window.chart_g{$g}_id{$eqLogic->getId()};
-                                            const series = chart.series[{$nbSeries}-1];
-                                            const dateObj = new Date(new Date(_options.collectDate).getTime());
-                                            const valeur = y + ' {$unite}';
-                                            
-                                            const dateFormatee = 'Le ' + 
-                                                                    dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
-                                                                    ' à ' + 
-                                                                    dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                    const series = chart.series[{$nbSeries}-1];
+                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
+                                    const valeur = y + ' {$unite}';
+                                    
+                                    const dateFormatee = 'Le ' + 
+                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                            ' à ' + 
+                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
 
-
-                                            if ({$updateAppend} === false) {
-                                                // Calcul des nouvelles extrêmes avant d'ajouter le point
-                                                const xAxis = series.xAxis;
-                                                const currentMin = xAxis.min;
-                                                const newMin = dateLastValue - {$delta};
-                                                const newMax = dateLastValue;
-                                                
-                                                // Ajout du point
-                                                series.addPoint({
-                                                    x: dateLastValue,
-                                                    name: '{$indexNom}',
-                                                    label: valeur,
-                                                    description: dateFormatee 
-                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                                
-                                                // Suppression des points obsolètes (plus anciens que newMin)
-                                                const data = series.data;
-                                                
-                                                while (data.length > 0 && data[0].x < newMin) {
-                                                    series.removePoint(0, false);
-                                                }
-                                                
-                                                // Décalage de la période d'affichage
-                                                //xAxis.setExtremes(newMin, newMax);
-                                                
-                                                // Mise à jour du navigator si présent
-                                                const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
-                                                if (graphnavigator) {
-                                                    if (debug){console.log('Décalage de la période d\'affichage pour le navigator');}
-                                                    //graphnavigator.xAxis.setExtremes(newMin, newMax);
-                                                    //graphnavigator.render();
-                                                }
-                                                
-                                                // Redraw final pour appliquer tous les changements en une fois
-                                                //window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
-                                            } else {
-                                                // Sinon, on ajoute normalement (le point sera ajouté à la fin de la série)
-                                                series.addPoint({
-                                                    x: dateLastValue,
-                                                    name: '{$indexNom}',
-                                                    label: valeur,
-                                                    description: dateFormatee 
-                                                }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                            }
-
-
-                                        };
-                                    };
+                                    series.addPoint({
+                                        x: dateLastValue,
+                                        name: '{$indexNom}',
+                                        label: valeur,
+                                        description: dateFormatee 
+                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
                                 };
                             });
                         }\n";
@@ -1392,88 +1344,48 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     //log::add(__CLASS__, 'debug', "graph{$g} nbseries: {$nbSeries}");
                 } else {
                     $var = $variation ? 'true':'false';
-                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: $nbSeries series - affOrdering: {$affOrdering}"); 
                     $cmdUpdateJS .= "
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             
                             debug = true;
-                            
-                            if (window.chart_g{$g}_id{$eqLogic->getId()}){
-                                for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
-                                    if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[s].userOptions.index === {$affOrdering}) {
-                                        if(debug){console.log('test: ', window.chart_g{$g}_id{$eqLogic->getId()}.series);}
-                                        
-                                        const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
 
-                                        const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
+                            const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
 
-                                        const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[s];
-                                        if (debug){console.log('series: ', series);}
-                                        let currentRawValue = _options.value;
-                                        if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
-                                        if (debug){console.log('options: ', _options);}
-                                        
-                                        // Récupère la dernière valeur brute stockée (ou null si première fois)
-                                        let lastRawValue = series.userOptions?.lastRawValue ?? null;
+                            {$appendJS}
 
-                                        let yToAdd = currentRawValue * {$coef}; // par défaut : valeur brute
+                            if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                                
+                                const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
-                                        if (variation) {
-                                            if (lastRawValue !== null) {
-                                                yToAdd = currentRawValue - lastRawValue; // vrai delta
-                                            } else {
-                                                yToAdd = 0; // premier point en mode variation
-                                            }
-                                        }
-                                        if (debug){console.log('yToAdd: ', yToAdd);}
+                                const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
+                                let currentRawValue = _options.value;
+                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
+                                if (debug){console.log('options: ', _options);}
+                                
+                                // Récupère la dernière valeur brute stockée (ou null si première fois)
+                                let lastRawValue = series.userOptions?.lastRawValue ?? null;
 
-                                        if ({$updateAppend} === false) {
-                                            // Calcul des nouvelles extrêmes avant d'ajouter le point
-                                            // const xAxis = series.xAxis;
-                                            // const currentMin = xAxis.min;
-                                            const newMin = dateLastValue - {$delta};
-                                            const newMax = dateLastValue;
-                                            
-                                            // Ajout du point
-                                            //series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
-                                            
-                                            // Suppression des points obsolètes (plus anciens que newMin)
-                                            const data = series.data;
-                                            
-                                            while (data.length > 0 && data[0].x < newMin) {
-                                                series.removePoint(0, false);
-                                            }
-                                            
-                                            //series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
-                                            
-                                            // Décalage de la période d'affichage
-                                            //xAxis.setExtremes(newMin, newMax);
-                                            
-                                            // Mise à jour du navigator si présent
-                                            const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
-                                            if (graphnavigator) {
-                                                if (debug){console.log('Décalage de la période d\'affichage pour le navigator');}
-                                                //graphnavigator.xAxis.setExtremes(newMin, newMax);
-                                                //graphnavigator.render();
-                                            }
-                                            
-                                            // Redraw final pour appliquer tous les changements en une fois
-                                            //window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
-                                            
-                                            
-                                        } else {
-                                            // Sinon, on ajoute normalement (le point sera ajouté à la fin de la série)
-                                            // series.addPoint([dateLastValue, yToAdd], true, false, true);
-                                        }
-                                        
-                                        series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
-                                        
-                                        // Sauvegarde la valeur brute pour la prochaine mise à jour
-                                        if (!series.userOptions) series.userOptions = {};
-                                        series.userOptions.lastRawValue = currentRawValue;
-                                    };
-                                };
+                                let yToAdd = currentRawValue * {$coef}; // par défaut : valeur brute
+
+                                if (variation) {
+                                    if (lastRawValue !== null) {
+                                        yToAdd = currentRawValue - lastRawValue; // vrai delta
+                                    } else {
+                                        yToAdd = 0; // premier point en mode variation
+                                    }
+                                }
+                                
+                                if (debug){console.log('yToAdd: ', yToAdd);}
+                                
+                                series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
+                                window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
+                                
+                                if (debug){console.log('series : ', series);}
+                                
+                                // Sauvegarde la valeur brute pour la prochaine mise à jour
+                                if (!series.userOptions) series.userOptions = {};
+                                series.userOptions.lastRawValue = currentRawValue;
                             };
                         });
                     }\n";
@@ -1485,7 +1397,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         
         $rangeSelectorJS = "
             enabled: {$configButtonsEnabled},
-            selected: 26,
+            selected: {$selectedRangeSelectorButton},
             inputEnabled: false,
             floating: true,
             allButtonsEnabled: true,
