@@ -79,9 +79,9 @@ function jeeHistoGraph_update() {
             $config[] = $key[0];
         }
         $version = $eqLogic->getConfiguration('version', '0.0');
-        $actualVersion = config::byKey('version', 'jeeHistoGraph', '0.0', true);
-        log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' current config version: {$version}, new plugin version: {$actualVersion}");
-        if (version_compare($version, $actualVersion, '<')) {
+        $newVersion = $core_version;
+        log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' current config version: {$version}, new plugin version: {$newVersion}");
+        if (version_compare($version, $newVersion, '<')) {
             $decode = $eqLogic->getConfiguration();
             foreach ($decode as $key => $value) {
                 if (in_array($key, $config) || substr($key, -9) == "_bg_color") {
@@ -128,7 +128,7 @@ function jeeHistoGraph_update() {
                     }
                     if (substr($key,-4) == "_nom"){
                         if ($value != ""){
-                            if (version_compare('2.04', $actualVersion, '>=')){ //met à jour la case à cocher d'affichage si la version avant mise à jour est <=2.04
+                            if (version_compare('2.04', $newVersion, '>=')){ //met à jour la case à cocher d'affichage si la version avant mise à jour est <=2.04
                                 $decomp=explode("_",$key);
                                 $graph=explode("graph",$decomp[0])[1];
                                 $index=(explode("index",$decomp[1])[1]);
@@ -137,6 +137,13 @@ function jeeHistoGraph_update() {
                                 log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating display configuration key: {$newDisplayKey} to value: 1 because {$key} is set to '{$value}'");
                                 $eqLogic   ->setConfiguration($newDisplayKey, 1);
                             }
+                        }
+                    }
+                    if (substr($key, -14) == "_update_append"){
+                        $graph = substr($key, 0, 6);
+                        if (($newVersion == '2.20') && (((substr($decode['periode_histo'], 0, 5) != 'dLast') && $decode['periode_histo_' . $graph] == 'global') || (($decode['periode_histo_' . $graph] != 'global') &&(substr($decode['periode_histo_' . $graph], 0, 5) != 'dLast')))){
+                            log::add('jeeHistoGraphUpdate', 'debug', "EqLogic: '{$eqLogic->getName()}' migrating configuration key: {$key} to new value: 1 for version 2.20");
+                            $eqLogic   ->setConfiguration($key, 1);
                         }
                     }
                     continue;
@@ -156,7 +163,7 @@ function jeeHistoGraph_update() {
             }
         }
 
-        $eqLogic   ->setConfiguration('version', $actualVersion);
+        $eqLogic   ->setConfiguration('version', $newVersion);
         $eqLogic   ->save();
         
     }

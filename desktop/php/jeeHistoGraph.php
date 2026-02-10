@@ -81,24 +81,17 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 		z-index: 10;
 	}
 
-	.sticky-left-10 {
-		position: sticky;
-		left: 80px;
-		background-color: rgb(var(--panel-bg-color));
-		z-index: 10;
-	}
-
 	.sticky-left-20 {
 		position: sticky;
 		text-align: center;
-		left: 130px;
+		left: 50px;
 		background-color: rgb(var(--panel-bg-color));
 		z-index: 10;
 	}
 
 	.sticky-left-30 {
 		position: sticky;
-		left: 170px;
+		left: 90px;
 		background-color: rgb(var(--panel-bg-color));
 		z-index: 10;
 	}
@@ -126,6 +119,28 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 	.checkbox-cell input[type="checkbox"]:hover {
 		transform: translate(-50%, -50%) scale(1.1);
 	}
+
+	.ui-sortable-helper {
+		background: rgba(46, 169, 85, 0.15);
+		border: 1px dashed #2ea955;
+	}
+
+	.ui-state-highlight {
+		background: #f8f9fa;
+		border: 1px dashed #ccc;
+		height: 52px !important; /* ≈ hauteur d'une ligne */
+		visibility: visible !important;
+	}
+
+	.drag-handle {
+		cursor: move;
+		margin-right: 8px;
+		color: #888;
+		font-size: 1.2em;
+		user-select: none;
+		-webkit-user-select: none;
+	}
+
 </style>
 
 <div class="row row-overflow">
@@ -985,12 +1000,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<thead>
 													<tr>
 														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th> 		<!-- 1 -->
-														<th class="text-center sticky-left-10" style="width: 50px;">{{Ordre}}		<!-- 2 -->
-															<sup>
-																<i class="fas fa-question-circle tooltips" title="{{Ordre d'affichage des courbes dans le graphique}}"></i>
-															</sup>
-
-														</th>
 														<th class="text-center sticky-left-20" style="width: 40px;">{{Aff?}} 		<!-- 3 -->
 															<sup>
 																<i class="fas fa-question-circle tooltips" title="{{Cochez pour afficher la courbe dans le graphique}}"></i>
@@ -1083,15 +1092,12 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														</th>
 													</tr>
 												</thead>
-												<tbody>
+												<tbody class="curves-sortable" data-graph="<?= $g ?>">
 													<?php for ($i = 1; $i <= 10; $i++) { 
 														$index = str_pad($i, 2, '0', STR_PAD_LEFT);
 													?>
-													<tr>
+													<tr data-courbe-index="<?= $i ?>">
 														<td class="text-center sticky-left">{{Courbe <?= $index ?>}}</td> 		<!-- 1 -->
-														<td class="sticky-left-10">								<!-- 2 -->
-															<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_order" placeholder="..."/>
-														</td>
 														<td class="text-center sticky-left-20">				<!-- 3 -->
 															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="display_graph<?= $g ?>_curve<?= $i ?>">
 														</td>
@@ -1744,8 +1750,144 @@ $(function() {
     });
 });
 
-</script>
 
+// ────────────────────────────────────────────────
+//  RÉORDONNANCEMENT DES COURBES PAR DRAG & DROP
+// ────────────────────────────────────────────────
+
+$(function() {
+    // Ajout poignée drag
+    $('[id$="tab"] .table-responsive table tbody tr td:first-child').each(function() {
+        if (!$(this).find('.drag-handle').length) {
+            $(this).prepend(
+                '<span class="drag-handle" style="cursor:move; margin-right:6px; color:#888; font-size:1.1em;">☰</span>'
+            );
+        }
+    });
+
+    $('.curves-sortable').sortable({
+        handle: '.drag-handle',
+        placeholder: 'ui-state-highlight',
+        axis: 'y',
+        opacity: 0.7,
+        update: function(event, ui) {
+            const $tbody = $(this);
+            const graphNum = $tbody.data('graph');
+
+            // Nouvel ordre : tableau des anciens index (1 à 10)
+            const newOrder = [];
+            $tbody.find('tr').each(function() {
+                const oldIndex = parseInt($(this).data('courbe-index'), 10);
+                if (!isNaN(oldIndex)) newOrder.push(oldIndex);
+            });
+
+            console.log('Nouvel ordre des anciens index :', newOrder);
+
+            // -------------------------------------------------------------------------
+            // Fonction utilitaire : renuméroter un champ donné
+            // -------------------------------------------------------------------------
+            function renumberField(selector, oldNumRegex, newKeyBuilder) {
+                $(selector).each(function() {
+                    const $input = $(this);
+                    const currentKey = $input.data('l2key') || '';
+                    const match = currentKey.match(oldNumRegex);
+
+                    if (match) {
+                        const oldNum = parseInt(match[1], 10);
+                        const newPos = newOrder.indexOf(oldNum);
+
+                        if (newPos !== -1) {
+                            const newNum = newPos + 1;
+                            const newNumPadded = String(newNum).padStart(2, '0');
+                            const newKey = newKeyBuilder(currentKey, newNum, newNumPadded);
+
+                            console.log(`  ${currentKey}  →  ${newKey}`);
+                            $input.attr('data-l2key', newKey);
+                        }
+                    }
+                });
+            }
+
+            // -------------------------------------------------------------------------
+            // 1. display_graphX_curveY  (Y sans zéro)
+            renumberField(
+                `.eqLogicAttr[data-l2key^="display_graph${graphNum}_curve"]`,
+                /display_graph\d+_curve(\d+)/,
+                (key, newNum) => `display_graph${graphNum}_curve${newNum}`
+            );
+
+            // 2. graphX_indexYY_nom  (YY avec deux chiffres)
+            renumberField(
+                `.eqLogicAttr[data-l2key^="graph${graphNum}_index"]`,
+                /graph\d+_index(\d+)_nom/,
+                (key, newNum, newNumPadded) => `graph${graphNum}_index${newNumPadded}_nom`
+            );
+
+            // 3. graphX_cmdGrapheYY  (YY avec deux chiffres)
+            renumberField(
+                `.eqLogicAttr[data-l2key^="graph${graphNum}_cmdGraphe"]`,
+                /graph\d+_cmdGraphe(\d+)/,
+                (key, newNum, newNumPadded) => `graph${graphNum}_cmdGraphe${newNumPadded}`
+            );
+
+            // 4. graphX_curveYY_xxx  (tous les curveYY_...)
+            renumberField(
+                `.eqLogicAttr[data-l2key*="graph${graphNum}_curve"]`,
+                /graph\d+_curve(\d+)_/,
+                (key, newNum) => key.replace(/curve\d+_/, `curve${newNum}_`)
+            );
+
+            // 5. graphX_colorY  (Y sans zéro !)
+            renumberField(
+                `.eqLogicAttr[data-l2key^="graph${graphNum}_color"]`,
+                /graph\d+_color(\d+)/,
+                (key, newNum) => `graph${graphNum}_color${newNum}`
+            );
+
+			// 5.1 stacking_graphX_curveY  (Y sans zéro)
+			renumberField(
+				`.eqLogicAttr[data-l2key^="stacking_graph${graphNum}_curve"]`,
+				/stacking_graph\d+_curve(\d+)/,
+				(key, newNum) => `stacking_graph${graphNum}_curve${newNum}`
+			);
+
+            // 6. Les autres champs simples avec suffixe à deux chiffres
+            const simpleFields = [
+                'unite', 'coef', 'mini', 'maxi', 'plotlines'
+            ];
+
+            simpleFields.forEach(field => {
+                renumberField(
+                    `.eqLogicAttr[data-l2key^="graph${graphNum}_${field}"]`,
+                    new RegExp(`graph\\d+_${field}(\\d+)`),
+                    (key, newNum) => `graph${graphNum}_${field}${newNum}`
+                );
+            });
+
+            // -------------------------------------------------------------------------
+            // Mise à jour visuelle des labels "Courbe XX" et data-courbe-index
+            $tbody.find('tr').each(function(idx) {
+                const newIdx = String(idx + 1).padStart(2, '0');
+                $(this).find('td:first-child').text(`{{Courbe ${newIdx}}}`);
+                $(this).attr('data-courbe-index', idx + 1);
+            });
+
+            // Déclencher un changement pour que Jeedom détecte la modif
+            $tbody.closest('form').find('.eqLogicAttr').first().trigger('change');
+
+            console.log("Renumérotation terminée pour graphique " + graphNum);
+
+			$tbody.find('tr td:first-child').each(function() {
+            const $cell = $(this);
+            $cell.find('.drag-handle').remove();
+            $cell.prepend(
+                '<span class="drag-handle" style="cursor:move; margin-right:6px; color:#888; font-size:1.1em;">☰</span>'
+            );
+        });
+        }
+    });
+});
+</script>
 
 
 <!-- Inclusion du fichier javascript du plugin (dossier, nom_du_fichier, extension_du_fichier, id_du_plugin) -->
