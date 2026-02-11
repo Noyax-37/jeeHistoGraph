@@ -1259,7 +1259,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             const newMin = dateLastValue - {$delta};
                             const newMax = dateLastValue;
                             const dataToUpdate = seriesToUPdate.data;
-                            while (dataToUpdate.length > 0 && dataToUpdate[0].x < newMin) {
+                            while (dataToUpdate.length > 0 && dataToUpdate[0]?.x < newMin) {
                                 dataToUpdate[0].remove(false);
                             }
                             //const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
