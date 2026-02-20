@@ -11,6 +11,13 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+# v2.21
+- correction d'un bug concernant les graphiques de type timeline
+- ajout des ériodes de regroupement 'par 5 minutes', 'par 15 minutes' et 'par 30 minutes' dans 'affichage des données'
+- ajout d'un option 'mois en cours' pour les graphiques de comparaison temporelle
+- correction d'une erreur qui empêchait la duplication d'équipement
+- refresh automatique lorsque l'on revient sur un graph sans recharger la page (onglet non visible, graph non visible sur la page, ...) si l'option d'actualisation est activée
+
 # v2.20
 - meilleure gestion des mises à jour automatiques des graphiques
 - modification pour modifier l'ordre des séries => maintenant c'est du glisser / déposer à la souris

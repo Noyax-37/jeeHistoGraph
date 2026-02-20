@@ -886,7 +886,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											</div>
 										</div>
 
-
 									</div>
 
 									<!-- Regroupements / comparaisons -->
@@ -926,6 +925,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<div class="col-lg-12 compareMonth" style="display:none;">
 													<label class="col-sm-7 control-label">{{Mois à comparer}}</label>
 													<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
+														<option value="00">{{Mois en cours}}</option>
 														<option value="01">{{Janvier}}</option>
 														<option value="02">{{Février}}</option>
 														<option value="03">{{Mars}}</option>
@@ -1129,6 +1129,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 															<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_regroup">
 																<option value="aucun">{{Toutes}}</option>
 																<option value="minute">{{par minute}}</option>
+																<option value="min5">{{par 5 minutes}}</option>
+																<option value="min15">{{par 15 minutes}}</option>
+																<option value="min30">{{par 30 minutes}}</option>
 																<option value="hour">{{par heure}}</option>
 																<option value="day">{{par jour}}</option>
 																<option value="week">{{par semaine}}</option>

@@ -87,26 +87,44 @@ class jeeHistoGraph extends eqLogic {
   public function preInsert() {
 }
   // Fonction exécutée automatiquement après la création de l'équipement
-  public function postInsert() {
-    $configs = self::config();
-    foreach ($configs as $key) {
-        $this ->setConfiguration($key[0], $key[1]);
+    public function postInsert() {
+        // Récupération des valeurs par défaut
+        $configs = self::config();
+
+        foreach ($configs as $keyValuePair) {
+            $key   = $keyValuePair[0];
+            $value = $keyValuePair[1];
+
+            // On n'écrase QUE si la clé n'existe PAS encore, permet la duplication d'équipement sans écrasement de la config
+            if ($this->getConfiguration($key) === null || $this->getConfiguration($key) === '') {
+                $this->setConfiguration($key, $value);
+            }
+        }
+
+        // Gestion de la version (même logique : on ne force que si absent)
+        $actualVersion = config::byKey('version', 'jeeHistoGraph', '0.0', true);
+        if ($this->getConfiguration('version') === null) {
+            $this->setConfiguration('version', $actualVersion);
+        }
+
+        // Sauvegarde uniquement si on a modifié quelque chose
+        if ($this->getChanged()) {
+            $this->save();
+        }
+
+        // Création de la commande refresh si elle n'existe pas déjà
+        $refresh = $this->getCmd('action', 'refresh');
+        if (!is_object($refresh)) {
+            log::add("jeeHistoGraph", "debug", "création de refresh pour eqLogic " . $this->getId());
+            $refresh = new jeeHistoGraphCmd();
+            $refresh->setName(__('Rafraichir', __FILE__));
+            $refresh->setEqLogic_id($this->getId());
+            $refresh->setLogicalId('refresh');
+            $refresh->setType('action');
+            $refresh->setSubType('other');
+            $refresh->save();
+        }
     }
-    $actualVersion = config::byKey('version', 'jeeHistoGraph', '0.0', true);
-    $this   ->setConfiguration('version', $actualVersion);
-    $this->save();
-    $refresh = $this->getCmd('action', 'refresh');
-    if (!is_object($refresh)) {
-        log::add("jeeHistoGraph", "debug", "création de refresh");
-        $refresh = new jeeHistoGraphCmd();
-        $refresh->setName(__('Rafraichir', __FILE__));
-    }
-    $refresh->setEqLogic_id($this->getId());
-    $refresh->setLogicalId('refresh');
-    $refresh->setType('action');
-    $refresh->setSubType('other');
-    $refresh->save();    
-  }
 
   // Fonction exécutée automatiquement avant la mise à jour de l'équipement
   public function preUpdate() {
@@ -554,6 +572,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $cmdUpdateJS = '';
         $compareType = $eqLogic->getConfiguration("graph{$g}_compare_type", 'none');
         $compareMonth = $eqLogic->getConfiguration("graph{$g}_compare_month", date('m'));
+        if ($compareMonth == '0') {
+            $compareMonth = date('m');
+        }
         $rollingStartMonth = $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '01');
         $recordData = [];
 
@@ -812,6 +833,15 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         case 'minute':
                             $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
                             break;
+                        case 'min5':
+                            $units = "[[ 'minute', [5, 10, 15, 30] ]]";
+                            break;
+                        case 'min15':
+                            $units = "[[ 'minute', [15, 30] ]]";
+                            break;
+                        case 'min30':
+                            $units = "[[ 'minute', [30] ]]";
+                            break;
                         case 'hour':
                             $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
                             break;
@@ -960,6 +990,41 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'all', text: 'Tout' }
                                         ]";
                         $selectedRangeSelectorButton = 6;
+                        break;
+                    case 'min5':
+                        $buttonJS = "buttons: [
+                                            { type: 'minute', count: 30, text: '30m' },
+                                            { type: 'hour', count: 1, text: '1h' },
+                                            { type: 'day', count: 1, text: '1j' },
+                                            { type: 'day', count: 7, text: '1s' },
+                                            { type: 'day', count: 30, text: '1m' },
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        $selectedRangeSelectorButton = 6;
+                        break;
+                    case 'min15':
+                        $buttonJS = "buttons: [
+                                            { type: 'minute', count: 30, text: '30m' },
+                                            { type: 'hour', count: 1, text: '1h' },
+                                            { type: 'day', count: 1, text: '1j' },
+                                            { type: 'day', count: 7, text: '1s' },
+                                            { type: 'day', count: 30, text: '1m' },
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        $selectedRangeSelectorButton = 6;
+                        break;
+                    case 'min30':
+                        $buttonJS = "buttons: [
+                                            { type: 'hour', count: 1, text: '1h' },
+                                            { type: 'day', count: 1, text: '1j' },
+                                            { type: 'day', count: 7, text: '1s' },
+                                            { type: 'day', count: 30, text: '1m' },
+                                            { type: 'day', count: 365, text: '1an' },
+                                            { type: 'all', text: 'Tout' }
+                                        ]";
+                        $selectedRangeSelectorButton = 5;
                         break;
                     case 'hour':
                         $buttonJS = "buttons: [
@@ -1138,7 +1203,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $navigatorJS =    " 
                         enabled: $navigatorEnabled,
                         baseSeries: $baseSeries,
-                        margin: 1
+                        margin: 1,
                         ";
                     //$xAxisMinJS = strtotime($year . '-01-01 00:00:00 UTC') * 1000;
                     //$xAxisMaxJS = strtotime($year . '-12-31 00:00:00 UTC') * 1000;
@@ -1181,7 +1246,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $selectedRangeSelectorButton = 1;
                     $navigatorJS =    " 
                         enabled: $configNavigatorEnabled,
-                        margin: 1
+                        margin: 1,
                         ";
                     $xAxisMinJS = 'undefined';
                     $xAxisMaxJS = 'undefined';
@@ -1237,7 +1302,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                                 ";
                     $navigatorJS =    " 
                         enabled: $configNavigatorEnabled,
-                        margin: 1
+                        margin: 1,
                         ";
                     $xAxisJS .=  "
                                 labels: {
@@ -1541,7 +1606,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             enabled: {$showLegend},
                         },
                         navigator: { 
-                            {$navigatorJS},
+                            {$navigatorJS}
                             },
                         plotOptions: {
                             series: {
@@ -1613,6 +1678,94 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     }, 50);       
                     {$cmdUpdateJS}
                     ";
+
+        // Refresh complet UNIQUEMENT quand le graphique redevient visible et si actualisation activée
+        $cmdRefresh = $eqLogic->getCmd('action', 'refresh');
+        if (is_object($cmdRefresh) && $cmdId && $actualisation) {
+            $cmdId = $cmdRefresh->getId();
+
+                $chartScripts .= "
+                (function() {
+                    const container = document.getElementById('{$containerId}');
+                    if (!container) return;
+
+                    const COOLDOWN_KEY = 'jeeHistoCooldown_{$eqLogic->getId()}_g{$g}';
+                    const COOLDOWN_MS = 5000;  // 5 secondes pour bloquer doublon au chargement
+
+                    function isInCooldown() {
+                        const start = sessionStorage.getItem(COOLDOWN_KEY);
+                        if (!start) return false;
+                        return (Date.now() - parseInt(start, 10)) < COOLDOWN_MS;
+                    }
+
+                    function startCooldown() {
+                        sessionStorage.setItem(COOLDOWN_KEY, Date.now().toString());
+                        setTimeout(() => sessionStorage.removeItem(COOLDOWN_KEY), COOLDOWN_MS + 2000);
+                    }
+
+                    // On pose un cooldown IMMÉDIAT au chargement (anti-doublon F5)
+                    startCooldown();
+
+                    let observer = null;
+                    let visibilityListener = null;
+
+                    function doRefresh(source = 'unknown') {
+                        if (isInCooldown() && source !== 'visibilitychange') {
+                            console.log('[Graph {$g}] Refresh ignoré (cooldown actif) depuis ' + source);
+                            return;
+                        }
+                        console.log('[Graph {$g}] Refresh déclenché depuis ' + source);
+                        jeedom.cmd.execute({
+                            id: '{$cmdId}',
+                            success: function() {
+                                startCooldown();  // prolonge cooldown après refresh réussi
+                            },
+                            error: function(error) {
+                                console.error('[Graph {$g}] Erreur refresh :', error);
+                                startCooldown();
+                            }
+                        });
+                    }
+
+                    function init() {
+                        if (observer) observer.disconnect();
+                        if (visibilityListener) document.removeEventListener('visibilitychange', visibilityListener);
+
+                        // Observer viewport (scroll)
+                        observer = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    doRefresh('viewport');
+                                }
+                            });
+                        }, { threshold: 0.1 });
+
+                        setTimeout(() => observer.observe(container), 2000);  // délai pour éviter déclenchement initial
+
+                        // Listener retour onglet (prioritaire)
+                        visibilityListener = () => {
+                            if (document.visibilityState === 'visible') {
+                                setTimeout(() => {
+                                    const rect = container.getBoundingClientRect();
+                                    if (rect.top < window.innerHeight && rect.bottom > 0) {
+                                        doRefresh('visibilitychange');
+                                    }
+                                }, 1800);  // délai raisonnable
+                            }
+                        };
+                        document.addEventListener('visibilitychange', visibilityListener);
+                    }
+
+                    init();
+
+                    // Nettoyage
+                    window.addEventListener('beforeunload', () => {
+                        if (observer) observer.disconnect();
+                        if (visibilityListener) document.removeEventListener('visibilitychange', visibilityListener);
+                    });
+                })();
+                ";
+        }
     }
 
     $syncCrosshairJS = "";
