@@ -885,6 +885,14 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_update_append" checked>
 											</div>
 										</div>
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Permettre le refresh du graphique sur visibilité:}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Si coché, le graphique se raffraichit lorsqu'il redevient visible, attention, si coché les zomms sont remis à 0. Lorsqu'un graphique n'est pas visible les updates ne se font pas, il faut un refresh soit manuel soit auto}}"></i></sup>
+											</label>
+											<div class="col-sm-5">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_refresh_enabled">
+											</div>
+										</div>
 
 									</div>
 

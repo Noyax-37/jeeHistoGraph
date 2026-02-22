@@ -11,6 +11,11 @@ Lien vers:
 - changelog_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md
 - documentation_beta : https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md
 
+Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
+
+# v2.22
+- ajut de la possibilité de ne pas permettre le refresh auto introduit dans la v2.21
+
 # v2.21
 - correction d'un bug concernant les graphiques de type timeline
 - ajout des ériodes de regroupement 'par 5 minutes', 'par 15 minutes' et 'par 30 minutes' dans 'affichage des données'

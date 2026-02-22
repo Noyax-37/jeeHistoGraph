@@ -218,6 +218,7 @@ public static function config() {
         $config[] = ["graph{$g}_default_color", 0];
         $config[] = ["graph{$g}_update_enabled", 1];
         $config[] = ["graph{$g}_update_append", 0];
+        $config[] = ["graph{$g}_refresh_enabled", '0'];
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
             $config[] = ["graph{$g}_curve{$i}_order", $i];
@@ -305,6 +306,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
         $updateEnabled = $eqLogic->getConfiguration("graph{$g}_update_enabled", 1) ? true : false;
         $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'true' : 'false';
+        $refreshEnabled = $eqLogic->getConfiguration("graph{$g}_refresh_enabled", '0')=='1' ? true : false;
         $xTitlePosition = $titleAlign == 'right' ? -30 : 0;
         $chartOrStock = 'StockChart';
         $inverted = 'false';
@@ -1681,8 +1683,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
         // Refresh complet UNIQUEMENT quand le graphique redevient visible et si actualisation activée
         $cmdRefresh = $eqLogic->getCmd('action', 'refresh');
-        if (is_object($cmdRefresh) && $cmdId && $actualisation) {
-            $cmdId = $cmdRefresh->getId();
+        if (is_object($cmdRefresh) && $cmdId && $actualisation && $refreshEnabled) {
+            $cmdIdRefresh = $cmdRefresh->getId();
 
                 $chartScripts .= "
                 (function() {
@@ -1716,7 +1718,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
                         console.log('[Graph {$g}] Refresh déclenché depuis ' + source);
                         jeedom.cmd.execute({
-                            id: '{$cmdId}',
+                            id: '{$cmdIdRefresh}',
                             success: function() {
                                 startCooldown();  // prolonge cooldown après refresh réussi
                             },
@@ -1876,7 +1878,7 @@ class jeeHistoGraphCmd extends cmd {
   // Exécution d'une commande
   public function execute($_options = array()) {
     $eqLogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
-    log::add('jeeHistoGraph', 'debug', "prehtml => " . print_r($eqLogic->pretoHtml('dashboard'), true));
+    //log::add('jeeHistoGraph', 'debug', "prehtml => " . print_r($eqLogic->pretoHtml('dashboard'), true));
     switch ($this->getLogicalId()) { //vérifie le logicalid de la commande      
       case 'refresh': // LogicalId de la commande rafraîchir
         log::add('jeeHistoGraph', 'debug', __('Exécution de la commande refresh pour l\'équipement ' . $eqLogic->getName(), __FILE__));
