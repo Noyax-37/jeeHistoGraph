@@ -13,8 +13,13 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+# v2.23
+- reprise de la gestion des heures (devrait être transparent)
+- modification du comportement des courbes pour les périodes "Aujourd'hui", "Cette semaine", "Ce mois" et "Cette année" afin de les remettre à 0 au dépassement de la date max (minuit du jour J pour "aujourd'hui", muinuit du dimanche pour "cette semaine", ...)
+- correction de petites coquilles
+
 # v2.22
-- ajut de la possibilité de ne pas permettre le refresh auto introduit dans la v2.21
+- ajout de la possibilité de ne pas permettre le refresh auto introduit dans la v2.21
 
 # v2.21
 - correction d'un bug concernant les graphiques de type timeline

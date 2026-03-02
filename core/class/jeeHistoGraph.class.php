@@ -406,8 +406,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             } else {
                 // Couleur unie
                 $bgColor = $eqLogic->getConfiguration("graph{$g}_bg_couleur", '#ffffff');
-                $plotBgCode = "'$bgColor'";
-                $plotBgCode3d = "'" . $bgColor . $plotBgmini . "'";
+                $plotBgCode = json_encode($bgColor);
+                $plotBgCode3d = json_encode($bgColor . $plotBgmini);
             }
         }
 
@@ -430,8 +430,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateFinGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateFinGraph));
                 $actualisation = false;
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
                 break;
             case 'deDate':
@@ -439,8 +439,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
                 $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'nbJours':
@@ -448,64 +448,64 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $delai = ($global) ? $delaiGraph : intval($eqLogic->getConfiguration("delai_histo_graph{$g}"));
                 $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast5Min':
                 $delta = 5 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 5 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 5 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast15Min':
                 $delta = 15 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 15 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 15 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast30Min':
                 $delta = 30 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 30 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 30 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLastHour':
                 $delta = 60 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last hour for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast6Hours':
                 $delta = 6 * 60 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 6 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 6 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast12Hours':
                 $delta = 12 * 60 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 12 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 12 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dLast24Hours':
                 $delta = 24 * 60 * 60 * 1000;
                 $startTime = date("Y-m-d H:i:s", time() - 24 * 60 * 60);
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 24 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dDay':
@@ -513,31 +513,35 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $startTime = date("Y-m-d 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
+                $isSlidingPeriod = true;
                 break;
             case 'dWeek':
                 $updateAppend = 'true';
                 $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
+                $isSlidingPeriod = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dMonth':
                 $updateAppend = 'true';
                 $startTime = date("Y-m-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
+                $isSlidingPeriod = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dYear':
                 $updateAppend = 'true';
                 $startTime = date("Y-01-01 00:00:00", time());
                 $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime . ' UTC') * 1000;
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMinJS = strtotime($startTime) * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
+                $isSlidingPeriod = true;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             case 'dAll':
@@ -545,7 +549,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 $startTime = date("1970-01-01 00:00:00");
                 $endTime = date("Y-m-d H:i:s", time());
                 $xAxisMinJS = 'undefined';
-                $xAxisMaxJS = strtotime($endTime . ' UTC') * 1000;
+                $xAxisMaxJS = strtotime($endTime) * 1000;
                 log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
                 break;
             default:
@@ -763,8 +767,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
 
             $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
-            $listeHisto = ''; 
+            $listeHisto = [];
             $cmdId = '';
+            $unite = '';
+            $finalCurveType = $graphType;
+            $coef = 1;
             if (is_object($cmd)) {
                 $indexNom = empty($indexNom) ? $cmd->getName() : $indexNom;
                 $finalCurveType = $curveTypeOverride;
@@ -876,7 +883,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 // Si la courbe est de type timeline → on transforme les données
                 if ($finalCurveType === 'timeline') {
                     foreach ($histo as $record) {
-                        $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
+                        $ts = strtotime($record->getDatetime()) * 1000;
                         $value = $record->getValue();
 
                         $previousLabel = $label ?? '';  
@@ -920,19 +927,19 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             if ($prevValue!==null){
                                 $valueHisto =  $valueHisto - $prevValue;
                                 $prevValue = $prevValueHisto;
-                                $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
+                                $ts = strtotime($record->getDatetime()) * 1000;
                             } else {
                                 $prevValue = $prevValueHisto;
-                                $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
+                                $ts = strtotime($record->getDatetime()) * 1000;
                                 continue;
                             }
                         }
                          
                         if ($compareType == 'none'){
-                            $ts = strtotime($record->getDatetime() . ' UTC') * 1000;
+                            $ts = strtotime($record->getDatetime()) * 1000;
                             $listeHisto[] = [$ts,  $valueHisto * $coef];
                         } elseif ($compareType == 'prev_year') {
-                            $recordDate = new DateTime($record->getDatetime() . ' UTC');
+                            $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
                             $recordMonth = (int)$recordDate->format('m');
                             if ($recordMonth < $monthToStart) {
@@ -944,7 +951,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             $ts = $adjustedDate->getTimestamp() * 1000;
                             $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
                         } elseif ($compareType == 'prev_year_month') {
-                            $recordDate = new DateTime($record->getDatetime() . ' UTC');
+                            $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
                             $recordMonth = (int)$recordDate->format('m');
                             if ($recordMonth == $compareMonth) {
@@ -1175,7 +1182,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             },
                             yAxis: {$axisIndex},
 
-                            stacking: '$stackingOption',
+                            stacking: " . json_encode($stackingOption) . ",
                             dataGrouping: { {$dataGroupingJS}
                                 dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
                             },
@@ -1234,7 +1241,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 valueSuffix: " . json_encode(' ' .$unite) . "
                             },
                             yAxis: {$axisIndex},
-                            stacking: '$stackingOption',
+                            stacking: " . json_encode($stackingOption) . ",
                             dataGrouping: { {$dataGroupingJS}
                                 dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
                             },
@@ -1283,7 +1290,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             year: ['%Y', 'De %Y', ' à %Y']
                         },
                         yAxis: {$axisIndex},
-                        stacking: '$stackingOption',
+                        stacking: " . json_encode($stackingOption) . ",
                         dataGrouping: { {$dataGroupingJS}
                                         dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
                                     },
@@ -1338,13 +1345,56 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
                     }";
                 }
+                elseif (isset($isSlidingPeriod) && $isSlidingPeriod) {
+                    $jsPeriodeType = json_encode($periodeHistoGraph);
+                    
+                    $appendJS = "
+                    if (window.chart_g{$g}_id{$eqLogic->getId()}){
+                        const now = new Date();
+                        let calculatedMin = null;
+                        const typePeriode = {$jsPeriodeType};
+                        const currentMax = now.getTime(); 
+                        
+                        if (typePeriode === 'dDay') {
+                            calculatedMin = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); // Minuit
+                        } else if (typePeriode === 'dWeek') {
+                            const day = now.getDay();
+                            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+                            const monday = new Date(now.setDate(diff));
+                            calculatedMin = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()).getTime();
+                        } else if (typePeriode === 'dMonth') {
+                            calculatedMin = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                        } else if (typePeriode === 'dYear') {
+                            calculatedMin = new Date(now.getFullYear(), 0, 1).getTime();
+                        }
+
+                        if (calculatedMin) {
+                            const axis = window.chart_g{$g}_id{$eqLogic->getId()}.xAxis[0];
+                            let remove = false;
+                            for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
+                                const seriesToUPdate = window.chart_g{$g}_id{$eqLogic->getId()}.series[s];
+                                if (!seriesToUPdate.data) continue;
+                                
+                                const dataToUpdate = seriesToUPdate.data;
+                                while (dataToUpdate.length > 0 && dataToUpdate[0]?.x < calculatedMin) {
+                                    dataToUpdate[0].remove(false);
+                                    remove = true;
+                                }
+                            }
+                            
+                            if (remove) {
+                                axis.setExtremes(calculatedMin, currentMax, false, false, true);
+                            }
+                        }
+                    }";
+                }
 
                 if ($graphType == 'timeline') {
                     if ($refPrec){
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate).getTime();
                                 const y = parseFloat(_options.value);
                                 
                                 {$appendJS}
@@ -1382,7 +1432,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $cmdUpdateJS .= "
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
+                                const dateLastValue = new Date(_options.collectDate).getTime();
                                 const y = parseFloat(_options.value);
 
                                 {$appendJS}
@@ -1417,7 +1467,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             
                             debug = true;
 
-                            const dateLastValue = new Date(_options.collectDate + 'Z').getTime();
+                            const dateLastValue = new Date(_options.collectDate).getTime();
 
                             {$appendJS}
 
@@ -1612,7 +1662,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             },
                         plotOptions: {
                             series: {
-                                stacking: '$stackingOption',
+                                stacking: " . json_encode($stackingOption) . ",
                                 groupPadding:0.1,
                                 pointPadding:0,
                                 fillOpacity: 0.1,
@@ -1641,7 +1691,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             }
                         },
                         time: {
-                            useUTC: true
+                            useUTC: false
                         },
                         tooltip: {
                             enabled: $tooltipEnabled,
@@ -1650,7 +1700,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 {$dateTimeLabelFormats} 
                                 },
                             backgroundColor: 'rgb(var(--bg-color))',
-                            useHTML: true,
                             useHTML: true,
                             shadow: true,
                             style: {
