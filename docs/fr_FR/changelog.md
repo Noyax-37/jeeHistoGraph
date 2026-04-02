@@ -13,6 +13,21 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+# v2.24
+- ajout de la possibilité d'afficher une fenètre de données au démarrage plutôt que toutes les données par défaut. Choix possible:
+    - tout
+    - 30 secondes
+    - 1 minute
+    - 5 minutes
+    - 15 minutes
+    - 30 minutes
+    - 1 heure
+    - 12 heures
+    - 1 jour
+    - 1 semaine
+    - 1 mois
+    - 1 année
+
 # v2.23
 - reprise de la gestion des heures (devrait être transparent)
 - modification du comportement des courbes pour les périodes "Aujourd'hui", "Cette semaine", "Ce mois" et "Cette année" afin de les remettre à 0 au dépassement de la date max (minuit du jour J pour "aujourd'hui", muinuit du dimanche pour "cette semaine", ...)

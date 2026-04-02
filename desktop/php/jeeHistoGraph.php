@@ -868,6 +868,27 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 
 										</br>
 										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Au chargement du graphique limiter la période affichée à:}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Permet d'afficher une période limitée au chargement du graphique même si la période d'affichage est plus grande.}}"></i></sup>
+											</label>
+											<div class="col-sm-4">
+												<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_visu_graph<?= $g ?>">
+													<option value="all" selected>{{Toute la période}}</option>
+													<option value="30sec">{{30 secondes}}</option>
+													<option value="min">{{1 minute}}</option>
+													<option value="5min">{{5 minutes}}</option>
+													<option value="15min">{{15 minutes}}</option>
+													<option value="30min">{{30 minutes}}</option>
+													<option value="1hour">{{1 heure}}</option>
+													<option value="12hour">{{12 heures}}</option>
+													<option value="1day">{{1 jour}}</option>
+													<option value="7day">{{1 semaine}}</option>
+													<option value="month">{{1 mois}}</option>
+													<option value="year">{{1 an}}</option>
+												</select>
+											</div>
+										</div>
+										<div class="form-group">
 											<label class="col-sm-6 control-label">{{Permettre update des courbes:}}
 												<sup><i class="fas fa-question-circle tooltips" title="{{Si coché, les courbes des graphiques s'actualisent automatiquement lorsque de nouvelles données sont disponibles.}}"></i></sup>
 											</label>

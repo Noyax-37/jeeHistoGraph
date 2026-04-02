@@ -180,6 +180,7 @@ public static function config() {
         $config[] = ["graph{$g}_type", 'line'];
         $config[] = ["periode_histo_graph{$g}", "global"];
         $config[] = ["delai_histo_graph{$g}", ''];
+        $config[] = ["periode_visu_graph{$g}", "all"];
         $config[] = ["stacking_graph{$g}", "null"];
         $config[] = ["date_debut_histo_graph{$g}", ''];
         $config[] = ["date_debut_histo_2dates_graph{$g}", ""];
@@ -298,6 +299,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $alignThresholdsJS = 'true';
         $graphType = $eqLogic->getConfiguration("graph{$g}_type", 'line');
         $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
+        $periodeVisuGraph = $eqLogic->getConfiguration("periode_visu_graph{$g}", 'all');
         $stackingOption = $eqLogic->getConfiguration("stacking_graph{$g}", 'null');
         $stackingOption = ($stackingOption == 'null') ? null : $stackingOption;
         $showLegend = $eqLogic->getConfiguration("graph{$g}_showLegend", 1) ? 'true' : 'false';
@@ -984,144 +986,100 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             month: ['%B %Y', 'De %B', ' à %B %Y'],
                             year: ['%Y', 'De %Y', ' à %Y']
                                                 ";
+
+            $allPossibleButtons = [
+                '30sec' => "{ type: 'second', count: 30, text: '30s' }",
+                'min'   => "{ type: 'minute', count: 1, text: '1m' }",
+                '5min'  => "{ type: 'minute', count: 5, text: '5m' }",
+                '15min' => "{ type: 'minute', count: 15, text: '15m' }",
+                '30min' => "{ type: 'minute', count: 30, text: '30m' }",
+                '1hour' => "{ type: 'hour', count: 1, text: '1h' }",
+                '12hour'=> "{ type: 'hour', count: 12, text: '12h' }",
+                '1day'  => "{ type: 'day', count: 1, text: '1j' }",
+                '7day'  => "{ type: 'day', count: 7, text: '1s' }",
+                'month' => "{ type: 'month', count: 1, text: '1m' }",
+                'year'  => "{ type: 'year', count: 1, text: '1an' }",
+                'all'   => "{ type: 'all', text: 'Tout' }"
+            ];
+
+            $currentButtons = [];
+
             $selectedRangeSelectorButton = 26;
             if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
                 switch ($regroup) {
                     case 'minute':
                         // $headerFormatJS = '<span style="font-size: 10px;">%A %d %B %Y<br/>%H:%M</span><br/>';
-                        $buttonJS = "buttons: [
-                                            { type: 'minute', count: 30, text: '30m' },
-                                            { type: 'hour', count: 1, text: '1h' },
-                                            { type: 'day', count: 1, text: '1j' },
-                                            { type: 'day', count: 7, text: '1s' },
-                                            { type: 'day', count: 30, text: '1m' },
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 6;
+                        $keys = ['30min', '1hour', '12hour', '1day', '7day', 'month', 'year', 'all'];
                         break;
                     case 'min5':
-                        $buttonJS = "buttons: [
-                                            { type: 'minute', count: 30, text: '30m' },
-                                            { type: 'hour', count: 1, text: '1h' },
-                                            { type: 'day', count: 1, text: '1j' },
-                                            { type: 'day', count: 7, text: '1s' },
-                                            { type: 'day', count: 30, text: '1m' },
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 6;
+                        $keys = ['30min', '1hour', '12hour', '1day', '7day', 'month', 'year', 'all'];
                         break;
                     case 'min15':
-                        $buttonJS = "buttons: [
-                                            { type: 'minute', count: 30, text: '30m' },
-                                            { type: 'hour', count: 1, text: '1h' },
-                                            { type: 'day', count: 1, text: '1j' },
-                                            { type: 'day', count: 7, text: '1s' },
-                                            { type: 'day', count: 30, text: '1m' },
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 6;
+                        $keys = ['30min', '1hour', '12hour', '1day', '7day', 'month', 'year', 'all'];
                         break;
                     case 'min30':
-                        $buttonJS = "buttons: [
-                                            { type: 'hour', count: 1, text: '1h' },
-                                            { type: 'day', count: 1, text: '1j' },
-                                            { type: 'day', count: 7, text: '1s' },
-                                            { type: 'day', count: 30, text: '1m' },
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 5;
+                        $keys = ['1hour', '12hour', '1day', '7day', 'month', 'year', 'all'];
                         break;
                     case 'hour':
-                        $buttonJS = "buttons: [
-                                            { type: 'day', count: 1, text: '1j' },
-                                            { type: 'day', count: 7, text: '1s' },
-                                            { type: 'day', count: 30, text: '1m' },
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 4;
+                        $keys = ['1day', '7day', 'month', 'year', 'all'];
                         break;
                     case 'day':
-                        $buttonJS = "buttons: [
-                                            { type: 'day', count: 7, text: '1s' },
-                                            { type: 'day', count: 30, text: '1m' },
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 3;
+                        $keys = ['7day', 'month', 'year', 'all'];
                         break;
                     case 'week':
-                        $buttonJS = "buttons: [
-                                            { type: 'day', count: 30, text: '1m' },
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 2;
+                        $keys = ['month', 'year', 'all'];
                         break;
                     case 'month':
-                        $buttonJS = "buttons: [
-                                            { type: 'day', count: 365, text: '1an' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 1;
+                        $keys = ['year', 'all'];
                         break;
                     case 'year':
-                        $buttonJS = "buttons: [
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                        $selectedRangeSelectorButton = 0;
+                        $keys = ['all'];
                         break;
                     default:
                 }
             } else {
                 if ($delta!=0){
-                    $selectedRangeSelectorButton = 2;
-                    $buttonJS = "buttons: [
-                                        { type: 'second', count: 30, text: '30s' },
-                                        { type: 'minute', count: 1, text: '1m' },";
+                    $keys = ['30sec', 'min'];
                     if ($delta >= 6*60*1000) {
-                        $buttonJS .= "{ type: 'minute', count: 5, text: '5m' },";
-                        $selectedRangeSelectorButton = 3;
+                        $keys[] = '5min';
                     }
                     if ($delta >= 16*60*1000) {
-                        $buttonJS .= "{ type: 'minute', count: 15, text: '15m' },";
-                        $selectedRangeSelectorButton = 4;
+                        $keys[] = '15min';
                     }
                     if ($delta >= 31*60*1000) {
-                        $buttonJS .= "{ type: 'minute', count: 30, text: '30m' },";
-                        $selectedRangeSelectorButton = 5;
+                        $keys[] = '30min';
                     }
                     if ($delta >= 61*60*1000) {
-                        $buttonJS .= "{ type: 'hour', count: 1, text: '1h' },";
-                        $selectedRangeSelectorButton = 6;
+                        $keys[] = '1hour';
                     }
                     if ($delta >= 12*60*60*1000) {
-                        $buttonJS .= "{ type: 'hour', count: 12, text: '12h' },";
-                        $selectedRangeSelectorButton = 7;
+                        $keys[] = '12hour';
                     }
-                    $buttonJS .=        "{ type: 'all', text: 'Tout' }
-                                    ]";
+                    $keys[] = 'all';
                 } else {
-                    $buttonJS = "buttons: [
-                                { type: 'second', count: 30, text: '30s' },
-                                { type: 'minute', count: 1, text: '1m' },
-                                { type: 'minute', count: 5, text: '5m' },
-                                { type: 'minute', count: 15, text: '15m' },
-                                { type: 'minute', count: 30, text: '30m' },
-                                { type: 'hour', count: 1, text: '1h' },
-                                { type: 'day', count: 1, text: '1j' },
-                                { type: 'day', count: 7, text: '1s' },
-                                { type: 'day', count: 30, text: '1m' },
-                                { type: 'day', count: 365, text: '1an' },
-                                { type: 'all', text: 'Tout' }
-                            ]";
-                    $selectedRangeSelectorButton = 10;
+                    $keys = ['30sec', 'min', '5min', '15min', '30min', '1hour', '12hour', '1day', '7day', 'month', 'year', 'all'];
                 }
             }
+
+            $buttonList = [];
+            $selectedRangeSelectorButton = 0; // Par défaut le premier
+            $found = false;
+
+            foreach ($keys as $index => $key) {
+                $buttonList[] = $allPossibleButtons[$key];
+                
+                if ($key == $periodeVisuGraph) {
+                    $selectedRangeSelectorButton = $index;
+                    $found = true;
+                }
+            }
+
+            // si la période demandée n'est pas dispo dans ce graphique, on met 'Tout' (le dernier)
+            if (!$found) {
+                $selectedRangeSelectorButton = count($buttonList) - 1;
+            }
+
+            $buttonJS = "buttons: [" . implode(',', $buttonList) . "]";
 
             $axisIndex = $unitToAxis[$unite] ?? 0;
             //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
@@ -1252,7 +1210,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                             { type: 'day', count: 7, text: '1s' },
                                             { type: 'all', text: 'Tout' }
                                         ]";
-                    $selectedRangeSelectorButton = 1;
+                    if ($periodeVisuGraph == '7day') {
+                        $selectedRangeSelectorButton = 0;
+                    } else{
+                        $selectedRangeSelectorButton = 1;
+                    }
                     $navigatorJS =    " 
                         enabled: $configNavigatorEnabled,
                         margin: 1,
@@ -1465,7 +1427,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             
-                            debug = true;
+                            debug = false;
 
                             const dateLastValue = new Date(_options.collectDate).getTime();
 
@@ -1762,10 +1724,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                     function doRefresh(source = 'unknown') {
                         if (isInCooldown() && source !== 'visibilitychange') {
-                            console.log('[Graph {$g}] Refresh ignoré (cooldown actif) depuis ' + source);
+                            //console.log('[Graph {$g}] Refresh ignoré (cooldown actif) depuis ' + source);
                             return;
                         }
-                        console.log('[Graph {$g}] Refresh déclenché depuis ' + source);
+                        //console.log('[Graph {$g}] Refresh déclenché depuis ' + source);
                         jeedom.cmd.execute({
                             id: '{$cmdIdRefresh}',
                             success: function() {
