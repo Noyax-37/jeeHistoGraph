@@ -13,9 +13,12 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+# v2.25
+- ajout de la possibilité d'affichage sur la journée en cours de 00h00 à 23h59
+
 # v2.24
 - ajout de la possibilité d'afficher une fenètre de données au démarrage plutôt que toutes les données par défaut. Choix possible:
-    - tout
+    - tout (par défaut)
     - 30 secondes
     - 1 minute
     - 5 minutes

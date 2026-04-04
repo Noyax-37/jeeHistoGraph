@@ -881,6 +881,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													<option value="30min">{{30 minutes}}</option>
 													<option value="1hour">{{1 heure}}</option>
 													<option value="12hour">{{12 heures}}</option>
+													<option value="today">{{Aujourd'hui (de 00h00 à 23h59)}}</option>
 													<option value="1day">{{1 jour}}</option>
 													<option value="7day">{{1 semaine}}</option>
 													<option value="month">{{1 mois}}</option>
