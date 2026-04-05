@@ -2,11 +2,11 @@ on:
   # Workflows check plugin Jeedom
   push:
     branches:
-      - beta
+      - develop
   pull_request:
     branches:
-      - beta
-      - master
+      - develop
+      - main
       
 name : 'Full Workflows Plugin Jeedom'
 
