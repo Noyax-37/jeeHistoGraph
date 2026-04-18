@@ -938,6 +938,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<div class="col-lg-12 compareRollingMonth" style="display:none;">
 													<label class="col-sm-7 control-label">{{Mois de début}}</label>
 													<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
+														<option value="00">{{Mois en cours}}</option>
 														<option value="01">{{Janvier}}</option>
 														<option value="02">{{Février}}</option>
 														<option value="03">{{Mars}}</option>

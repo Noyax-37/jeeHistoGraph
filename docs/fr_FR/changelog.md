@@ -13,6 +13,10 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+# v2.30
+- correction des calculs pour les graphiques de comparaison temporelle
+- ajout de 'mois en cours' dans la comparaison temporelle annuelle
+
 # v2.25
 - ajout de la possibilité d'affichage sur la journée en cours de 00h00 à 23h59
 

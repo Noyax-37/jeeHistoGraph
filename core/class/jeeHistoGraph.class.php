@@ -260,6 +260,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $nbGraphs = max(1, min(4, $eqLogic->getConfiguration('nbGraphs', 1)));
     $replace['#nbGraphs#'] = $nbGraphs;
     $nameEqpmnt = $eqLogic->getName();
+    $idEqpmnt = $eqLogic->getId();
     $message = '';
 
     $graphLayout = $eqLogic->getConfiguration('graphLayout', 'auto');
@@ -584,7 +585,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         if ($compareMonth == '0') {
             $compareMonth = date('m');
         }
-        $rollingStartMonth = $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '01');
+        $rollingStartMonth = $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '00') == '00' ? strval(date('m')) : $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '00');
         $recordData = [];
 
         $first = false;
@@ -727,6 +728,135 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $nbSeries = 0;
 
         $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
+
+        $allPossibleButtons = [
+            '30sec' => "{ type: 'second', count: 30, text: '30s', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            'min'   => "{ type: 'minute', count: 1, text: '1m', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            '5min'  => "{ type: 'minute', count: 5, text: '5m', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            '15min' => "{ type: 'minute', count: 15, text: '15m', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            '30min' => "{ type: 'minute', count: 30, text: '30m', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            '1hour' => "{ type: 'hour', count: 1, text: '1h', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            '12hour'=> "{ type: 'hour', count: 12, text: '12h', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            'today' => "{ text: 'Auj.', 
+                            events: {
+                                click: function() {
+                                    var chart = window.chart_g{$g}_id{$idEqpmnt};
+                                    if (chart && chart.xAxis && chart.xAxis[0]) {
+                                        var now = new Date();
+                                        var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                        var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = true;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = true;
+                                    chart.xAxis[0].setExtremes(startOfDay, endOfDay, true, false);
+                                    }
+                                    return false;
+                                }
+                            }
+                        }",
+            '1day'  => "{ type: 'day', count: 1, text: '1j', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            '7day'  => "{ type: 'day', count: 7, text: '1s', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            'month' => "{ type: 'month', count: 1, text: '1m', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            'year'  => "{ type: 'year', count: 1, text: '1an', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }",
+            'all'   => "{ type: 'all', text: 'Tout', 
+                            events: {
+                                click: function() {
+                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                    return true;
+                                }
+                            }
+                        }"
+        ];
+
         
         for ($i = 1; $i <= 10; $i++) {
             $index = str_pad($i, 2, '0', STR_PAD_LEFT);
@@ -945,21 +1075,32 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
                             $recordMonth = (int)$recordDate->format('m');
+                            
+                            // Détermination de l'année de référence pour la courbe
+                            $groupYear = $recordYear; 
                             if ($recordMonth < $monthToStart) {
-                                $recordYear = $recordYear - 1;
+                                $groupYear = $recordYear - 1;
                                 $rolling = true;
                             }
-                            $yearsDiff = $currentYear - $recordYear;
-                            $adjustedDate = $recordDate->modify("+{$yearsDiff} years");
+
+                            $yearsDiff = $currentYear - $groupYear;
+
+                            $adjustedDate = clone $recordDate;
+                            $adjustedDate->modify("+{$yearsDiff} years");
+
+                            // Conversion en timestamp millisecondes pour Highcharts
                             $ts = $adjustedDate->getTimestamp() * 1000;
-                            $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
+
+                            $recordData[$groupYear][] = [$ts, (float)$valueHisto * $coef];
                         } elseif ($compareType == 'prev_year_month') {
                             $recordDate = new DateTime($record->getDatetime());
                             $recordYear = (int)$recordDate->format('Y');
                             $recordMonth = (int)$recordDate->format('m');
+                            $pivotYear = 3024;
                             if ($recordMonth == $compareMonth) {
-                                $yearsDiff = $currentYear - $recordYear;
-                                $adjustedDate = $recordDate->modify("+{$yearsDiff} years");
+                                $yearsDiff = $pivotYear - $recordYear;
+                                $adjustedDate = clone $recordDate;
+                                $adjustedDate->modify("+{$yearsDiff} years");
                                 $ts = $adjustedDate->getTimestamp() * 1000;
                                 $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
                             }
@@ -987,125 +1128,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             month: ['%B %Y', 'De %B', ' à %B %Y'],
                             year: ['%Y', 'De %Y', ' à %Y']
                                                 ";
-            $now      = new DateTime();
-            $midnight = (clone $now)->setTime(0, 0, 0);   // minuit du jour courant
-
-            $secondesDepuisMinuit = (int) floor( ($now->getTimestamp() - $midnight->getTimestamp()));
-
-            $allPossibleButtons = [
-                '30sec' => "{ type: 'second', count: 30, text: '30s', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                'min'   => "{ type: 'minute', count: 1, text: '1m', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                '5min'  => "{ type: 'minute', count: 5, text: '5m', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                '15min' => "{ type: 'minute', count: 15, text: '15m', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                '30min' => "{ type: 'minute', count: 30, text: '30m', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                '1hour' => "{ type: 'hour', count: 1, text: '1h', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                '12hour'=> "{ type: 'hour', count: 12, text: '12h', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                'today' => "{ text: 'Auj.', 
-                                events: {
-                                    click: function() {
-                                        var chart = window.chart_g{$g}_id{$eqLogic->getId()};
-                                        if (chart && chart.xAxis && chart.xAxis[0]) {
-                                            var now = new Date();
-                                            var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                            var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
-                                    
-                                            window.isTodayMode_g{$g}_id{$eqLogic->getId()} = true;
-                                            chart.xAxis[0].setExtremes(startOfDay, endOfDay, true, false);
-                                        }
-                                        return false;
-                                    }
-                                }
-                            }",
-                '1day'  => "{ type: 'day', count: 1, text: '1j', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                '7day'  => "{ type: 'day', count: 7, text: '1s', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                'month' => "{ type: 'month', count: 1, text: '1m', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                'year'  => "{ type: 'year', count: 1, text: '1an', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }",
-                'all'   => "{ type: 'all', text: 'Tout', 
-                                events: {
-                                    click: function() {
-                                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = false;
-                                        return true;
-                                    }
-                                }
-                            }"
-            ];
 
             $currentButtons = [];
 
@@ -1221,46 +1243,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         $baseSeries = 0;
                     }
                     $actualisation = false;
-                    foreach ($recordData as $year => $data) {
-                        if ($year == $currentYear) {
-                            $actualisation = $updateEnabled; // mettre à jour si année courante
-                            $updateAppend = 'false';
-                        }
-
-                        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
-                        if ($rolling){
-                            $years = $year . '.' . (substr($year,2,2) + 1);
-                        } else {
-                            $years = $year;
-                        }
-                        $seriesJS .= "{
-                            name: " . json_encode($indexNom . " - {$years}") . ",
-                            showInNavigator: true,
-                            borderColor: " . json_encode($color) . ",
-                            step: {$stairStepKey},
-                            type: " . json_encode($finalCurveType) . ",
-                            data: ". json_encode($data) . ",
-                            valueSuffix: " . json_encode(' ' .$unite) . ",
-                            tooltip: {
-                                valueSuffix: " . json_encode(' ' .$unite) . "
-                            },
-                            yAxis: {$axisIndex},
-
-                            stacking: " . json_encode($stackingOption) . ",
-                            dataGrouping: { {$dataGroupingJS}
-                                dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
-                            },
-                        },\n";
-                    }
-                    $xAxisJS .=  "
-                                labels: {
-                                    formatter: function() {
-                                        return Highcharts.dateFormat('%d %b', this.value);
-                                    }
-                                },
-                            ";
-
-                    $xDateFormatJS = "%d %B - %Hh%M";
                     $dataGroupingDateTimeLabelFormatsJS = "
                                     millisecond: [
                                         '%A %e %b, %H:%M:%S.%L', '%A %e %b de %H:%M:%S.%L', ' à %H:%M:%S.%L'
@@ -1273,6 +1255,93 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                     month: ['%B', 'De %B', ' à %B'],
                                     year: ['%Y', 'De %Y', ' à %Y']
                                 ";
+
+                    foreach ($recordData as $year => $data) {
+
+                        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
+                        if ($rolling){
+                            $years = $year . '.' . (substr($year,2,2) + 1);
+                        } else {
+                            $years = $year;
+                        }
+
+                        $headerFormatJS = '<span>{point.key:%B}</span><br>';
+                        $seriesJS .= "{
+                            name: " . json_encode($indexNom . " - {$years}") . ",
+                            showInNavigator: true,
+                            borderColor: " . json_encode($color) . ",
+                            step: {$stairStepKey},
+                            type: " . json_encode($finalCurveType) . ",
+                            data: ". json_encode($data) . ",
+                            valueSuffix: " . json_encode(' ' .$unite) . ",
+                            tooltip: {
+                                headerFormat: '{$headerFormatJS}',
+                                valueSuffix: " . json_encode(' ' .$unite) . ",
+                            },
+                            yAxis: {$axisIndex},
+
+                            stacking: " . json_encode($stackingOption) . ",
+                            dataGrouping: { {$dataGroupingJS}
+                                dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                            },
+                        },\n";
+                    }
+
+                    if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+
+                        switch ($regroup) {
+                            case 'minute':
+                            case 'min5':
+                            case 'min15':
+                            case 'min30':
+                            case 'hour':
+                            case 'day':
+                            case 'week':
+                                $xAxisJS .=  "
+                                            labels: {
+                                                formatter: function() {
+                                                    const date = new Date(this.value);
+                                                    return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
+                                                }
+                                            },
+                                        ";
+                                break;
+                            case 'month':
+                                $xAxisJS .=  "
+                                            labels: {
+                                                formatter: function() {
+                                                    const date = new Date(this.value);
+                                                    return date.toLocaleString(undefined, { month: 'short' });
+                                                }
+                                            },
+                                        ";
+                                break;
+                            case 'year':
+                                $xAxisJS .=  "
+                                            labels: {
+                                                formatter: function() {
+                                                    const date = new Date(this.value);
+                                                    return date.toLocaleString(undefined, { year: 'numeric' });
+                                                }
+                                            },
+                                        ";
+                                break;
+                            default:
+                        }
+
+                    } else {
+                        $xAxisJS .=  "
+                                    labels: {
+                                        formatter: function() {
+                                            const date = new Date(this.value);
+                                            return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
+                                        }
+                                    },
+                                ";
+                    }
+
+                    $xDateFormatJS = "%d %B - %Hh%M";
+
                     $navigatorJS =    " 
                         enabled: $navigatorEnabled,
                         baseSeries: $baseSeries,
@@ -1289,10 +1358,6 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $cmdUpdateJS = '';
                     $nbSeries = count($recordData);
                     foreach ($recordData as $year => $data) {
-                        if ($compareMonth == $currentMonth && $year == $currentYear){
-                            $actualisation = $updateEnabled; // mettre à jour si le mois courant de l'année courante
-                            $updateAppend = 'false';
-                        } 
                         //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
                         $seriesJS .= "{
                             name: " . json_encode($indexNom . " - {$year}") . ",
@@ -1395,16 +1460,16 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} graphtype= {$graphType}");
                 //log::add(__CLASS__, 'debug', "{$graphType} data: " . json_encode($listeHisto));
                 if ($updateAppend === 'false') {
-                    $appendJS = "if (window.chart_g{$g}_id{$eqLogic->getId()}){
-                        for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
-                            const seriesToUPdate = window.chart_g{$g}_id{$eqLogic->getId()}.series[s];
+                    $appendJS = "if (window.chart_g{$g}_id{$idEqpmnt}) {
+                        for (let s = 0; s < window.chart_g{$g}_id{$idEqpmnt}.series.length; s++) {
+                            const seriesToUPdate = window.chart_g{$g}_id{$idEqpmnt}.series[s];
                             const newMin = dateLastValue - {$delta};
                             const newMax = dateLastValue;
                             const dataToUpdate = seriesToUPdate.data;
                             while (dataToUpdate.length > 0 && dataToUpdate[0]?.x < newMin) {
                                 dataToUpdate[0].remove(false);
                             }
-                            //const graphnavigator = window.chart_g{$g}_id{$eqLogic->getId()}.navigator;
+                            //const graphnavigator = window.chart_g{$g}_id{$idEqpmnt}.navigator;
                             //if (graphnavigator) {
                                 //if (debug){console.log('Décalage de la période d\'affichage pour le navigator', graphnavigator);}
                                 //graphnavigator.zoomedMin = 0;
@@ -1417,7 +1482,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $jsPeriodeType = json_encode($periodeHistoGraph);
                     
                     $appendJS = "
-                    if (window.chart_g{$g}_id{$eqLogic->getId()}){
+                    if (window.chart_g{$g}_id{$idEqpmnt}){
                         const now = new Date();
                         let calculatedMin = null;
                         const typePeriode = {$jsPeriodeType};
@@ -1437,10 +1502,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         }
 
                         if (calculatedMin) {
-                            const axis = window.chart_g{$g}_id{$eqLogic->getId()}.xAxis[0];
+                            const axis = window.chart_g{$g}_id{$idEqpmnt}.xAxis[0];
                             let remove = false;
-                            for (let s = 0; s < window.chart_g{$g}_id{$eqLogic->getId()}.series.length; s++) {
-                                const seriesToUPdate = window.chart_g{$g}_id{$eqLogic->getId()}.series[s];
+                            for (let s = 0; s < window.chart_g{$g}_id{$idEqpmnt}.series.length; s++) {
+                                const seriesToUPdate = window.chart_g{$g}_id{$idEqpmnt}.series[s];
                                 if (!seriesToUPdate.data) continue;
                                 
                                 const dataToUpdate = seriesToUPdate.data;
@@ -1459,18 +1524,21 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                 $isToday = ($periodeVisuGraph == 'today') ? 'true' : 'false';
                 $setExtremesJS = ($isToday == 'true') ? "
-                    if (window.isTodayMode_g{$g}_id{$eqLogic->getId()} === true) {
-                        var chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                    if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
+                        var chart = window.chart_g{$g}_id{$idEqpmnt};
                         var now = new Date();
                         var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                         var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
                         chart.xAxis[0].setExtremes(startOfDay, endOfDay);
+                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = true;
+                    } else {
+                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
                     }" . "\n" : "\n"; // Si on démarre en mode "aujourd'hui", on positionne directement les extrêmes sur la journée courante
 
                 if ($graphType == 'timeline') {
                     if ($refPrec){
                         $cmdUpdateJS .= "
-                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = {$isToday};
+                        window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                                 const dateLastValue = new Date(_options.collectDate).getTime();
@@ -1479,8 +1547,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 {$appendJS}
                                 
 
-                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
+                                    const chart = window.chart_g{$g}_id{$idEqpmnt};
                                     const series = chart.series[{$nbSeries}-1];
                                     const dateObj = new Date(new Date(_options.collectDate).getTime());
                                     const valeur = y + ' {$unite}';
@@ -1505,18 +1573,18 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                         description: dateFormatee 
                                     }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
                                     
-                                    if (window.isTodayMode_g{$g}_id{$eqLogic->getId()} === true) {
+                                    if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
                                         var now = new Date();
                                         var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
                                         var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                        window.chart_g{$g}_id{$eqLogic->getId()}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
+                                        window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
                                     }
                                 };
                             });
                         }\n";
                     } else {
                         $cmdUpdateJS .= "
-                        window.isTodayMode_g{$g}_id{$eqLogic->getId()} = {$isToday};
+                        window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
                         if ('{$cmdId}' !== '') {
                             jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                                 const dateLastValue = new Date(_options.collectDate).getTime();
@@ -1524,8 +1592,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                                 {$appendJS}
                                 
-                                if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
-                                    const chart = window.chart_g{$g}_id{$eqLogic->getId()};
+                                if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
+                                    const chart = window.chart_g{$g}_id{$idEqpmnt};
                                     const series = chart.series[{$nbSeries}-1];
                                     const dateObj = new Date(new Date(_options.collectDate).getTime());
                                     const valeur = y + ' {$unite}';
@@ -1543,11 +1611,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                     }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
                                 };
 
-                                if (window.isTodayMode_g{$g}_id{$eqLogic->getId()} === true) {
+                                if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
                                     var now = new Date();
                                     var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
                                     var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                    window.chart_g{$g}_id{$eqLogic->getId()}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
+                                    window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
                                 }
                             });
                         }\n";
@@ -1556,7 +1624,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                 } else {
                     $var = $variation ? 'true':'false';
                     $cmdUpdateJS .= "
-                    window.isTodayMode_g{$g}_id{$eqLogic->getId()} = {$isToday};
+                    window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
+                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = {$isToday};
                     if ('{$cmdId}' !== '') {
                         jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
                             
@@ -1566,11 +1635,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
                             {$appendJS}
 
-                            if (window.chart_g{$g}_id{$eqLogic->getId()} && window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1]) {
+                            if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
                                 
                                 const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
 
-                                const series = window.chart_g{$g}_id{$eqLogic->getId()}.series[{$nbSeries}-1];
+                                const series = window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1];
                                 let currentRawValue = _options.value;
                                 if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
                                 if (debug){console.log('options: ', _options);}
@@ -1591,16 +1660,20 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 if (debug){console.log('yToAdd: ', yToAdd);}
                                 
                                 series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
-                                
-                                if (window.isTodayMode_g{$g}_id{$eqLogic->getId()} === true) { // Si on est en mode 'aujourd'hui', on repositionne les extrêmes sur la journée courante pour faire défiler les données
+                                 
+
+                                if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) { // Si on est en mode 'aujourd'hui', on repositionne les extrêmes sur la journée courante pour faire défiler les données
                                     var now = new Date();
                                     var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
                                     var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                    window.chart_g{$g}_id{$eqLogic->getId()}.xAxis[0].setExtremes(startOfDay, endOfDay, false, false, true);
+                                    //console.log('window min: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].userMax);
+                                    //console.log('window all: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0]);
+                                    window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, false, false, true);
+                                    //console.log('window 2: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].getExtremes());
                                 }
  
-                                window.chart_g{$g}_id{$eqLogic->getId()}.redraw();
- 
+                                window.chart_g{$g}_id{$idEqpmnt}.redraw();
+
                                 if (debug){console.log('series : ', series);}
                                 
                                 // Sauvegarde la valeur brute pour la prochaine mise à jour
@@ -1688,7 +1761,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
         $chartScripts .= "
             $(document).ready(function() {        
-                    window.chart_g{$g}_id{$eqLogic->getId()} = Highcharts.{$chartOrStock}('{$containerId}', {
+                    window.chart_g{$g}_id{$idEqpmnt} = Highcharts.{$chartOrStock}('{$containerId}', {
                         chart: {
                             alignThresholds: $alignThresholdsJS,
                             inverted: {$inverted},
@@ -1751,6 +1824,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 }                    
                             },                
                         },
+                        boost: {
+                                enabled: true,
+                            },
                         credits: { enabled: false },
                         exporting: {
                             enabled: true,
@@ -1819,7 +1895,28 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             min: $xAxisMinJS,
                             max: $xAxisMaxJS,
                             {$xAxisJS}
+                            events: {
+                                afterSetExtremes: function(e) {
+                                    // 'navigator' -> déplacement via la barre du bas
+                                    // 'zoom' -> zoom à la souris
+                                    if (e.trigger === 'navigator' || e.trigger === 'zoom') {
+                                        if (window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} === true) {
+                                            if (e.userMin !== undefined && e.userMax !== undefined) {
+                                                console.log('L utilisateur a bougé manuellement : on désactive le mode Aujourd hui pour le graphique n° ' + {$g} + ' de l\'équipement ' + '{$nameEqpmnt}' + ' (id: ' + {$idEqpmnt} + ')');
+                                                window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                            } else {
+                                                console.log('L utilisateur a annulé le zoom : on réactive le mode Aujourd hui pour le graphique n° ' + {$g} + ' de l\'équipement ' + '{$nameEqpmnt}' + ' (id: ' + {$idEqpmnt} + ')');
+                                                window.isTodayMode_g{$g}_id{$idEqpmnt} = true;
+                                                var now = new Date();
+                                                var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                                var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                                window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
+                                            }
+                                        }
+                                    }
+                                }
                             },
+                        },
                         yAxis: [ 
                             {$yAxisJS} 
                             ],
@@ -1831,8 +1928,8 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     $(window).trigger('resize'); // Simule un resize pour forcer le reflow
                 });        
                     setTimeout(() => {
-                    if (is_object(window.chart_g{$g}_id{$eqLogic->getId()})) {
-                        window.chart_g{$g}_id{$eqLogic->getId()}.reflow()
+                    if (is_object(window.chart_g{$g}_id{$idEqpmnt})) {
+                        window.chart_g{$g}_id{$idEqpmnt}.reflow()
                     }
                     }, 50);       
                     {$cmdUpdateJS}
@@ -1848,7 +1945,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     const container = document.getElementById('{$containerId}');
                     if (!container) return;
 
-                    const COOLDOWN_KEY = 'jeeHistoCooldown_{$eqLogic->getId()}_g{$g}';
+                    const COOLDOWN_KEY = 'jeeHistoCooldown_{$idEqpmnt}_g{$g}';
                     const COOLDOWN_MS = 5000;  // 5 secondes pour bloquer doublon au chargement
 
                     function isInCooldown() {
@@ -1931,32 +2028,32 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     
     if ($nbGraphs == 2) {
         $syncCrosshairJS = "
-        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');
-        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g1_id{$idEqpmnt}', 'chart_g2_id{$idEqpmnt}');
+        syncCrosshair('chart_g2_id{$idEqpmnt}', 'chart_g1_id{$idEqpmnt}');    
         ";    
     } else if ($nbGraphs == 3) {
         $syncCrosshairJS = "
-        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');
-        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');
-        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');    
+        syncCrosshair('chart_g1_id{$idEqpmnt}', 'chart_g2_id{$idEqpmnt}');
+        syncCrosshair('chart_g1_id{$idEqpmnt}', 'chart_g3_id{$idEqpmnt}');
+        syncCrosshair('chart_g2_id{$idEqpmnt}', 'chart_g1_id{$idEqpmnt}');    
+        syncCrosshair('chart_g2_id{$idEqpmnt}', 'chart_g3_id{$idEqpmnt}');    
+        syncCrosshair('chart_g3_id{$idEqpmnt}', 'chart_g1_id{$idEqpmnt}');    
+        syncCrosshair('chart_g3_id{$idEqpmnt}', 'chart_g2_id{$idEqpmnt}');    
         ";    
     } else if ($nbGraphs == 4) {
         $syncCrosshairJS = "
-        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');
-        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');
-        syncCrosshair('chart_g1_id{$eqLogic->getId()}', 'chart_g4_id{$eqLogic->getId()}');
-        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g2_id{$eqLogic->getId()}', 'chart_g4_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g3_id{$eqLogic->getId()}', 'chart_g4_id{$eqLogic->getId()}');
-        syncCrosshair('chart_g4_id{$eqLogic->getId()}', 'chart_g1_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g4_id{$eqLogic->getId()}', 'chart_g2_id{$eqLogic->getId()}');    
-        syncCrosshair('chart_g4_id{$eqLogic->getId()}', 'chart_g3_id{$eqLogic->getId()}');
+        syncCrosshair('chart_g1_id{$idEqpmnt}', 'chart_g2_id{$idEqpmnt}');
+        syncCrosshair('chart_g1_id{$idEqpmnt}', 'chart_g3_id{$idEqpmnt}');
+        syncCrosshair('chart_g1_id{$idEqpmnt}', 'chart_g4_id{$idEqpmnt}');
+        syncCrosshair('chart_g2_id{$idEqpmnt}', 'chart_g1_id{$idEqpmnt}');    
+        syncCrosshair('chart_g2_id{$idEqpmnt}', 'chart_g3_id{$idEqpmnt}');    
+        syncCrosshair('chart_g2_id{$idEqpmnt}', 'chart_g4_id{$idEqpmnt}');    
+        syncCrosshair('chart_g3_id{$idEqpmnt}', 'chart_g1_id{$idEqpmnt}');    
+        syncCrosshair('chart_g3_id{$idEqpmnt}', 'chart_g2_id{$idEqpmnt}');    
+        syncCrosshair('chart_g3_id{$idEqpmnt}', 'chart_g4_id{$idEqpmnt}');
+        syncCrosshair('chart_g4_id{$idEqpmnt}', 'chart_g1_id{$idEqpmnt}');    
+        syncCrosshair('chart_g4_id{$idEqpmnt}', 'chart_g2_id{$idEqpmnt}');    
+        syncCrosshair('chart_g4_id{$idEqpmnt}', 'chart_g3_id{$idEqpmnt}');
         ";    
     }
     
