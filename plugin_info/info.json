@@ -1,21 +1,26 @@
 {
-	"id" : "jeeHistoGraph",
-	"name" : "jeeHistoGraph",
-	"description" : {
-		"fr_FR": "Plugin permettant l'affichage jusqu'à 10 historiques par un graphique sur une tuile"
+	"id": "jeeHistoGraph",
+	"name": "jeeHistoGraph",
+	"description": {
+		"fr_FR": "Plugin permettant l'affichage jusqu'à 10 historiques par un graphique sur une tuile",
+		"en_US": "Plugin that displays up to 10 historical data points in a graph on a tile",
+		"es_ES": "Complemento que permite mostrar hasta 10 historiales mediante un gráfico en un mosaico",
+		"de_DE": "Plugin, das die Anzeige von bis zu 10 Verlaufsdaten in Form einer Grafik auf einer Kachel ermöglicht",
+		"it_IT": "Plugin che consente di visualizzare fino a 10 dati storici tramite un grafico su una tessera",
+		"pt_PT": "Plugin que permite a visualização de até 10 históricos através de um gráfico num mosaico"
 	},
-	"licence" : "AGPL",
-	"author" : "Noyax37",
-	"require" : "4.2.0",
-	"category" : "monitoring",
-	"hasDependency" : false,
-	"hasOwnDeamon" : false,
-	"changelog" : "https://github.com/Noyax-37/jeeHistoGraph/blob/main/docs/fr_FR/changelog.md",
-	"documentation" : "https://github.com/Noyax-37/jeeHistoGraph/blob/main/docs/fr_FR/index.md",
-	"changelog_beta" : "https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md",
-	"documentation_beta" : "https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md",
-	"link" : {
-		"forum":"https://community.jeedom.com/tag/plugin-jeeHistoGraph"
+	"licence": "AGPL",
+	"author": "Noyax37",
+	"require": "4.2.0",
+	"category": "monitoring",
+	"hasDependency": false,
+	"hasOwnDeamon": false,
+	"changelog": "https://github.com/Noyax-37/jeeHistoGraph/blob/main/docs/fr_FR/changelog.md",
+	"documentation": "https://github.com/Noyax-37/jeeHistoGraph/blob/main/docs/fr_FR/index.md",
+	"changelog_beta": "https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/changelog.md",
+	"documentation_beta": "https://github.com/Noyax-37/jeeHistoGraph/blob/develop/docs/fr_FR/index.md",
+	"link": {
+		"forum": "https://community.jeedom.com/tag/plugin-jeeHistoGraph"
 	},
 	"language": [
 		"de_DE",
