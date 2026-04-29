@@ -13,6 +13,15 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+# v2.40
+- ajout d'un traitement qui permet d'afficher une apostrophe dans le titre d'un graphique (ex: "Graphique de l'année" => "Graphique de l'année")
+- ajout d'une option pour choisir la couleur du titre du graphique
+- modification de la façon dont est géré la comparaison temporelle annuelle, maintenant le "mois pivot" est celui qui lorsqu'il est sélectionné s'affiche le plus à droite du graphique
+- correction d'un bug qui empêchait l'affichage de certaines dates dans les graphiques de comparaison temporelle
+- correction d'un bug qui empêchait l'affichage de certaines dates dans les graphiques de type timeline
+- correction d'un bug qui empêchait l'affichage de certaines dates dans les graphiques de type "comparaison temporelle annuelle" lorsque le mois de janvier était sélectionné
+- ajout de la possibilité de fixer une taille pour un équipement de type "graphique au survol" dans un design (si la largeur ou la hauteur est à 0 alors le graphique prendra la taille paramétrée dans le design, utile si vous voulez fixer une petite zone de survol et un graphique plus grand)
+
 # v2.30
 - correction des calculs pour les graphiques de comparaison temporelle
 - ajout de 'mois en cours' dans la comparaison temporelle annuelle

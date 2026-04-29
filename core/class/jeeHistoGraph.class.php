@@ -174,7 +174,9 @@ public static function config() {
                     ["graph1_crosshair", 0],
                     ["graph2_crosshair", 0],
                     ["graph3_crosshair", 0],
-                    ["graph4_crosshair", 0]
+                    ["graph4_crosshair", 0],
+                    ["survol_width", '0'],
+                    ["survol_height", '0']
                 ];
     for ($g = 1; $g <= 4; $g++) {
         $config[] = ["graph{$g}_type", 'line'];
@@ -192,6 +194,7 @@ public static function config() {
         $config[] = ["graph{$g}_bg_gradient_end", ""];
         $config[] = ["graph{$g}_bg_gradient_angle", 90];
         $config[] = ["titleGraph{$g}", "Titre Graph {$g}"];
+        $config[] = ["graph{$g}_titre_couleur", "rgb(100, 100, 100)"];
         $config[] = ["graph{$g}_compare_type", 'none'];
         $config[] = ["graph{$g}_compare_month", "01"];
         $config[] = ["graph{$g}_rolling_start_month", "01"];
@@ -263,9 +266,30 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $idEqpmnt = $eqLogic->getId();
     $message = '';
 
+    // gestion du survol dans un design
+    $replace['#graph_au_survol#'] = "";
+    $survolWidth = strval($eqLogic->getConfiguration("survol_width", '0')) . 'px';
+    $survolHeight = strval($eqLogic->getConfiguration("survol_height", '0')) . 'px';
+
+    if ($survolWidth != '0px' && $survolHeight != '0px' && $survolWidth != 'px' && $survolHeight != 'px') {
+        $replace['#graph_au_survol#'] = "
+                .zoneEqLogicOnFly .jeeHistoGraph[data-eqlogic_id='$idEqpmnt'],
+                .popover .jeeHistoGraph[data-eqlogic_id='$idEqpmnt'] {
+                    width: $survolWidth !important; 
+                    height: $survolHeight !important;
+                }
+
+                .zoneEqLogicOnFly .jeeHistoGraph[data-eqlogic_id='$idEqpmnt'] .graphs-container,
+                .popover .jeeHistoGraph[data-eqlogic_id='$idEqpmnt'] .graphs-container {
+                    height: 100% !important;
+                    width: 100% !important;
+                }
+            ";
+    }
+
+
     $graphLayout = $eqLogic->getConfiguration('graphLayout', 'auto');
     $replace['#graphLayout#'] = $graphLayout;
-
     $periodeHisto = $eqLogic->getConfiguration('periode_histo', 'nbJours');
     $delaiGraph = $eqLogic->getConfiguration("delai_histo");
     $dateDebutGraph1date = $eqLogic->getConfiguration("date_debut_histo");
@@ -308,6 +332,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
         $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
+        $titleColor = $eqLogic->getConfiguration("graph{$g}_titre_couleur", 'rgb(100, 100, 100)');
         $updateEnabled = $eqLogic->getConfiguration("graph{$g}_update_enabled", 1) ? true : false;
         $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'true' : 'false';
         $refreshEnabled = $eqLogic->getConfiguration("graph{$g}_refresh_enabled", '0')=='1' ? true : false;
@@ -585,7 +610,11 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         if ($compareMonth == '0') {
             $compareMonth = date('m');
         }
-        $rollingStartMonth = $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '00') == '00' ? strval(date('m')) : $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '00');
+        $startValue = $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '00');
+        $monthToProcess = ($startValue == '00') ? date('m') : $startValue;
+        $date = DateTime::createFromFormat('m', $monthToProcess);
+        $date->modify('+1 month');
+        $rollingStartMonth = $date->format('m');
         $recordData = [];
 
         $first = false;
@@ -1861,13 +1890,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             floating: false,
                             margin: 0,
                             y: 5,
-                            text: '{$titleGraph}', 
+                            text: " . json_encode($titleGraph) . ", 
                             align: '{$titleAlign}',
                             x: $xTitlePosition,
                             height: 10,
                             style: { 
                                 fontWeight: 'bold', 
-                                color: 'rgb(100, 100, 100)' 
+                                color: '{$titleColor}', 
                             }
                         },
                         time: {

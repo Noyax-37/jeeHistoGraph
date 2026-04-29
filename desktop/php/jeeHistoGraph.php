@@ -369,6 +369,43 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 								</div>
 
+								<!-- Design -->
+								</br>
+								<div class="form-group">
+									<div class="col-sm-2"></div>
+									<span><b><i class="fa fa-exclamation-triangle"></i> {{Personnalisation uniquement pour design}}</b></span>
+
+									<div class="form-group">
+										<div class="row">
+											<label class="col-sm-8 control-label">{{En cas d'utilisation de l'affichage du graphique "au survol" dans un design: }}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Permet de fixer les dimensions du graphique au survol. Si un des deux paramètres à 0 alors le graphique prendra la largeur paramétrée dans le design. Utile si vous voulez fixer une petite zone de survol et un graphique plus grand}}"></i>
+												</sup>
+											</label>
+										</div>
+										<div class="row">
+											<label class="col-sm-6 control-label">{{largeur à fixer: }}
+											</label>
+											<div class="col-sm-1">
+												<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="survol_width" placeholder="0"/>
+											</div>
+											<div class="col-sm-1">
+												<label class="col-sm-1 pull-left"> pixel(s) </label>
+											</div>
+										</div>
+										<div class="row">
+											<label class="col-sm-6 control-label">{{hauteur à fixer: }}
+											</label>
+											<div class="col-sm-1">
+												<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="survol_height" placeholder="0"/>
+											</div>
+											<div class="col-sm-1">
+												<label class="col-sm-1 pull-left"> pixel(s) </label>
+											</div>
+										</div>
+									</div>
+								</div>								
+
 								<div class="form-group">
 									<label class="col-sm-3 control-label"></label>
 									<div class="col-sm-6">
@@ -500,6 +537,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 								</div>											
 								<br>
+								<label class="col-lg-12 control-label pull-left">{{Personnalisation  uniquement pour design affichage au survol: }}{{fixer la taille de la zone d'affichage de l'équipement sans modifier la taille d'affichage initiale}}</label>
+								<br>
 								<label class="col-lg-12 control-label pull-left">{{Remettre tous les fonds transparents: }}{{permet de remettre le fond de tous les graphiques transparents en un seul clic}}</label>
 							</div>
 						</div>
@@ -563,6 +602,15 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<option value="left">{{Gauche}}</option>
 												<option value="right">{{Droite}}</option>
 											</select>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="col-sm-7 control-label">{{Couleur du titre}}
+											 <sup><i class="fas fa-question-circle tooltips" title="{{Pour remettre la couleur par défaut saisir 100 100 100}}"></i></sup>
+										</label>
+										<div class="col-sm-2">
+											<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_titre_couleur" value="rgb(100, 100, 100)">
 										</div>
 									</div>
 
@@ -936,7 +984,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											</div>
 											<div class="row">
 												<div class="col-lg-12 compareRollingMonth" style="display:none;">
-													<label class="col-sm-7 control-label">{{Mois de début}}</label>
+													<label class="col-sm-7 control-label">{{Mois pivot}}
+														<sup><i class="fas fa-question-circle tooltips" title="{{ce sera le mois qui se situera le plus à droite sur le graphique}}"></i></sup>
+													</label>
 													<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
 														<option value="00">{{Mois en cours}}</option>
 														<option value="01">{{Janvier}}</option>
@@ -1017,7 +1067,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											</div>
 									</div>
 
-									<br>
 								</div>
 							</div>
 
