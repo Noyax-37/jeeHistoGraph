@@ -195,6 +195,7 @@ public static function config() {
         $config[] = ["graph{$g}_bg_gradient_angle", 90];
         $config[] = ["titleGraph{$g}", "Titre Graph {$g}"];
         $config[] = ["graph{$g}_titre_couleur", "rgb(100, 100, 100)"];
+        $config[] = ["graph{$g}_label_x_couleur", "rgb(102, 102, 102)"];
         $config[] = ["graph{$g}_compare_type", 'none'];
         $config[] = ["graph{$g}_compare_month", "01"];
         $config[] = ["graph{$g}_rolling_start_month", "01"];
@@ -333,6 +334,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
         $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
         $titleColor = $eqLogic->getConfiguration("graph{$g}_titre_couleur", 'rgb(100, 100, 100)');
+        $axisXColor = $eqLogic->getConfiguration("graph{$g}_label_x_couleur", 'rgb(102, 102, 102)');
         $updateEnabled = $eqLogic->getConfiguration("graph{$g}_update_enabled", 1) ? true : false;
         $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'true' : 'false';
         $refreshEnabled = $eqLogic->getConfiguration("graph{$g}_refresh_enabled", '0')=='1' ? true : false;
@@ -340,6 +342,12 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $chartOrStock = 'StockChart';
         $inverted = 'false';
         $tooltipEnabled = 'true';
+
+        // couleur axe X
+        $colorAxisXJS = "
+                    style: {
+                        color: '{$axisXColor}'
+                    },";
 
         // Position des boutons zoom et reset zoom
         $titleAlign = $showTitle ? $titleAlign : 'center'; // si pas de titre
@@ -665,8 +673,17 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     }
                     $units[] = $unite;
                     $unit = ($unite == ' ' || $unite == '') ? 'sans' : $unite;
-                    if (!isset($plot[$unit])){
+                    if (!isset($plot[$unit]) && $plotlines !== 'null') {
                         $plot[$unit] = "
+                        {
+                            id: {$i},
+                            dashStyle: 'longdashdot',
+                            color: '$colorPlotlines',
+                            value: $plotlines,
+                            width: 2
+                        },";
+                    } else if ($plotlines !== 'null') {
+                        $plot[$unit] .= "
                         {
                             id: {$i},
                             dashStyle: 'longdashdot',
@@ -1328,6 +1345,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             case 'week':
                                 $xAxisJS .=  "
                                             labels: {
+                                                {$colorAxisXJS}
                                                 formatter: function() {
                                                     const date = new Date(this.value);
                                                     return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
@@ -1338,6 +1356,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             case 'month':
                                 $xAxisJS .=  "
                                             labels: {
+                                                {$colorAxisXJS}
                                                 formatter: function() {
                                                     const date = new Date(this.value);
                                                     return date.toLocaleString(undefined, { month: 'short' });
@@ -1348,6 +1367,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             case 'year':
                                 $xAxisJS .=  "
                                             labels: {
+                                                {$colorAxisXJS}
                                                 formatter: function() {
                                                     const date = new Date(this.value);
                                                     return date.toLocaleString(undefined, { year: 'numeric' });
@@ -1361,6 +1381,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     } else {
                         $xAxisJS .=  "
                                     labels: {
+                                        {$colorAxisXJS}
                                         formatter: function() {
                                             const date = new Date(this.value);
                                             return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
@@ -1477,6 +1498,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                         ";
                     $xAxisJS .=  "
                                 labels: {
+                                    {$colorAxisXJS}
                                     skew3d: true,
                                     },";
                 }

@@ -13,6 +13,10 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+# v2.41
+- ajout de la possibilité de fixer un seuil par courbe, avant un seul seuil était possible par axe Y avec unité commune.
+
+
 # v2.40
 - ajout d'un traitement qui permet d'afficher une apostrophe dans le titre d'un graphique (ex: "Graphique de l'année" => "Graphique de l'année")
 - ajout d'une option pour choisir la couleur du titre du graphique

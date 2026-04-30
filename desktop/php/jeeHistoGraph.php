@@ -790,7 +790,16 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_zoom_axe_y" checked>
 											</div>
 										</div>
-
+<!--
+										<div class="form-group">
+											<label class="col-sm-7 control-label">{{Couleur labels de l'axe des X}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Pour remettre la couleur par défaut saisir 102 102 102}}"></i></sup>
+											</label>
+											<div class="col-sm-2">
+												<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_label_x_couleur" value="rgb(102, 102, 102)">
+											</div>
+										</div>
+-->
 										<div class="form-group">
 											<label class="col-sm-6 control-label">{{Fond transparent : }}</label>
 											<div class="col-sm-1">
