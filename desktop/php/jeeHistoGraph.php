@@ -1091,7 +1091,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th> 		<!-- 1 -->
 														<th class="text-center sticky-left-20" style="width: 40px;">{{Aff?}} 		<!-- 3 -->
 															<sup>
-																<i class="fas fa-question-circle tooltips" title="{{Cochez pour afficher la courbe dans le graphique}}"></i>
+																<i class="fas fa-question-circle tooltips" title="{{Décochez pour ne pas afficher la courbe dans le graphique}}"></i>
 															</sup>
 														</th>
 														<th class="text-center sticky-left-30" style="width: 140px;">{{Libellé}} 		<!-- 4 -->
@@ -1099,7 +1099,11 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<i class="fas fa-question-circle tooltips" title="{{Nom de la courbe dans le graphique, laisser vide pour utiliser le nom de la commande}}"></i>
 															</sup>
 														</th>
-														<th class="text-center" style="width: 400px;">{{Commande}}</th> 		<!-- 5 -->
+														<th class="text-center" style="width: 400px;">{{Commande}} 		<!-- 5 -->
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Même si aff est coché s'il n'y a pas de commande sélectionnée ici la courbe ne sera pas affichée}}"></i>
+															</sup>
+														</th>
 														<th class="text-center" style="width: 400px;"> 							<!-- 6 -->
 															<div>{{Type de courbe par défaut (ci-dessous) ou par courbe}}</div>
 															<div>
@@ -1112,6 +1116,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																	<option value="bar">{{Barre}}</option>
 																	<option value="scatter">{{Simples points}}</option>
 																	<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
+																	<option value="pie">{{Camembert (en construction)}}</option>
+																	<option value="piePercent">{{Camembert (en %) (en construction)}}</option>
 																</select>
 															</div>
 														</th>
@@ -1188,7 +1194,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													<tr data-courbe-index="<?= $i ?>">
 														<td class="text-center sticky-left">{{Courbe <?= $index ?>}}</td> 		<!-- 1 -->
 														<td class="text-center sticky-left-20">				<!-- 3 -->
-															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="display_graph<?= $g ?>_curve<?= $i ?>">
+															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="display_graph<?= $g ?>_curve<?= $i ?>"  checked>
 														</td>
 														<td class="sticky-left-30">					<!-- 4 -->
 															<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/>

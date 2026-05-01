@@ -238,7 +238,7 @@ public static function config() {
             $config[] = ["graph{$g}_coef{$i}", ""];
             $config[] = ["graph{$g}_curve{$i}_stairStep", 0];
             $config[] = ["graph{$g}_curve{$i}_variation", 0];
-            $config[] = ["display_graph{$g}_curve{$i}", 0];
+            $config[] = ["display_graph{$g}_curve{$i}", 1];
             $config[] = ["graph{$g}_mini{$i}", ""];
             $config[] = ["graph{$g}_maxi{$i}", ""];
             $config[] = ["graph{$g}_plotlines{$i}", ""];
@@ -320,1760 +320,1838 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $defaultHightchartColors = [ "#2caffe", "#544fc5", "#00e272", "#fe6a35", "#6b8abc", "#d568fb", "#2ee0ca", "#fa4b42", "#feb56a", "#91e8e1" ];
     
         
-    for ($g = 1; $g <= $nbGraphs; $g++) {
-        // Type du graphique
-        $alignThresholdsJS = 'true';
-        $graphType = $eqLogic->getConfiguration("graph{$g}_type", 'line');
-        $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
-        $periodeVisuGraph = $eqLogic->getConfiguration("periode_visu_graph{$g}", 'all');
-        $setExtremesJS = '';
-        $stackingOption = $eqLogic->getConfiguration("stacking_graph{$g}", 'null');
-        $stackingOption = ($stackingOption == 'null') ? null : $stackingOption;
-        $showLegend = $eqLogic->getConfiguration("graph{$g}_showLegend", 1) ? 'true' : 'false';
-        $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
-        $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
-        $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
-        $titleColor = $eqLogic->getConfiguration("graph{$g}_titre_couleur", 'rgb(100, 100, 100)');
-        $axisXColor = $eqLogic->getConfiguration("graph{$g}_label_x_couleur", 'rgb(102, 102, 102)');
-        $updateEnabled = $eqLogic->getConfiguration("graph{$g}_update_enabled", 1) ? true : false;
-        $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'true' : 'false';
-        $refreshEnabled = $eqLogic->getConfiguration("graph{$g}_refresh_enabled", '0')=='1' ? true : false;
-        $xTitlePosition = $titleAlign == 'right' ? -30 : 0;
-        $chartOrStock = 'StockChart';
-        $inverted = 'false';
-        $tooltipEnabled = 'true';
+        for ($g = 1; $g <= $nbGraphs; $g++) {
+            // Type du graphique
+            $graphType = $eqLogic->getConfiguration("graph{$g}_type", 'line');
+            $alignThresholdsJS = 'true';
+            $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
+            $periodeVisuGraph = $eqLogic->getConfiguration("periode_visu_graph{$g}", 'all');
+            $setExtremesJS = '';
+            $stackingOption = $eqLogic->getConfiguration("stacking_graph{$g}", 'null');
+            $stackingOption = ($stackingOption == 'null') ? null : $stackingOption;
+            $showLegend = $eqLogic->getConfiguration("graph{$g}_showLegend", 1) ? 'true' : 'false';
+            $showTitle = $eqLogic->getConfiguration("graph{$g}_showTitle", 1);
+            $titleGraph = $showTitle ? $eqLogic->getConfiguration("titleGraph{$g}", "") : '';
+            $titleAlign = $eqLogic->getConfiguration("graph{$g}_title_align", 'center');
+            $titleColor = $eqLogic->getConfiguration("graph{$g}_titre_couleur", 'rgb(100, 100, 100)');
+            $axisXColor = $eqLogic->getConfiguration("graph{$g}_label_x_couleur", 'rgb(102, 102, 102)');
+            $updateEnabled = $eqLogic->getConfiguration("graph{$g}_update_enabled", 1) ? true : false;
+            $updateAppend = $eqLogic->getConfiguration("graph{$g}_update_append", 0) ? 'true' : 'false';
+            $refreshEnabled = $eqLogic->getConfiguration("graph{$g}_refresh_enabled", '0')=='1' ? true : false;
+            $xTitlePosition = $titleAlign == 'right' ? -30 : 0;
+            $chartOrStock = 'StockChart';
+            $inverted = 'false';
+            $tooltipEnabled = 'true';
 
-        // couleur axe X
-        $colorAxisXJS = "
-                    style: {
-                        color: '{$axisXColor}'
-                    },";
+            // couleur axe X
+            $colorAxisXJS = "
+                        style: {
+                            color: '{$axisXColor}'
+                        },";
 
-        // Position des boutons zoom et reset zoom
-        $titleAlign = $showTitle ? $titleAlign : 'center'; // si pas de titre
-        $buttonAxisAlign = $titleAlign == 'left' ? 'right' : 'left';
-        $xRangeSelectorButtonPosition = $titleAlign == 'left' ? -40 : 0;
-        $yRangeSelectorButtonPosition = $showTitle ? -30 : 0; // remonte les boutons sauf si titre non affiché
-        $xZoomResetButtonPosition = $titleAlign == 'left' ? -70 : 70;
-        $yZoomResetButtonPosition = $showTitle ? -35 : 0;
-        
-        $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
-        $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
-        $configButtonsEnabled = $eqLogic->getConfiguration("graph{$g}_buttons", 0) ? 'true' : 'false';
-        $config3DEnabled = $eqLogic->getConfiguration("graph{$g}_3D_enabled", 0) ? 'true' : 'false';
-        if ($config3DEnabled == 'true') {
-            // Si 3D activé, on désactive la barre de navigation
-            $configNavigatorEnabled = 'false';
-            $configBarreEnabled = 'false';
-        }
-
-        if ($configNavigatorEnabled == 'false' && $configBarreEnabled == 'false') { // si ni barre ni navigator, on force la barre invisible pour permettre le scroll
-            $configBarreEnabled = 'true';
-            $scrollbarConfig = "
-                enabled: true,
-                height: 0,          // hauteur nulle = invisible
-                margin: -999,       // ou -50 selon la version
-                barBackgroundColor: 'transparent',
-                trackBackgroundColor: 'transparent',
-                buttonBackgroundColor: 'transparent',
-                buttonArrowColor: 'transparent'
-            ";
-        } else {
-            $scrollbarConfig = "
-                enabled: {$configBarreEnabled},
-                margin: 10
-            ";
-        }
-
-        //$configNavigatorEnabled = 'true';
-        //$configBarreEnabled = 'true';
-        $config3DAlpha = (int)$eqLogic->getConfiguration("graph{$g}_3D_alpha", 15);
-        $config3DBeta = (int)$eqLogic->getConfiguration("graph{$g}_3D_beta", 15);
-        $config3DDepth = (int)$eqLogic->getConfiguration("graph{$g}_3D_depth", 25);
-        $config3DViewDistance = (int)$eqLogic->getConfiguration("graph{$g}_3D_view_distance", 0);
-        $configZoomAxeX = $eqLogic->getConfiguration("graph{$g}_zoom_axe_x", 1) ? true : false;
-        $configZoomAxeY = $eqLogic->getConfiguration("graph{$g}_zoom_axe_y", 1) ? true : false;
-        if ($configZoomAxeX && $configZoomAxeY) {
-            $zoomType = 'xy';
-        } elseif ($configZoomAxeX) {
-            $zoomType = 'x';
-        } elseif ($configZoomAxeY) {
-            $zoomType = 'y';
-        } else {
-            $zoomType = 'none';
-        }
-
-        $xAxisMinJS = 'undefined';
-        $xAxisMaxJS = 'undefined';
-        
-
-        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
-        
-
-        // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
-        $bgTransparent = $eqLogic->getConfiguration("graph{$g}_bg_transparent", 1);
-
-        $plotBgCode = "null"; // par défaut = pas de fond (transparent)
-        $plotBgCode3d = "'#ffffff60'";
-        $plotBgmini = "80"; // atténuation pour les côtés des graphs 3d
-
-        if (!$bgTransparent) {
-            $useGradient = $eqLogic->getConfiguration("graph{$g}_bg_gradient_enabled", 0);
-
-            if ($useGradient) {
-                $start = $eqLogic->getConfiguration("graph{$g}_bg_gradient_start", '#001f3f');
-                $end   = $eqLogic->getConfiguration("graph{$g}_bg_gradient_end",   '#007bff');
-                $angle = (int)$eqLogic->getConfiguration("graph{$g}_bg_gradient_angle", 90);
-
-                // Conversion angle CSS → direction Highcharts (0 = haut, 90 = droite, etc.)
-                $angles = [
-                    0   => ['x1' => 0, 'y1' => 1, 'x2' => 0, 'y2' => 0],  // bas → haut
-                    45  => ['x1' => 0, 'y1' => 1, 'x2' => 1, 'y2' => 0],
-                    90  => ['x1' => 0, 'y1' => 0, 'x2' => 1, 'y2' => 0],  // gauche → droite
-                    135 => ['x1' => 0, 'y1' => 0, 'x2' => 1, 'y2' => 1],
-                    180 => ['x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1],  // haut → bas
-                    225 => ['x1' => 1, 'y1' => 0, 'x2' => 0, 'y2' => 1],
-                    270 => ['x1' => 1, 'y1' => 0, 'x2' => 0, 'y2' => 0],  // droite → gauche
-                    315 => ['x1' => 1, 'y1' => 1, 'x2' => 0, 'y2' => 0],
-                ];
-                $dir = $angles[$angle];
-                
-                $plotBgCode = "{ linearGradient: { x1: {$dir['x1']}, y1: {$dir['y1']}, x2: {$dir['x2']}, y2: {$dir['y2']} }, stops: [[0, '$start'], [1, '$end']] }";
-                $plotBgCode3d = "{ linearGradient: { x1: {$dir['x1']}, y1: {$dir['y1']}, x2: {$dir['x2']}, y2: {$dir['y2']} }, stops: [[0, '" . $start .  $plotBgmini . "'], [1, '" . $end . $plotBgmini . "']] }";
-            } else {
-                // Couleur unie
-                $bgColor = $eqLogic->getConfiguration("graph{$g}_bg_couleur", '#ffffff');
-                $plotBgCode = json_encode($bgColor);
-                $plotBgCode3d = json_encode($bgColor . $plotBgmini);
+            // Position des boutons zoom et reset zoom
+            $titleAlign = $showTitle ? $titleAlign : 'center'; // si pas de titre
+            $buttonAxisAlign = $titleAlign == 'left' ? 'right' : 'left';
+            $xRangeSelectorButtonPosition = $titleAlign == 'left' ? -40 : 0;
+            $yRangeSelectorButtonPosition = $showTitle ? -30 : 0; // remonte les boutons sauf si titre non affiché
+            $xZoomResetButtonPosition = $titleAlign == 'left' ? -70 : 70;
+            $yZoomResetButtonPosition = $showTitle ? -35 : 0;
+            
+            $configNavigatorEnabled = $eqLogic->getConfiguration("graph{$g}_navigator", 0) ? 'true' : 'false';
+            $configBarreEnabled = $eqLogic->getConfiguration("graph{$g}_barre", 0) ? 'true' : 'false';
+            $configButtonsEnabled = $eqLogic->getConfiguration("graph{$g}_buttons", 0) ? 'true' : 'false';
+            $config3DEnabled = $eqLogic->getConfiguration("graph{$g}_3D_enabled", 0) ? 'true' : 'false';
+            if ($config3DEnabled == 'true') {
+                // Si 3D activé, on désactive la barre de navigation
+                $configNavigatorEnabled = 'false';
+                $configBarreEnabled = 'false';
             }
-        }
 
-        $id = $replace['#id#'];
-        $containerId = "graphContainer{$id}_{$g}";
-        $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 98%; margin: 0 1% 0 1%;\"></div>";
-        $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
-        $global = false;
-        if ($periodeHistoGraph === 'global') {
-            $periodeHistoGraph = $periodeHisto;
-            $global = true;
-        }
-        $actualisation = $updateEnabled;
-        $endTime = null;
-        $delta = 0;
-        switch ($periodeHistoGraph) {
-            case 'deDateAdate':
-                $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_2dates_graph{$g}", date("Y-m-d H:i:s", time()));
-                $dateFinGraph = $eqLogic->getConfiguration("date_fin_histo_2dates_graph{$g}", date("Y-m-d H:i:s", time()));
-                $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
-                $endTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateFinGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateFinGraph));
-                $actualisation = false;
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
-                break;
-            case 'deDate':
-                $updateAppend = 'true';
-                $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
-                $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'nbJours':
-                $updateAppend = 'true';
-                $delai = ($global) ? $delaiGraph : intval($eqLogic->getConfiguration("delai_histo_graph{$g}"));
-                $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dLast5Min':
-                $delta = 5 * 60 * 1000;
-                $startTime = date("Y-m-d H:i:s", time() - 5 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 5 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dLast15Min':
-                $delta = 15 * 60 * 1000;
-                $startTime = date("Y-m-d H:i:s", time() - 15 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 15 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dLast30Min':
-                $delta = 30 * 60 * 1000;
-                $startTime = date("Y-m-d H:i:s", time() - 30 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 30 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dLastHour':
-                $delta = 60 * 60 * 1000;
-                $startTime = date("Y-m-d H:i:s", time() - 60 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last hour for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dLast6Hours':
-                $delta = 6 * 60 * 60 * 1000;
-                $startTime = date("Y-m-d H:i:s", time() - 6 * 60 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 6 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dLast12Hours':
-                $delta = 12 * 60 * 60 * 1000;
-                $startTime = date("Y-m-d H:i:s", time() - 12 * 60 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 12 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dLast24Hours':
-                $delta = 24 * 60 * 60 * 1000;
-                $startTime = date("Y-m-d H:i:s", time() - 24 * 60 * 60);
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 24 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dDay':
-                $updateAppend = 'true';
-                $startTime = date("Y-m-d 00:00:00", time());
-                $endTime = date("Y-m-d H:i:s", time());
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                $isSlidingPeriod = true;
-                break;
-            case 'dWeek':
-                $updateAppend = 'true';
-                $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                $isSlidingPeriod = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dMonth':
-                $updateAppend = 'true';
-                $startTime = date("Y-m-01 00:00:00", time());
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                $isSlidingPeriod = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dYear':
-                $updateAppend = 'true';
-                $startTime = date("Y-01-01 00:00:00", time());
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = strtotime($startTime) * 1000;
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                $isSlidingPeriod = true;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            case 'dAll':
-                $updateAppend = 'true';
-                $startTime = date("1970-01-01 00:00:00");
-                $endTime = date("Y-m-d H:i:s", time());
-                $xAxisMinJS = 'undefined';
-                $xAxisMaxJS = strtotime($endTime) * 1000;
-                log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
-                break;
-            default:
-        }
-
-        $split = $eqLogic->getConfiguration("tooltip{$g}", 'regroup');
-        $splitJS = 'false';
-        $sharedJS = 'false';
-
-        if ($graphType != 'timeLine'){
-            if ($split == 'sans') {
-                $tooltipEnabled = 'false';
-            } elseif ($split == 'normal') {
-                $splitJS = 'false';
-                $sharedJS = 'false';
-            } elseif ($split == 'regroup') {
-                $splitJS = 'false';
-                $sharedJS = 'true';
+            if ($configNavigatorEnabled == 'false' && $configBarreEnabled == 'false') { // si ni barre ni navigator, on force la barre invisible pour permettre le scroll
+                $configBarreEnabled = 'true';
+                $scrollbarConfig = "
+                    enabled: true,
+                    height: 0,          // hauteur nulle = invisible
+                    margin: -999,       // ou -50 selon la version
+                    barBackgroundColor: 'transparent',
+                    trackBackgroundColor: 'transparent',
+                    buttonBackgroundColor: 'transparent',
+                    buttonArrowColor: 'transparent'
+                ";
             } else {
-                $splitJS = 'true';
-                $sharedJS = 'true';
+                $scrollbarConfig = "
+                    enabled: {$configBarreEnabled},
+                    margin: 10
+                ";
             }
-        }
 
-        $seriesJS = '';
-        $cmdUpdateJS = '';
-        $compareType = $eqLogic->getConfiguration("graph{$g}_compare_type", 'none');
-        $compareMonth = $eqLogic->getConfiguration("graph{$g}_compare_month", date('m'));
-        if ($compareMonth == '0') {
-            $compareMonth = date('m');
-        }
-        $startValue = $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '00');
-        $monthToProcess = ($startValue == '00') ? date('m') : $startValue;
-        $date = DateTime::createFromFormat('m', $monthToProcess);
-        $date->modify('+1 month');
-        $rollingStartMonth = $date->format('m');
-        $recordData = [];
+            //$configNavigatorEnabled = 'true';
+            //$configBarreEnabled = 'true';
+            $config3DAlpha = (int)$eqLogic->getConfiguration("graph{$g}_3D_alpha", 15);
+            $config3DBeta = (int)$eqLogic->getConfiguration("graph{$g}_3D_beta", 15);
+            $config3DDepth = (int)$eqLogic->getConfiguration("graph{$g}_3D_depth", 25);
+            $config3DViewDistance = (int)$eqLogic->getConfiguration("graph{$g}_3D_view_distance", 0);
+            $configZoomAxeX = $eqLogic->getConfiguration("graph{$g}_zoom_axe_x", 1) ? true : false;
+            $configZoomAxeY = $eqLogic->getConfiguration("graph{$g}_zoom_axe_y", 1) ? true : false;
+            if ($configZoomAxeX && $configZoomAxeY) {
+                $zoomType = 'xy';
+            } elseif ($configZoomAxeX) {
+                $zoomType = 'x';
+            } elseif ($configZoomAxeY) {
+                $zoomType = 'y';
+            } else {
+                $zoomType = 'none';
+            }
 
-        $first = false;
-        $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
-        //log::add(__CLASS__, 'debug', "Crosshair for Equipment: '{$nameEqpmnt}' Graph {$g}: {$crosshair}");
-                
-        // Collecter les unités en premier pour définir les axes Y
-        $units = [];
-        $mini = [];
-        $maxi = [];
-        $plot = [];
-        $colorYAxis = [];
-        for ($i = 1; $i <= 10; $i++) {
-            $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
-            if ($displayCurve != '0') {
+            $xAxisMinJS = 'undefined';
+            $xAxisMaxJS = 'undefined';
+            
+
+            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: configbarre {$configBarreEnabled} confignavigator {$configNavigatorEnabled} configbuttons {$configButtonsEnabled}");
+            
+
+            // === CALCUL DU FOND DE LA ZONE DE TRACÉ (plot area only) ===
+            $bgTransparent = $eqLogic->getConfiguration("graph{$g}_bg_transparent", 1);
+
+            $plotBgCode = "null"; // par défaut = pas de fond (transparent)
+            $plotBgCode3d = "'#ffffff60'";
+            $plotBgmini = "80"; // atténuation pour les côtés des graphs 3d
+
+            if (!$bgTransparent) {
+                $useGradient = $eqLogic->getConfiguration("graph{$g}_bg_gradient_enabled", 0);
+
+                if ($useGradient) {
+                    $start = $eqLogic->getConfiguration("graph{$g}_bg_gradient_start", '#001f3f');
+                    $end   = $eqLogic->getConfiguration("graph{$g}_bg_gradient_end",   '#007bff');
+                    $angle = (int)$eqLogic->getConfiguration("graph{$g}_bg_gradient_angle", 90);
+
+                    // Conversion angle CSS → direction Highcharts (0 = haut, 90 = droite, etc.)
+                    $angles = [
+                        0   => ['x1' => 0, 'y1' => 1, 'x2' => 0, 'y2' => 0],  // bas → haut
+                        45  => ['x1' => 0, 'y1' => 1, 'x2' => 1, 'y2' => 0],
+                        90  => ['x1' => 0, 'y1' => 0, 'x2' => 1, 'y2' => 0],  // gauche → droite
+                        135 => ['x1' => 0, 'y1' => 0, 'x2' => 1, 'y2' => 1],
+                        180 => ['x1' => 0, 'y1' => 0, 'x2' => 0, 'y2' => 1],  // haut → bas
+                        225 => ['x1' => 1, 'y1' => 0, 'x2' => 0, 'y2' => 1],
+                        270 => ['x1' => 1, 'y1' => 0, 'x2' => 0, 'y2' => 0],  // droite → gauche
+                        315 => ['x1' => 1, 'y1' => 1, 'x2' => 0, 'y2' => 0],
+                    ];
+                    $dir = $angles[$angle];
+                    
+                    $plotBgCode = "{ linearGradient: { x1: {$dir['x1']}, y1: {$dir['y1']}, x2: {$dir['x2']}, y2: {$dir['y2']} }, stops: [[0, '$start'], [1, '$end']] }";
+                    $plotBgCode3d = "{ linearGradient: { x1: {$dir['x1']}, y1: {$dir['y1']}, x2: {$dir['x2']}, y2: {$dir['y2']} }, stops: [[0, '" . $start .  $plotBgmini . "'], [1, '" . $end . $plotBgmini . "']] }";
+                } else {
+                    // Couleur unie
+                    $bgColor = $eqLogic->getConfiguration("graph{$g}_bg_couleur", '#ffffff');
+                    $plotBgCode = json_encode($bgColor);
+                    $plotBgCode3d = json_encode($bgColor . $plotBgmini);
+                }
+            }
+
+            $id = $replace['#id#'];
+            $containerId = "graphContainer{$id}_{$g}";
+            $graphContainers .= "<div id=\"{$containerId}\" style=\"height: 100%; width: 98%; margin: 0 1% 0 1%;\"></div>";
+            $periodeHistoGraph = $eqLogic->getConfiguration("periode_histo_graph{$g}", 'global');
+            $global = false;
+            if ($periodeHistoGraph === 'global') {
+                $periodeHistoGraph = $periodeHisto;
+                $global = true;
+            }
+            $actualisation = $updateEnabled;
+            $endTime = null;
+            $delta = 0;
+            switch ($periodeHistoGraph) {
+                case 'deDateAdate':
+                    $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_2dates_graph{$g}", date("Y-m-d H:i:s", time()));
+                    $dateFinGraph = $eqLogic->getConfiguration("date_fin_histo_2dates_graph{$g}", date("Y-m-d H:i:s", time()));
+                    $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
+                    $endTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateFinGraph2Dates)) : date("Y-m-d H:i:s", strtotime($dateFinGraph));
+                    $actualisation = false;
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using interval for start time calculation. Start time: {$startTime} End time: {$endTime}");
+                    break;
+                case 'deDate':
+                    $updateAppend = 'true';
+                    $dateDebutGraph = $eqLogic->getConfiguration("date_debut_histo_graph{$g}", date("Y-m-d H:i:s", time() - 24 * 60 * 60));
+                    $startTime = ($global) ? date("Y-m-d H:i:s", strtotime($dateDebutGraph1date)) : date("Y-m-d H:i:s", strtotime($dateDebutGraph));
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using date for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'nbJours':
+                    $updateAppend = 'true';
+                    $delai = ($global) ? $delaiGraph : intval($eqLogic->getConfiguration("delai_histo_graph{$g}"));
+                    $startTime = date("Y-m-d H:i:s", time() - $delai * 24 * 60 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using delay of {$delai} days for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dLast5Min':
+                    $delta = 5 * 60 * 1000;
+                    $startTime = date("Y-m-d H:i:s", time() - 5 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 5 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dLast15Min':
+                    $delta = 15 * 60 * 1000;
+                    $startTime = date("Y-m-d H:i:s", time() - 15 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 15 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dLast30Min':
+                    $delta = 30 * 60 * 1000;
+                    $startTime = date("Y-m-d H:i:s", time() - 30 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 30 minutes for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dLastHour':
+                    $delta = 60 * 60 * 1000;
+                    $startTime = date("Y-m-d H:i:s", time() - 60 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last hour for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dLast6Hours':
+                    $delta = 6 * 60 * 60 * 1000;
+                    $startTime = date("Y-m-d H:i:s", time() - 6 * 60 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 6 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dLast12Hours':
+                    $delta = 12 * 60 * 60 * 1000;
+                    $startTime = date("Y-m-d H:i:s", time() - 12 * 60 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 12 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dLast24Hours':
+                    $delta = 24 * 60 * 60 * 1000;
+                    $startTime = date("Y-m-d H:i:s", time() - 24 * 60 * 60);
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using last 24 hours for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dDay':
+                    $updateAppend = 'true';
+                    $startTime = date("Y-m-d 00:00:00", time());
+                    $endTime = date("Y-m-d H:i:s", time());
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using today for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    $isSlidingPeriod = true;
+                    break;
+                case 'dWeek':
+                    $updateAppend = 'true';
+                    $startTime = date("Y-m-d 00:00:00", strtotime('monday this week'));
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    $isSlidingPeriod = true;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this week for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dMonth':
+                    $updateAppend = 'true';
+                    $startTime = date("Y-m-01 00:00:00", time());
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    $isSlidingPeriod = true;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this month for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dYear':
+                    $updateAppend = 'true';
+                    $startTime = date("Y-01-01 00:00:00", time());
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = strtotime($startTime) * 1000;
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    $isSlidingPeriod = true;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using this year for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                case 'dAll':
+                    $updateAppend = 'true';
+                    $startTime = date("1970-01-01 00:00:00");
+                    $endTime = date("Y-m-d H:i:s", time());
+                    $xAxisMinJS = 'undefined';
+                    $xAxisMaxJS = strtotime($endTime) * 1000;
+                    log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Using all data for start time calculation. Start time: {$startTime} End time: now ({$endTime})");
+                    break;
+                default:
+            }
+
+            $split = $eqLogic->getConfiguration("tooltip{$g}", 'regroup');
+            $splitJS = 'false';
+            $sharedJS = 'false';
+
+            if ($graphType != 'timeLine'){
+                if ($split == 'sans') {
+                    $tooltipEnabled = 'false';
+                } elseif ($split == 'normal') {
+                    $splitJS = 'false';
+                    $sharedJS = 'false';
+                } elseif ($split == 'regroup') {
+                    $splitJS = 'false';
+                    $sharedJS = 'true';
+                } else {
+                    $splitJS = 'true';
+                    $sharedJS = 'true';
+                }
+            }
+
+            $seriesJS = '';
+            $cmdUpdateJS = '';
+            $compareType = $eqLogic->getConfiguration("graph{$g}_compare_type", 'none');
+            $compareMonth = $eqLogic->getConfiguration("graph{$g}_compare_month", date('m'));
+            if ($compareMonth == '0') {
+                $compareMonth = date('m');
+            }
+            $startValue = $eqLogic->getConfiguration("graph{$g}_rolling_start_month", '00');
+            $monthToProcess = ($startValue == '00') ? date('m') : $startValue;
+            $date = DateTime::createFromFormat('m', $monthToProcess);
+            $date->modify('+1 month');
+            $rollingStartMonth = $date->format('m');
+            $recordData = [];
+
+            $first = false;
+            $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
+            //log::add(__CLASS__, 'debug', "Crosshair for Equipment: '{$nameEqpmnt}' Graph {$g}: {$crosshair}");
+                    
+            // Collecter les unités en premier pour définir les axes Y
+            $units = [];
+            $mini = [];
+            $maxi = [];
+            $plot = [];
+            $colorYAxis = [];
+            for ($i = 1; $i <= 10; $i++) {
+                $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
+                if ($displayCurve != '0') {
+                    $index = str_pad($i, 2, '0', STR_PAD_LEFT);
+                    $cmdKey = "graph{$g}_cmdGraphe{$index}";
+                    $nomKey = "graph{$g}_index{$index}_nom";
+                    $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
+                    $indexNom = $eqLogic->getConfiguration($nomKey);
+                    $miniValue = $eqLogic->getConfiguration("graph{$g}_mini{$i}", '');
+                    $maxiValue = $eqLogic->getConfiguration("graph{$g}_maxi{$i}", '');
+                    $plotlines = $eqLogic->getConfiguration("graph{$g}_plotlines{$i}", '') == '' ? 'null' : floatval($eqLogic->getConfiguration("graph{$g}_plotlines{$i}"));
+                    $colorHighchartsCurve = $defaultHightchartColors[($i-1)];
+                    $colorCurve = $eqLogic->getConfiguration("graph{$g}_color{$i}", $colorHighchartsCurve);
+                    $colorPlotlines = $defaultColors == 1 ? $colorHighchartsCurve : $colorCurve;
+
+                    if (empty($cmdGraphe)) {
+                        continue;
+                    }
+
+                    if (!$first){
+                        $first = true;
+                    } else {
+                        if ($compareType == 'prev_year' || $compareType == 'prev_year_month'){
+                            continue;
+                        }
+                    }
+
+                    $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
+                    if (is_object($cmd)) {
+                        $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ' '));
+                        if ($manualUnit !== '') {
+                            $unite = $manualUnit;
+                        } else {
+                            $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : ' ';
+                        }
+                        $units[] = $unite;
+                        $unit = ($unite == ' ' || $unite == '') ? 'sans' : $unite;
+                        if (!isset($plot[$unit]) && $plotlines !== 'null') {
+                            $plot[$unit] = "
+                            {
+                                id: {$i},
+                                dashStyle: 'longdashdot',
+                                color: '$colorPlotlines',
+                                value: $plotlines,
+                                width: 2
+                            },";
+                        } else if ($plotlines !== 'null') {
+                            $plot[$unit] .= "
+                            {
+                                id: {$i},
+                                dashStyle: 'longdashdot',
+                                color: '$colorPlotlines',
+                                value: $plotlines,
+                                width: 2
+                            },";
+                        }
+                        if (!isset($colorYAxis[$unit])) {
+                            $colorYAxis[$unit] = $colorPlotlines;
+                        }
+                    
+                        if (!isset($mini[$unite]) || ($miniValue!= '' && $miniValue < $mini[$unite])) {
+                            $mini[$unite] = $miniValue;
+                        }
+                        if (!isset($maxi[$unite]) || ($maxiValue != '' && $maxiValue > $maxi[$unite])) {
+                            $maxi[$unite] = $maxiValue;
+                        }
+                        $indexNom = empty($indexNom) ? $cmd->getName() : $indexNom;
+                    }
+                }
+            }
+
+
+            $uniqueUnits = array_values(array_unique(array_filter($units)));
+            $unitToAxis = [];
+            foreach ($uniqueUnits as $idx => $u) {
+                $index = $idx;
+                //if ($idx == 2) $index = $idx-1;
+                $unitToAxis[$u] = $index;
+            }
+            $nbAxes   = count($uniqueUnits);
+
+            //log::add(__CLASS__, 'debug', "mini = ". json_encode($mini) . " maxi = ". json_encode($maxi));
+
+            // construire les axes Y
+            $showYAxis = $eqLogic->getConfiguration("graph{$g}_show_yAxis", 1);
+            $visible = $showYAxis ? 'true' : 'false';
+            $alternateYAxis = $eqLogic->getConfiguration("graph{$g}_alternate_yAxis", 1);
+            $position = 'true'; // commencer à droite
+            $yAxisJS = '';
+            $z = 5;
+            foreach ($uniqueUnits as $idx => $u) {
+                $unit = ($u == ' ' || $u == '') ? 'sans' : $u;
+                $offset = $idx * 20;
+                $YaxisColor  = $colorYAxis[$unit];
+                $crossHairColor  = $crosshair[$g] == 'false' ? $colorYAxis[$unit] : '';
+                $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
+                $align = ($position == 'false' && $alternateYAxis == 1) ? 'right' : 'left';
+                $yAxisJS .= "{
+                    plotLines: [ " . (isset($plot[$unit]) ? $plot[$unit] : '') . " ],
+                    max: " . (isset($maxi[$u]) && $maxi[$u] !== '' ? floatval($maxi[$u]) : 'null') . ",
+                    min: " . (isset($mini[$u]) && $mini[$u] !== '' ? floatval($mini[$u]) : 'null') . ",
+                    visible: {$visible},
+                    opposite: {$position},
+                    offset: {$offset},
+                    labels: {
+                        format: '{value} " . ($u !== '' ? " " . addslashes($u) : '') . "',
+                        align: '{$align}',
+                        x: 8,
+                        y: 4,
+                        style: { 
+                            fontSize: '11px',
+                            color: '$YaxisColor'
+                        },
+                        " . ($nbAxes > 1 ? "useHTML: true,
+                        formatter: function () {
+                            return '<div style=\"transform: rotate(-45deg); transform-origin: left center; margin-top: 15px; white-space: nowrap;\">' + this.value + ' {$u}</div>';
+                        }" : "") . "
+                    },
+                    crosshair: {
+                        width: " . ($showYAxis ? '1' : '0') . ",
+                        color: '$crossHairColor',
+                        dashStyle: 'Dash',
+                        zIndex: $z,
+                        enabled: true,
+                        snap: $cros,
+                    }
+                },";
+                $z += 1;
+                $position = ($position == 'true' && $alternateYAxis == 1) ? 'false' : 'true'; // alterner gauche/droite
+            }
+            
+            
+            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Y Axis JS: " . $yAxisJS);
+
+            $first = false; // Reset for second loop
+            $nbSeries = 0;
+            $nbSeriesPie = 0;
+
+            $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
+
+            $allPossibleButtons = [
+                '30sec' => "{ type: 'second', count: 30, text: '30s', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                'min'   => "{ type: 'minute', count: 1, text: '1m', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                '5min'  => "{ type: 'minute', count: 5, text: '5m', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                '15min' => "{ type: 'minute', count: 15, text: '15m', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                '30min' => "{ type: 'minute', count: 30, text: '30m', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                '1hour' => "{ type: 'hour', count: 1, text: '1h', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                '12hour'=> "{ type: 'hour', count: 12, text: '12h', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                'today' => "{ text: 'Auj.', 
+                                events: {
+                                    click: function() {
+                                        var chart = window.chart_g{$g}_id{$idEqpmnt};
+                                        if (chart && chart.xAxis && chart.xAxis[0]) {
+                                            var now = new Date();
+                                            var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                            var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                    
+                                            window.isTodayMode_g{$g}_id{$idEqpmnt} = true;
+                                            window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = true;
+                                        chart.xAxis[0].setExtremes(startOfDay, endOfDay, true, false);
+                                        }
+                                        return false;
+                                    }
+                                }
+                            }",
+                '1day'  => "{ type: 'day', count: 1, text: '1j', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                '7day'  => "{ type: 'day', count: 7, text: '1s', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                'month' => "{ type: 'month', count: 1, text: '1m', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                'year'  => "{ type: 'year', count: 1, text: '1an', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }",
+                'all'   => "{ type: 'all', text: 'Tout', 
+                                events: {
+                                    click: function() {
+                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                                        return true;
+                                    }
+                                }
+                            }"
+            ];
+
+            $listeHisto = [];
+            $graphTypePiePercent = false;
+
+            for ($i = 1; $i <= 10; $i++) {
                 $index = str_pad($i, 2, '0', STR_PAD_LEFT);
                 $cmdKey = "graph{$g}_cmdGraphe{$index}";
                 $nomKey = "graph{$g}_index{$index}_nom";
+                //$colorKey = "graph{$g}_color{$i}";
+                $curveTypeKey = "graph{$g}_curve{$i}_type";
+                $stackingOptionEnabled = $eqLogic->getConfiguration("stacking_graph{$g}_curve{$i}", 0) ? true : false;
+                $stackingOption = ($stackingOptionEnabled) ? $stackingOption : null; 
                 $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
                 $indexNom = $eqLogic->getConfiguration($nomKey);
-                $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
-                $miniValue = $eqLogic->getConfiguration("graph{$g}_mini{$i}", '');
-                $maxiValue = $eqLogic->getConfiguration("graph{$g}_maxi{$i}", '');
-                $plotlines = $eqLogic->getConfiguration("graph{$g}_plotlines{$i}", '') == '' ? 'null' : floatval($eqLogic->getConfiguration("graph{$g}_plotlines{$i}"));
+                
                 $colorHighchartsCurve = $defaultHightchartColors[($i-1)];
                 $colorCurve = $eqLogic->getConfiguration("graph{$g}_color{$i}", $colorHighchartsCurve);
-                $colorPlotlines = $defaultColors == 1 ? $colorHighchartsCurve : $colorCurve;
+                $color = $defaultColors == 1 ? $colorHighchartsCurve : $colorCurve;
 
+                //$color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
+
+                if ($graphType === 'pie' || $graphType === 'piePercent') {
+                    if ($graphType === 'piePercent') {
+                        $graphType = 'pie';
+                        $graphTypePiePercent = true;
+                    }
+                    $curveTypeOverride = 'inherit_curve';
+                    $colorPieJS[] = $color;
+                    $colorJS = "";
+                } else {
+                    $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
+                    $colorJS = "color: " . json_encode($color) . ",";
+                }
+                $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
+                $variation = $eqLogic->getConfiguration("graph{$g}_curve{$i}_variation", 0) ? true : false;
+                $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
+                $coef = 1;
+                
                 if ($displayCurve == '0' || empty($cmdGraphe)) {
                     continue;
                 }
 
                 if (!$first){
-                    $first = true;
+                        $first = true;
                 } else {
                     if ($compareType == 'prev_year' || $compareType == 'prev_year_month'){
                         continue;
                     }
                 }
 
+                $nbSeries += 1;
+                
+                //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
+
+
                 $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
-                if (is_object($cmd)) {
-                    $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ' '));
-                    if ($manualUnit !== '') {
-                        $unite = $manualUnit;
-                    } else {
-                        $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : ' ';
-                    }
-                    $units[] = $unite;
-                    $unit = ($unite == ' ' || $unite == '') ? 'sans' : $unite;
-                    if (!isset($plot[$unit]) && $plotlines !== 'null') {
-                        $plot[$unit] = "
-                        {
-                            id: {$i},
-                            dashStyle: 'longdashdot',
-                            color: '$colorPlotlines',
-                            value: $plotlines,
-                            width: 2
-                        },";
-                    } else if ($plotlines !== 'null') {
-                        $plot[$unit] .= "
-                        {
-                            id: {$i},
-                            dashStyle: 'longdashdot',
-                            color: '$colorPlotlines',
-                            value: $plotlines,
-                            width: 2
-                        },";
-                    }
-                    if (!isset($colorYAxis[$unit])) {
-                        $colorYAxis[$unit] = $colorPlotlines;
-                    }
-                   
-                    if (!isset($mini[$unite]) || ($miniValue!= '' && $miniValue < $mini[$unite])) {
-                        $mini[$unite] = $miniValue;
-                    }
-                    if (!isset($maxi[$unite]) || ($maxiValue != '' && $maxiValue > $maxi[$unite])) {
-                        $maxi[$unite] = $maxiValue;
-                    }
-                    $indexNom = empty($indexNom) ? $cmd->getName() : $indexNom;
+                if ($finalCurveType !== 'pie' && $finalCurveType !== 'piePercent') {
+                    $listeHisto = [];
                 }
-            }
-        }
-
-
-        $uniqueUnits = array_values(array_unique(array_filter($units)));
-        $unitToAxis = [];
-        foreach ($uniqueUnits as $idx => $u) {
-            $index = $idx;
-            //if ($idx == 2) $index = $idx-1;
-            $unitToAxis[$u] = $index;
-        }
-        $nbAxes   = count($uniqueUnits);
-
-        //log::add(__CLASS__, 'debug', "mini = ". json_encode($mini) . " maxi = ". json_encode($maxi));
-
-        // construire les axes Y
-        $showYAxis = $eqLogic->getConfiguration("graph{$g}_show_yAxis", 1);
-        $visible = $showYAxis ? 'true' : 'false';
-        $alternateYAxis = $eqLogic->getConfiguration("graph{$g}_alternate_yAxis", 1);
-        $position = 'true'; // commencer à droite
-        $yAxisJS = '';
-        $z = 5;
-        foreach ($uniqueUnits as $idx => $u) {
-            $unit = ($u == ' ' || $u == '') ? 'sans' : $u;
-            $offset = $idx * 20;
-            $YaxisColor  = $colorYAxis[$unit];
-            $crossHairColor  = $crosshair[$g] == 'false' ? $colorYAxis[$unit] : '';
-            $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
-            $align = ($position == 'false' && $alternateYAxis == 1) ? 'right' : 'left';
-            $yAxisJS .= "{
-                plotLines: [ " . (isset($plot[$unit]) ? $plot[$unit] : '') . " ],
-                max: " . (isset($maxi[$u]) && $maxi[$u] !== '' ? floatval($maxi[$u]) : 'null') . ",
-                min: " . (isset($mini[$u]) && $mini[$u] !== '' ? floatval($mini[$u]) : 'null') . ",
-                visible: {$visible},
-                opposite: {$position},
-                offset: {$offset},
-                labels: {
-                    format: '{value} " . ($u !== '' ? " " . addslashes($u) : '') . "',
-                    align: '{$align}',
-                    x: 8,
-                    y: 4,
-                    style: { 
-                        fontSize: '11px',
-                        color: '$YaxisColor'
-                    },
-                    " . ($nbAxes > 1 ? "useHTML: true,
-                    formatter: function () {
-                        return '<div style=\"transform: rotate(-45deg); transform-origin: left center; margin-top: 15px; white-space: nowrap;\">' + this.value + ' {$u}</div>';
-                    }" : "") . "
-                },
-                crosshair: {
-                    width: " . ($showYAxis ? '1' : '0') . ",
-                    color: '$crossHairColor',
-                    dashStyle: 'Dash',
-                    zIndex: $z,
-                    enabled: true,
-                    snap: $cros,
-                }
-            },";
-            $z += 1;
-            $position = ($position == 'true' && $alternateYAxis == 1) ? 'false' : 'true'; // alterner gauche/droite
-        }
-        
-        
-        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g}: Y Axis JS: " . $yAxisJS);
-
-        $first = false; // Reset for second loop
-        $nbSeries = 0;
-
-        $defaultColors = $eqLogic->getConfiguration("graph{$g}_default_color", 0);
-
-        $allPossibleButtons = [
-            '30sec' => "{ type: 'second', count: 30, text: '30s', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            'min'   => "{ type: 'minute', count: 1, text: '1m', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            '5min'  => "{ type: 'minute', count: 5, text: '5m', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            '15min' => "{ type: 'minute', count: 15, text: '15m', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            '30min' => "{ type: 'minute', count: 30, text: '30m', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            '1hour' => "{ type: 'hour', count: 1, text: '1h', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            '12hour'=> "{ type: 'hour', count: 12, text: '12h', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            'today' => "{ text: 'Auj.', 
-                            events: {
-                                click: function() {
-                                    var chart = window.chart_g{$g}_id{$idEqpmnt};
-                                    if (chart && chart.xAxis && chart.xAxis[0]) {
-                                        var now = new Date();
-                                        var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                        var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
-                                
-                                        window.isTodayMode_g{$g}_id{$idEqpmnt} = true;
-                                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = true;
-                                    chart.xAxis[0].setExtremes(startOfDay, endOfDay, true, false);
-                                    }
-                                    return false;
-                                }
-                            }
-                        }",
-            '1day'  => "{ type: 'day', count: 1, text: '1j', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            '7day'  => "{ type: 'day', count: 7, text: '1s', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            'month' => "{ type: 'month', count: 1, text: '1m', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            'year'  => "{ type: 'year', count: 1, text: '1an', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }",
-            'all'   => "{ type: 'all', text: 'Tout', 
-                            events: {
-                                click: function() {
-                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                                    return true;
-                                }
-                            }
-                        }"
-        ];
-
-        
-        for ($i = 1; $i <= 10; $i++) {
-            $index = str_pad($i, 2, '0', STR_PAD_LEFT);
-            $cmdKey = "graph{$g}_cmdGraphe{$index}";
-            $nomKey = "graph{$g}_index{$index}_nom";
-            //$colorKey = "graph{$g}_color{$i}";
-            $curveTypeKey = "graph{$g}_curve{$i}_type";
-            $stackingOptionEnabled = $eqLogic->getConfiguration("stacking_graph{$g}_curve{$i}", 0) ? true : false;
-            $stackingOption = ($stackingOptionEnabled) ? $stackingOption : null; 
-            $cmdGraphe = $eqLogic->getConfiguration($cmdKey);
-            $indexNom = $eqLogic->getConfiguration($nomKey);
-            
-            $colorHighchartsCurve = $defaultHightchartColors[($i-1)];
-            $colorCurve = $eqLogic->getConfiguration("graph{$g}_color{$i}", $colorHighchartsCurve);
-            $color = $defaultColors == 1 ? $colorHighchartsCurve : $colorCurve;
-
-            //$color = $eqLogic->getConfiguration($colorKey, $defaultColors[$i-1] ?? '#000000');
-
-            $colorJS = "color: " . json_encode($color) . ",";
-            $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
-            $stairStepKey = $eqLogic->getConfiguration("graph{$g}_curve{$i}_stairStep", 0) ? 'true' : 'false';
-            $variation = $eqLogic->getConfiguration("graph{$g}_curve{$i}_variation", 0) ? true : false;
-            $displayCurve = $eqLogic->getConfiguration("display_graph{$g}_curve{$i}", 0);
-            $coef = 1;
-            
-            if ($displayCurve == '0' || empty($cmdGraphe)) {
-                continue;
-            }
-
-            if (!$first){
-                    $first = true;
-            } else {
-                if ($compareType == 'prev_year' || $compareType == 'prev_year_month'){
-                    continue;
-                }
-            }
-
-            $nbSeries += 1;
-            
-            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Processing with command {$cmdGraphe}, name {$indexNom}, compare={$compareType} and first={$first}");
-
-
-            $cmd = cmd::byId(str_replace('#', '', $cmdGraphe));
-            $listeHisto = [];
-            $cmdId = '';
-            $unite = '';
-            $finalCurveType = $graphType;
-            $coef = 1;
-            if (is_object($cmd)) {
-                $indexNom = empty($indexNom) ? $cmd->getName() : $indexNom;
+                
+                $cmdId = '';
+                $unite = '';
                 $finalCurveType = $curveTypeOverride;
                 if ($finalCurveType === 'inherit_curve') {
                     $finalCurveType = $graphType;
                 }
+                $coef = 1;
+                $histoPie = 0;
+                if (is_object($cmd)) {
+                    $indexNom = empty($indexNom) ? $cmd->getName() : $indexNom;
 
-                if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
-                    $finalCurveType = 'timeline';
-                    $chartOrStock = 'chart';
-                    $refPrec = $eqLogic->getConfiguration("graph{$g}_show_refPrec", 1) ? true : false;
-                    $inverted = $eqLogic->getConfiguration("graph{$g}_inverted", 1) ? 'true' : 'false';
-                    if ($inverted== 'true') {
-                        $xRangeSelectorButtonPosition = $titleAlign == 'left' ? -40 : -70;
-                        $xZoomResetButtonPosition = $titleAlign == 'left' ? -120 : 0;
+                    if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
+                        $finalCurveType = 'timeline';
+                        $chartOrStock = 'chart';
+                        $refPrec = $eqLogic->getConfiguration("graph{$g}_show_refPrec", 1) ? true : false;
+                        $inverted = $eqLogic->getConfiguration("graph{$g}_inverted", 1) ? 'true' : 'false';
+                        if ($inverted== 'true') {
+                            $xRangeSelectorButtonPosition = $titleAlign == 'left' ? -40 : -70;
+                            $xZoomResetButtonPosition = $titleAlign == 'left' ? -120 : 0;
+                        }
+                        $tooltipEnabled = $eqLogic->getConfiguration("graph{$g}_tooltip_enabled", 1) ? 'true' : 'false';
+                        $limitHisto = intval($eqLogic->getConfiguration("graph{$g}_nbPointsTimeLine", 300));
+                        if ($limitHisto <= 0 || $limitHisto > 300) {
+                            $limitHisto = 300;
+                        }
                     }
-                    $tooltipEnabled = $eqLogic->getConfiguration("graph{$g}_tooltip_enabled", 1) ? 'true' : 'false';
-                    $limitHisto = intval($eqLogic->getConfiguration("graph{$g}_nbPointsTimeLine", 300));
-                    if ($limitHisto <= 0 || $limitHisto > 300) {
-                        $limitHisto = 300;
+
+                    if ($stackingOptionEnabled && (!is_null($stackingOption) || $stackingOption != 'null')) {
+                        $alignThresholdsJS = 'false';
                     }
+
+                    // log::add(__CLASS__, 'debug', "alignThresholdsJS $alignThresholdsJS stackingOptionEnabled $stackingOptionEnabled stackingOption $stackingOption finalCurveType $finalCurveType ");
+
+
+                    $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
+                    if ($manualUnit !== '') {
+                        $unite = $manualUnit;
+                    } else {
+                        $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : '';
+                    }
+                    $coef = floatval($eqLogic->getConfiguration("graph{$g}_coef{$i}", '1'));
+                    if ($finalCurveType === 'pie' || $finalCurveType === 'piePercent') {
+                        $histoPie = (float)$cmd->execCmd();
+                        $chartOrStock = 'chart';
+                        $nbSeriesPie += 1;
+                        log::add(__CLASS__, 'info', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Executed command for pie chart. Value: {$histoPie}");
+                    } else {
+                        $histo = $cmd->getHistory($startTime, isset($endTime) ? $endTime : null);
+                    }
+                    
+                    $recordYear = null;
+                    $currentYear = (int)date('Y');
+                    $currentMonth = (int)date('m');
+                    $monthToStart = (int)$rollingStartMonth;
+                    $rolling = false;
+                    $label = '';
+                    $text = '';
+                    $description = '';
+
+                    $dataGroupingJS = 'enabled: false,';
+                    $regroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_regroup", 'aucun');
+                    $typeRegroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_typeRegroup", 'aucun');
+                    $dataGroupingDateTimeLabelFormatsJS = "
+                                                    millisecond: ['%A %e %b %Y, %H:%M:%S.%L', '%A %e %b %Y de %H:%M:%S.%L', ' à %H:%M:%S.%L'],
+                                                    second: ['%A %e %b %Y, %H:%M:%S', '%A %e %b %Y de %H:%M:%S', ' à %H:%M:%S'],
+                                                    minute: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                                    hour: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
+                                                    day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                                    week: ['Semaine du %e %b %Y', 'Du %e %b %Y', ' au %e %b %Y'],
+                                                    month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                                    year: ['%Y', 'De %Y', ' à %Y']
+                        ";
+
+                    if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+                        $units = '';
+                        switch ($regroup) {
+                            case 'minute':
+                                $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
+                                break;
+                            case 'min5':
+                                $units = "[[ 'minute', [5, 10, 15, 30] ]]";
+                                break;
+                            case 'min15':
+                                $units = "[[ 'minute', [15, 30] ]]";
+                                break;
+                            case 'min30':
+                                $units = "[[ 'minute', [30] ]]";
+                                break;
+                            case 'hour':
+                                $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
+                                break;
+                            case 'day':
+                                $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
+                                break;
+                            case 'week':
+                                $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
+                                break;
+                            case 'month':
+                                $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
+                                break;
+                            case 'year':
+                                $units = "[[ 'year', [1] ]]";
+                                break;
+                            default:
+                                $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
+                        }
+
+                        $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
+
+                        $dataGroupingJS = "
+                            enabled: true,
+                            forced: true,
+                            approximation: '{$approximation}',
+                            units: {$units},
+                        ";
+                    }        
+                    $xAxisVisibleJS = "true";
+                    // Si la courbe est de type timeline → on transforme les données
+                    if ($finalCurveType === 'timeline') {
+                        foreach ($histo as $record) {
+                            $ts = strtotime($record->getDatetime()) * 1000;
+                            $value = $record->getValue();
+
+                            $previousLabel = $label ?? '';  
+                            $label = (is_numeric($value)) ? round($value * $coef, 2) : $value;
+                            if (!empty($unite)) {
+                                $label .= ' ' . $unite;
+                            }
+                            if (empty($previousLabel)) {
+                                $previousLabel = 'Début data';
+                            } elseif ($previousLabel === $label) {
+                                continue; // éviter les doublons
+                            }
+
+                            if ($refPrec) {
+                                $description = $previousLabel . ' → ' . $label . ' le ' . gmdate('d/m/Y à H:i:s', $ts/1000);
+                            } else {
+                                $description = 'Le ' . gmdate('d/m/Y à H:i:s', $ts/1000);
+                            }
+                            
+                            $listeHisto[] = [
+                                'x' => $ts,
+                                'name' => $indexNom,           // nom de la série (ou de l'événement)
+                                'label' => $label,             // texte principal sur la timeline
+                                'description' => $description, // texte détaillé dans le popup
+                            ];
+                        }
+                        if (count($listeHisto) > $limitHisto) {
+                            $listeHisto = array_slice($listeHisto, -$limitHisto);
+                            $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la timeline '{$indexNom}'.";
+                        }
+                        $yAxisJS = "{ visible: false }";
+                    } else {
+                        if ($finalCurveType === 'pie' || $finalCurveType === 'piePercent') {
+                            $value = is_numeric($histoPie) ? round($histoPie * $coef, 2) : $histoPie;
+                            $listeHisto[] = [
+                                    'name' => $indexNom,
+                                    'y' => $value,
+                            ];
+                            log::add(__CLASS__, 'info', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Prepared data for pie chart. Name: {$indexNom}, Value: {$value}, listeHisto: " . json_encode($listeHisto));
+                            $yAxisJS = "{ visible: false }";
+                            $xAxisVisibleJS = "false";
+                            $configNavigatorEnabled = 'false';
+                        } else {
+                            //$recordData = [];
+                            $xAxisVisibleJS = "true";
+                            $prevValue = null;
+                            $prevValueHisto = 0;
+                            foreach ($histo as $record) {
+                                $valueHisto = $record->getValue();
+                                if ($variation){
+                                    $prevValueHisto = $valueHisto;
+                                    if ($prevValue!==null){
+                                        $valueHisto =  $valueHisto - $prevValue;
+                                        $prevValue = $prevValueHisto;
+                                        $ts = strtotime($record->getDatetime()) * 1000;
+                                    } else {
+                                        $prevValue = $prevValueHisto;
+                                        $ts = strtotime($record->getDatetime()) * 1000;
+                                        continue;
+                                    }
+                                }
+                                
+                                if ($compareType == 'none'){
+                                    $ts = strtotime($record->getDatetime()) * 1000;
+                                    $listeHisto[] = [$ts,  $valueHisto * $coef];
+                                } elseif ($compareType == 'prev_year') {
+                                    $recordDate = new DateTime($record->getDatetime());
+                                    $recordYear = (int)$recordDate->format('Y');
+                                    $recordMonth = (int)$recordDate->format('m');
+                                    
+                                    // Détermination de l'année de référence pour la courbe
+                                    $groupYear = $recordYear; 
+                                    if ($recordMonth < $monthToStart) {
+                                        $groupYear = $recordYear - 1;
+                                        $rolling = true;
+                                    }
+
+                                    $yearsDiff = $currentYear - $groupYear;
+
+                                    $adjustedDate = clone $recordDate;
+                                    $adjustedDate->modify("+{$yearsDiff} years");
+
+                                    // Conversion en timestamp millisecondes pour Highcharts
+                                    $ts = $adjustedDate->getTimestamp() * 1000;
+
+                                    $recordData[$groupYear][] = [$ts, (float)$valueHisto * $coef];
+                                } elseif ($compareType == 'prev_year_month') {
+                                    $recordDate = new DateTime($record->getDatetime());
+                                    $recordYear = (int)$recordDate->format('Y');
+                                    $recordMonth = (int)$recordDate->format('m');
+                                    $pivotYear = 3024;
+                                    if ($recordMonth == $compareMonth) {
+                                        $yearsDiff = $pivotYear - $recordYear;
+                                        $adjustedDate = clone $recordDate;
+                                        $adjustedDate->modify("+{$yearsDiff} years");
+                                        $ts = $adjustedDate->getTimestamp() * 1000;
+                                        $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    $cmdId = str_replace('#', '', $cmdGraphe);
                 }
-
-                if ($stackingOptionEnabled && (!is_null($stackingOption) || $stackingOption != 'null')) {
-                    $alignThresholdsJS = 'false';
-                }
-
-                // log::add(__CLASS__, 'debug', "alignThresholdsJS $alignThresholdsJS stackingOptionEnabled $stackingOptionEnabled stackingOption $stackingOption finalCurveType $finalCurveType ");
-
-
-                $manualUnit = trim($eqLogic->getConfiguration("graph{$g}_unite{$i}", ''));
-                if ($manualUnit !== '') {
-                    $unite = $manualUnit;
-                } else {
-                    $unite = ($cmd && $cmd->getUnite()) ? $cmd->getUnite() : '';
-                }
-                $coef = floatval($eqLogic->getConfiguration("graph{$g}_coef{$i}", '1'));
-                $histo = $cmd->getHistory($startTime, isset($endTime) ? $endTime : null);
-                //log::add(__CLASS__, 'debug', "Equipment2: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Retrieved " . count($histo) . " history records: date= 2026-01-14 23:39:03" . strtotime("2026-01-14 23:39:03 UTC"));
                 
-                $listeHisto = [];
-                $recordYear = null;
-                $currentYear = (int)date('Y');
-                $currentMonth = (int)date('m');
-                $monthToStart = (int)$rollingStartMonth;
-                $rolling = false;
-                $label = '';
-                $text = '';
-                $description = '';
+                $xAxisJS = "type: 'datetime',
+                            ordinal: false,";
+                $xAxisDateTimeLabelFormatJS = '';
 
-                $dataGroupingJS = 'enabled: false,';
-                $regroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_regroup", 'aucun');
-                $typeRegroup = $eqLogic->getConfiguration("graph{$g}_curve{$i}_typeRegroup", 'aucun');
-                $dataGroupingDateTimeLabelFormatsJS = "
-                                                millisecond: ['%A %e %b %Y, %H:%M:%S.%L', '%A %e %b %Y de %H:%M:%S.%L', ' à %H:%M:%S.%L'],
-                                                second: ['%A %e %b %Y, %H:%M:%S', '%A %e %b %Y de %H:%M:%S', ' à %H:%M:%S'],
-                                                minute: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
-                                                hour: ['%A %e %b %Y, %H:%M', '%A %e %b %Y de %H:%M', ' à %H:%M'],
-                                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                                                week: ['Semaine du %e %b %Y', 'Du %e %b %Y', ' au %e %b %Y'],
-                                                month: ['%B %Y', 'De %B', ' à %B %Y'],
-                                                year: ['%Y', 'De %Y', ' à %Y']
-                    ";
+                $headerFormatJS = '<span>{point.key}</span><br>';
+                $dateTimeLabelFormats = "
+                                millisecond: [
+                                    '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                                ],
+                                second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                                minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                                month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                year: ['%Y', 'De %Y', ' à %Y']
+                                                    ";
 
+                $currentButtons = [];
+
+                $selectedRangeSelectorButton = 26;
                 if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
-                    $units = '';
                     switch ($regroup) {
                         case 'minute':
-                            $units = "[[ 'minute', [1, 5, 10, 15, 30] ]]";
+                            // $headerFormatJS = '<span style="font-size: 10px;">%A %d %B %Y<br/>%H:%M</span><br/>';
+                            $keys = ['30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
                             break;
                         case 'min5':
-                            $units = "[[ 'minute', [5, 10, 15, 30] ]]";
+                            $keys = ['30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
                             break;
                         case 'min15':
-                            $units = "[[ 'minute', [15, 30] ]]";
+                            $keys = ['30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
                             break;
                         case 'min30':
-                            $units = "[[ 'minute', [30] ]]";
+                            $keys = ['1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
                             break;
                         case 'hour':
-                            $units = "[[ 'hour', [1, 2, 4, 6, 12] ], [ 'day', [1] ]]";
+                            $keys = ['today', '1day', '7day', 'month', 'year', 'all'];
                             break;
                         case 'day':
-                            $units = "[[ 'day', [1] ], [ 'week', [1] ]]";
+                            $keys = ['7day', 'month', 'year', 'all'];
                             break;
                         case 'week':
-                            $units = "[[ 'week', [1] ], [ 'month', [1] ]]";
+                            $keys = ['month', 'year', 'all'];
                             break;
                         case 'month':
-                            $units = "[[ 'month', [1, 3, 6] ], [ 'year', null ]]";
+                            $keys = ['year', 'all'];
                             break;
                         case 'year':
-                            $units = "[[ 'year', [1] ]]";
+                            $keys = ['all'];
                             break;
                         default:
-                            $units = "[[ 'minute', [1,5,15,30] ], [ 'hour', [1,6] ], [ 'day', [1] ], [ 'week', [1] ], [ 'month', [1,3,6] ], [ 'year', null ]]";
                     }
-
-                    $approximation = $typeRegroup; // 'average', 'sum', 'min', 'max', 'average' → 'average'
-
-                    $dataGroupingJS = "
-                        enabled: true,
-                        forced: true,
-                        approximation: '{$approximation}',
-                        units: {$units},
-                    ";
-                }        
-                
-                // Si la courbe est de type timeline → on transforme les données
-                if ($finalCurveType === 'timeline') {
-                    foreach ($histo as $record) {
-                        $ts = strtotime($record->getDatetime()) * 1000;
-                        $value = $record->getValue();
-
-                        $previousLabel = $label ?? '';  
-                        $label = (is_numeric($value)) ? round($value * $coef, 2) : $value;
-                        if (!empty($unite)) {
-                            $label .= ' ' . $unite;
-                        }
-                        if (empty($previousLabel)) {
-                            $previousLabel = 'Début data';
-                        } elseif ($previousLabel === $label) {
-                            continue; // éviter les doublons
-                        }
-
-                        if ($refPrec) {
-                            $description = $previousLabel . ' → ' . $label . ' le ' . gmdate('d/m/Y à H:i:s', $ts/1000);
-                        } else {
-                            $description = 'Le ' . gmdate('d/m/Y à H:i:s', $ts/1000);
-                        }
-                        
-                        $listeHisto[] = [
-                            'x' => $ts,
-                            'name' => $indexNom,           // nom de la série (ou de l'événement)
-                            'label' => $label,             // texte principal sur la timeline
-                            'description' => $description, // texte détaillé dans le popup
-                        ];
-                    }
-                    if (count($listeHisto) > $limitHisto) {
-                        $listeHisto = array_slice($listeHisto, -$limitHisto);
-                        $message .= "le graphique {$g} de l'équipement '{$nameEqpmnt}' a été limité à {$limitHisto} points pour la timeline '{$indexNom}'.";
-                    }
-                    $yAxisJS = "{ visible: false }";
                 } else {
-
-                    //$recordData = [];
-                    $prevValue = null;
-                    $prevValueHisto = 0;
-                    foreach ($histo as $record) {
-                        $valueHisto = $record->getValue();
-                        if ($variation){
-                            $prevValueHisto = $valueHisto;
-                            if ($prevValue!==null){
-                                $valueHisto =  $valueHisto - $prevValue;
-                                $prevValue = $prevValueHisto;
-                                $ts = strtotime($record->getDatetime()) * 1000;
-                            } else {
-                                $prevValue = $prevValueHisto;
-                                $ts = strtotime($record->getDatetime()) * 1000;
-                                continue;
-                            }
+                    if ($delta!=0){
+                        $keys = ['30sec', 'min'];
+                        if ($delta >= 6*60*1000) {
+                            $keys[] = '5min';
                         }
-                         
-                        if ($compareType == 'none'){
-                            $ts = strtotime($record->getDatetime()) * 1000;
-                            $listeHisto[] = [$ts,  $valueHisto * $coef];
-                        } elseif ($compareType == 'prev_year') {
-                            $recordDate = new DateTime($record->getDatetime());
-                            $recordYear = (int)$recordDate->format('Y');
-                            $recordMonth = (int)$recordDate->format('m');
-                            
-                            // Détermination de l'année de référence pour la courbe
-                            $groupYear = $recordYear; 
-                            if ($recordMonth < $monthToStart) {
-                                $groupYear = $recordYear - 1;
-                                $rolling = true;
-                            }
-
-                            $yearsDiff = $currentYear - $groupYear;
-
-                            $adjustedDate = clone $recordDate;
-                            $adjustedDate->modify("+{$yearsDiff} years");
-
-                            // Conversion en timestamp millisecondes pour Highcharts
-                            $ts = $adjustedDate->getTimestamp() * 1000;
-
-                            $recordData[$groupYear][] = [$ts, (float)$valueHisto * $coef];
-                        } elseif ($compareType == 'prev_year_month') {
-                            $recordDate = new DateTime($record->getDatetime());
-                            $recordYear = (int)$recordDate->format('Y');
-                            $recordMonth = (int)$recordDate->format('m');
-                            $pivotYear = 3024;
-                            if ($recordMonth == $compareMonth) {
-                                $yearsDiff = $pivotYear - $recordYear;
-                                $adjustedDate = clone $recordDate;
-                                $adjustedDate->modify("+{$yearsDiff} years");
-                                $ts = $adjustedDate->getTimestamp() * 1000;
-                                $recordData[$recordYear][] = [$ts, $valueHisto * $coef];
-                            }
+                        if ($delta >= 16*60*1000) {
+                            $keys[] = '15min';
                         }
-                    }
-                }
-
-                $cmdId = str_replace('#', '', $cmdGraphe);
-            }
-            
-            $xAxisJS = "type: 'datetime',
-                        ordinal: false,";
-            $xAxisDateTimeLabelFormatJS = '';
-
-            $headerFormatJS = '<span>{point.key}</span><br>';
-            $dateTimeLabelFormats = "
-                            millisecond: [
-                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
-                            ],
-                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
-                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                            month: ['%B %Y', 'De %B', ' à %B %Y'],
-                            year: ['%Y', 'De %Y', ' à %Y']
-                                                ";
-
-            $currentButtons = [];
-
-            $selectedRangeSelectorButton = 26;
-            if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
-                switch ($regroup) {
-                    case 'minute':
-                        // $headerFormatJS = '<span style="font-size: 10px;">%A %d %B %Y<br/>%H:%M</span><br/>';
-                        $keys = ['30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
-                        break;
-                    case 'min5':
-                        $keys = ['30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
-                        break;
-                    case 'min15':
-                        $keys = ['30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
-                        break;
-                    case 'min30':
-                        $keys = ['1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
-                        break;
-                    case 'hour':
-                        $keys = ['today', '1day', '7day', 'month', 'year', 'all'];
-                        break;
-                    case 'day':
-                        $keys = ['7day', 'month', 'year', 'all'];
-                        break;
-                    case 'week':
-                        $keys = ['month', 'year', 'all'];
-                        break;
-                    case 'month':
-                        $keys = ['year', 'all'];
-                        break;
-                    case 'year':
-                        $keys = ['all'];
-                        break;
-                    default:
-                }
-            } else {
-                if ($delta!=0){
-                    $keys = ['30sec', 'min'];
-                    if ($delta >= 6*60*1000) {
-                        $keys[] = '5min';
-                    }
-                    if ($delta >= 16*60*1000) {
-                        $keys[] = '15min';
-                    }
-                    if ($delta >= 31*60*1000) {
-                        $keys[] = '30min';
-                    }
-                    if ($delta >= 61*60*1000) {
-                        $keys[] = '1hour';
-                    }
-                    if ($delta >= 12*60*60*1000) {
-                        $keys[] = '12hour';
-                    }
-                    $keys[] = 'all';
-                } else {
-                    $keys = ['30sec', 'min', '5min', '15min', '30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
-                }
-            }
-
-            $buttonList = [];
-            $todayButtonIndex = -1;
-            $selectedRangeSelectorButton = 0; // Par défaut le premier
-            $found = false;
-
-            foreach ($keys as $index => $key) {
-                $buttonList[] = $allPossibleButtons[$key];
-                
-                if ($key == $periodeVisuGraph) {
-                    $selectedRangeSelectorButton = $index;
-                    $found = true;
-                }
-            }
-
-            // si la période demandée n'est pas dispo dans ce graphique, on met 'Tout' (le dernier)
-            if (!$found) {
-                $selectedRangeSelectorButton = count($buttonList) - 1;
-            }
-
-            $buttonJS = "buttons: [" . implode(',', $buttonList) . "]";
-
-            $axisIndex = $unitToAxis[$unite] ?? 0;
-            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
-
-            if ($finalCurveType === 'timeline') {
-                $dataLabelsOverlap = $eqLogic->getConfiguration("graph{$g}_dataLabels_overlaps", 0) ? 'true' : 'false';
-                $seriesJS .= "{
-                        name: " . json_encode($indexNom) . ",
-                        type: 'timeline',
-                        pointInterval: 24 * 3600 * 1000,
-                        data: " . json_encode($listeHisto) . ", 
-                        legendIndex: {$i},
-                        marker: { symbol: 'circle' },
-                        dataLabels: {
-                            allowOverlap: {$dataLabelsOverlap},
-                            format: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/>{point.x:%d-%m-%y %H:%M:%S}<br/>{point.label}',
-                            width: 200,
-                        },
-                        tooltip: {
-                            outside: false,
-                            pointFormat: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/></span><b>{point.label}</b><br/>{point.description}<br/>',
+                        if ($delta >= 31*60*1000) {
+                            $keys[] = '30min';
                         }
-                    },\n";
-            } else {
-                if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
-                    $cmdUpdateJS = '';
-                    $nbSeries = count($recordData);
-                    if ($nbSeries > 2) {
-                        $baseSeries = 1;
-                        $navigatorEnabled = $configNavigatorEnabled;
+                        if ($delta >= 61*60*1000) {
+                            $keys[] = '1hour';
+                        }
+                        if ($delta >= 12*60*60*1000) {
+                            $keys[] = '12hour';
+                        }
+                        $keys[] = 'all';
                     } else {
-                        $navigatorEnabled = 'false';
-                        $baseSeries = 0;
+                        $keys = ['30sec', 'min', '5min', '15min', '30min', '1hour', '12hour', 'today', '1day', '7day', 'month', 'year', 'all'];
                     }
-                    $actualisation = false;
-                    $dataGroupingDateTimeLabelFormatsJS = "
-                                    millisecond: [
-                                        '%A %e %b, %H:%M:%S.%L', '%A %e %b de %H:%M:%S.%L', ' à %H:%M:%S.%L'
-                                    ],
-                                    second: ['%A %e %b, %H:%M:%S', '%A %e %b de %H:%M:%S', ' à %H:%M:%S'],
-                                    minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                                    hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                                    day: ['%A %e %b', 'Du %A %b %e', ' au %A %b %e'],
-                                    week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                                    month: ['%B', 'De %B', ' à %B'],
-                                    year: ['%Y', 'De %Y', ' à %Y']
-                                ";
+                }
 
-                    foreach ($recordData as $year => $data) {
+                $buttonList = [];
+                $todayButtonIndex = -1;
+                $selectedRangeSelectorButton = 0; // Par défaut le premier
+                $found = false;
 
-                        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
-                        if ($rolling){
-                            $years = $year . '.' . (substr($year,2,2) + 1);
+                foreach ($keys as $index => $key) {
+                    $buttonList[] = $allPossibleButtons[$key];
+                    
+                    if ($key == $periodeVisuGraph) {
+                        $selectedRangeSelectorButton = $index;
+                        $found = true;
+                    }
+                }
+
+                // si la période demandée n'est pas dispo dans ce graphique, on met 'Tout' (le dernier)
+                if (!$found) {
+                    $selectedRangeSelectorButton = count($buttonList) - 1;
+                }
+
+                $buttonJS = "buttons: [" . implode(',', $buttonList) . "]";
+
+                $axisIndex = $unitToAxis[$unite] ?? 0;
+                //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} Curve {$i}: Unit '{$unite}' assigned to axis index {$axisIndex}");
+
+                if ($finalCurveType === 'timeline'  && $finalCurveType !== 'pie' && $finalCurveType !== 'piePercent') {
+                    $dataLabelsOverlap = $eqLogic->getConfiguration("graph{$g}_dataLabels_overlaps", 0) ? 'true' : 'false';
+                    $seriesJS .= "{
+                            name: " . json_encode($indexNom) . ",
+                            type: 'timeline',
+                            pointInterval: 24 * 3600 * 1000,
+                            data: " . json_encode($listeHisto) . ", 
+                            legendIndex: {$i},
+                            marker: { symbol: 'circle' },
+                            dataLabels: {
+                                allowOverlap: {$dataLabelsOverlap},
+                                format: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/>{point.x:%d-%m-%y %H:%M:%S}<br/>{point.label}',
+                                width: 200,
+                            },
+                            tooltip: {
+                                outside: false,
+                                pointFormat: '<span style=\"color:{point.color}\">● </span><span ' + 'style=\"font-weight: bold;\" > ' + '{point.name}</span><br/></span><b>{point.label}</b><br/>{point.description}<br/>',
+                            }
+                        },\n";
+                } else if ($finalCurveType !== 'pie' && $finalCurveType !== 'piePercent') {
+                    if ($compareType == 'prev_year' && isset($recordData) && is_array($recordData)) {
+                        $cmdUpdateJS = '';
+                        $nbSeries = count($recordData);
+                        if ($nbSeries > 2) {
+                            $baseSeries = 1;
+                            $navigatorEnabled = $configNavigatorEnabled;
                         } else {
-                            $years = $year;
+                            $navigatorEnabled = 'false';
+                            $baseSeries = 0;
+                        }
+                        $actualisation = false;
+                        $dataGroupingDateTimeLabelFormatsJS = "
+                                        millisecond: [
+                                            '%A %e %b, %H:%M:%S.%L', '%A %e %b de %H:%M:%S.%L', ' à %H:%M:%S.%L'
+                                        ],
+                                        second: ['%A %e %b, %H:%M:%S', '%A %e %b de %H:%M:%S', ' à %H:%M:%S'],
+                                        minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                        hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                        day: ['%A %e %b', 'Du %A %b %e', ' au %A %b %e'],
+                                        week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                                        month: ['%B', 'De %B', ' à %B'],
+                                        year: ['%Y', 'De %Y', ' à %Y']
+                                    ";
+
+                        foreach ($recordData as $year => $data) {
+
+                            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
+                            if ($rolling){
+                                $years = $year . '.' . (substr($year,2,2) + 1);
+                            } else {
+                                $years = $year;
+                            }
+
+                            $headerFormatJS = '<span>{point.key:%B}</span><br>';
+                            $seriesJS .= "{
+                                name: " . json_encode($indexNom . " - {$years}") . ",
+                                showInNavigator: true,
+                                borderColor: " . json_encode($color) . ",
+                                step: {$stairStepKey},
+                                type: " . json_encode($finalCurveType) . ",
+                                data: ". json_encode($data) . ",
+                                valueSuffix: " . json_encode(' ' .$unite) . ",
+                                tooltip: {
+                                    headerFormat: '{$headerFormatJS}',
+                                    valueSuffix: " . json_encode(' ' .$unite) . ",
+                                },
+                                yAxis: {$axisIndex},
+
+                                stacking: " . json_encode($stackingOption) . ",
+                                dataGrouping: { {$dataGroupingJS}
+                                    dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                                },
+                            },\n";
                         }
 
-                        $headerFormatJS = '<span>{point.key:%B}</span><br>';
+                        if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
+
+                            switch ($regroup) {
+                                case 'minute':
+                                case 'min5':
+                                case 'min15':
+                                case 'min30':
+                                case 'hour':
+                                case 'day':
+                                case 'week':
+                                    $xAxisJS .=  "
+                                                labels: {
+                                                    {$colorAxisXJS}
+                                                    formatter: function() {
+                                                        const date = new Date(this.value);
+                                                        return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
+                                                    }
+                                                },
+                                            ";
+                                    break;
+                                case 'month':
+                                    $xAxisJS .=  "
+                                                labels: {
+                                                    {$colorAxisXJS}
+                                                    formatter: function() {
+                                                        const date = new Date(this.value);
+                                                        return date.toLocaleString(undefined, { month: 'short' });
+                                                    }
+                                                },
+                                            ";
+                                    break;
+                                case 'year':
+                                    $xAxisJS .=  "
+                                                labels: {
+                                                    {$colorAxisXJS}
+                                                    formatter: function() {
+                                                        const date = new Date(this.value);
+                                                        return date.toLocaleString(undefined, { year: 'numeric' });
+                                                    }
+                                                },
+                                            ";
+                                    break;
+                                default:
+                            }
+
+                        } else {
+                            $xAxisJS .=  "
+                                        labels: {
+                                            {$colorAxisXJS}
+                                            formatter: function() {
+                                                const date = new Date(this.value);
+                                                return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
+                                            }
+                                        },
+                                    ";
+                        }
+
+                        $xDateFormatJS = "%d %B - %Hh%M";
+
+                        $navigatorJS =    " 
+                            enabled: $navigatorEnabled,
+                            baseSeries: $baseSeries,
+                            margin: 1,
+                            ";
+                        //$xAxisMinJS = strtotime($year . '-01-01 00:00:00 UTC') * 1000;
+                        //$xAxisMaxJS = strtotime($year . '-12-31 00:00:00 UTC') * 1000;
+                        $xAxisMinJS = 'undefined';
+                        $xAxisMaxJS = 'undefined';
+                    }
+
+                    if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
+                        $actualisation = false;
+                        $cmdUpdateJS = '';
+                        $nbSeries = count($recordData);
+                        foreach ($recordData as $year => $data) {
+                            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
+                            $seriesJS .= "{
+                                name: " . json_encode($indexNom . " - {$year}") . ",
+                                showInNavigator: true,
+                                borderColor: " . json_encode($color) . ",
+                                step: {$stairStepKey},
+                                type: " . json_encode($finalCurveType) . ",
+                                data: ". json_encode($data) . ",
+                                tooltip: {
+                                    valueSuffix: " . json_encode(' ' .$unite) . "
+                                },
+                                yAxis: {$axisIndex},
+                                stacking: " . json_encode($stackingOption) . ",
+                                dataGrouping: { {$dataGroupingJS}
+                                    dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                                },
+                            },\n";
+                        }
+                        $xDateFormatJS = "%d %B - %Hh%M";
+                        $buttonJS = "buttons: [
+                                                { type: 'day', count: 7, text: '1s' },
+                                                { type: 'all', text: 'Tout' }
+                                            ]";
+                        if ($periodeVisuGraph == '7day') {
+                            $selectedRangeSelectorButton = 0;
+                        } else{
+                            $selectedRangeSelectorButton = 1;
+                        }
+                        $navigatorJS =    " 
+                            enabled: $configNavigatorEnabled,
+                            margin: 1,
+                            ";
+                        $xAxisMinJS = 'undefined';
+                        $xAxisMaxJS = 'undefined';
+                    }
+
+
+                    if ($compareType == 'none'){
+                        //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
                         $seriesJS .= "{
-                            name: " . json_encode($indexNom . " - {$years}") . ",
+                            name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
                             showInNavigator: true,
                             borderColor: " . json_encode($color) . ",
                             step: {$stairStepKey},
+                            {$colorJS}
                             type: " . json_encode($finalCurveType) . ",
-                            data: ". json_encode($data) . ",
-                            valueSuffix: " . json_encode(' ' .$unite) . ",
+                            id: " . json_encode("graph_{$g}_curve_{$i}") . ",
+                            data: ". json_encode($listeHisto) . ",
                             tooltip: {
-                                headerFormat: '{$headerFormatJS}',
-                                valueSuffix: " . json_encode(' ' .$unite) . ",
+                                pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
+                            },
+                            //marker: { symbol: 'square' },
+                            dateTimeLabelFormats: {
+                                millisecond: [
+                                    '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                                ],
+                                second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                                minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                                month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                year: ['%Y', 'De %Y', ' à %Y']
                             },
                             yAxis: {$axisIndex},
-
                             stacking: " . json_encode($stackingOption) . ",
                             dataGrouping: { {$dataGroupingJS}
-                                dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
-                            },
+                                            dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
+                                        },
                         },\n";
-                    }
 
-                    if ($regroup !== 'aucun' && $typeRegroup !== 'aucun') {
-
-                        switch ($regroup) {
-                            case 'minute':
-                            case 'min5':
-                            case 'min15':
-                            case 'min30':
-                            case 'hour':
-                            case 'day':
-                            case 'week':
-                                $xAxisJS .=  "
-                                            labels: {
-                                                {$colorAxisXJS}
-                                                formatter: function() {
-                                                    const date = new Date(this.value);
-                                                    return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
-                                                }
-                                            },
-                                        ";
-                                break;
-                            case 'month':
-                                $xAxisJS .=  "
-                                            labels: {
-                                                {$colorAxisXJS}
-                                                formatter: function() {
-                                                    const date = new Date(this.value);
-                                                    return date.toLocaleString(undefined, { month: 'short' });
-                                                }
-                                            },
-                                        ";
-                                break;
-                            case 'year':
-                                $xAxisJS .=  "
-                                            labels: {
-                                                {$colorAxisXJS}
-                                                formatter: function() {
-                                                    const date = new Date(this.value);
-                                                    return date.toLocaleString(undefined, { year: 'numeric' });
-                                                }
-                                            },
-                                        ";
-                                break;
-                            default:
-                        }
-
-                    } else {
+                        $xDateFormatJS = "%d %B %Y - %Hh%M";
+                        $dateTimeLabelFormats = "
+                                millisecond: [
+                                    '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
+                                ],
+                                second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
+                                minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
+                                day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
+                                week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
+                                month: ['%B %Y', 'De %B', ' à %B %Y'],
+                                year: ['%Y', 'De %Y', ' à %Y']
+                                                    ";
+                        $navigatorJS =    " 
+                            enabled: $configNavigatorEnabled,
+                            margin: 1,
+                            ";
                         $xAxisJS .=  "
                                     labels: {
                                         {$colorAxisXJS}
-                                        formatter: function() {
-                                            const date = new Date(this.value);
-                                            return date.toLocaleString(undefined, { day: 'numeric', month: 'short' });
+                                        skew3d: true,
+                                        },";
+                    }
+
+                }
+                
+                $appendJS = '';
+                //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} cmdId= {$cmdId} actualisation= " . ($actualisation ? 'true' : 'false'));
+                if ($cmdId and $actualisation) {
+                    if ($finalCurveType !== 'pie' && $finalCurveType !== 'piePercent') {
+                        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} graphtype= {$graphType}");
+                        //log::add(__CLASS__, 'debug', "{$graphType} data: " . json_encode($listeHisto));
+                        if ($updateAppend === 'false') {
+                            $appendJS = "if (window.chart_g{$g}_id{$idEqpmnt}) {
+                                for (let s = 0; s < window.chart_g{$g}_id{$idEqpmnt}.series.length; s++) {
+                                    const seriesToUPdate = window.chart_g{$g}_id{$idEqpmnt}.series[s];
+                                    const newMin = dateLastValue - {$delta};
+                                    const newMax = dateLastValue;
+                                    const dataToUpdate = seriesToUPdate.data;
+                                    while (dataToUpdate.length > 0 && dataToUpdate[0]?.x < newMin) {
+                                        dataToUpdate[0].remove(false);
+                                    }
+                                    //const graphnavigator = window.chart_g{$g}_id{$idEqpmnt}.navigator;
+                                    //if (graphnavigator) {
+                                        //if (debug){console.log('Décalage de la période d\'affichage pour le navigator', graphnavigator);}
+                                        //graphnavigator.zoomedMin = 0;
+                                        //graphnavigator.render();
+                                    //}
+                                }
+                            }";
+                        }
+                        elseif (isset($isSlidingPeriod) && $isSlidingPeriod) {
+                            $jsPeriodeType = json_encode($periodeHistoGraph);
+                            
+                            $appendJS = "
+                            if (window.chart_g{$g}_id{$idEqpmnt}){
+                                const now = new Date();
+                                let calculatedMin = null;
+                                const typePeriode = {$jsPeriodeType};
+                                const currentMax = now.getTime(); 
+                                
+                                if (typePeriode === 'dDay') {
+                                    calculatedMin = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); // Minuit
+                                } else if (typePeriode === 'dWeek') {
+                                    const day = now.getDay();
+                                    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+                                    const monday = new Date(now.setDate(diff));
+                                    calculatedMin = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()).getTime();
+                                } else if (typePeriode === 'dMonth') {
+                                    calculatedMin = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                                } else if (typePeriode === 'dYear') {
+                                    calculatedMin = new Date(now.getFullYear(), 0, 1).getTime();
+                                }
+
+                                if (calculatedMin) {
+                                    const axis = window.chart_g{$g}_id{$idEqpmnt}.xAxis[0];
+                                    let remove = false;
+                                    for (let s = 0; s < window.chart_g{$g}_id{$idEqpmnt}.series.length; s++) {
+                                        const seriesToUPdate = window.chart_g{$g}_id{$idEqpmnt}.series[s];
+                                        if (!seriesToUPdate.data) continue;
+                                        
+                                        const dataToUpdate = seriesToUPdate.data;
+                                        while (dataToUpdate.length > 0 && dataToUpdate[0]?.x < calculatedMin) {
+                                            dataToUpdate[0].remove(false);
+                                            remove = true;
                                         }
-                                    },
-                                ";
-                    }
-
-                    $xDateFormatJS = "%d %B - %Hh%M";
-
-                    $navigatorJS =    " 
-                        enabled: $navigatorEnabled,
-                        baseSeries: $baseSeries,
-                        margin: 1,
-                        ";
-                    //$xAxisMinJS = strtotime($year . '-01-01 00:00:00 UTC') * 1000;
-                    //$xAxisMaxJS = strtotime($year . '-12-31 00:00:00 UTC') * 1000;
-                    $xAxisMinJS = 'undefined';
-                    $xAxisMaxJS = 'undefined';
-                }
-
-                if ($compareType == 'prev_year_month' && isset($recordData) && is_array($recordData)) {
-                    $actualisation = false;
-                    $cmdUpdateJS = '';
-                    $nbSeries = count($recordData);
-                    foreach ($recordData as $year => $data) {
-                        //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} comparemonth: {$compareMonth} currentmonth= {$currentMonth} year= {$year} actualisation= " . ($actualisation ? 'true' : 'false'));
-                        $seriesJS .= "{
-                            name: " . json_encode($indexNom . " - {$year}") . ",
-                            showInNavigator: true,
-                            borderColor: " . json_encode($color) . ",
-                            step: {$stairStepKey},
-                            type: " . json_encode($finalCurveType) . ",
-                            data: ". json_encode($data) . ",
-                            tooltip: {
-                                valueSuffix: " . json_encode(' ' .$unite) . "
-                            },
-                            yAxis: {$axisIndex},
-                            stacking: " . json_encode($stackingOption) . ",
-                            dataGrouping: { {$dataGroupingJS}
-                                dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
-                            },
-                        },\n";
-                    }
-                    $xDateFormatJS = "%d %B - %Hh%M";
-                    $buttonJS = "buttons: [
-                                            { type: 'day', count: 7, text: '1s' },
-                                            { type: 'all', text: 'Tout' }
-                                        ]";
-                    if ($periodeVisuGraph == '7day') {
-                        $selectedRangeSelectorButton = 0;
-                    } else{
-                        $selectedRangeSelectorButton = 1;
-                    }
-                    $navigatorJS =    " 
-                        enabled: $configNavigatorEnabled,
-                        margin: 1,
-                        ";
-                    $xAxisMinJS = 'undefined';
-                    $xAxisMaxJS = 'undefined';
-                }
-
-
-                if ($compareType == 'none'){
-                    //$message.= "nombre de points pour la courbe '{$indexNom}': " . count($listeHisto) . ". ";
-                    $seriesJS .= "{
-                        name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
-                        showInNavigator: true,
-                        borderColor: " . json_encode($color) . ",
-                        step: {$stairStepKey},
-                        {$colorJS}
-                        type: " . json_encode($finalCurveType) . ",
-                        id: " . json_encode("graph_{$g}_curve_{$i}") . ",
-                        data: ". json_encode($listeHisto) . ",
-                        tooltip: {
-                            pointFormat: '<span style=\"color:{series.color};font-weight:bold\"> ● </span>{$indexNom} : <b>{point.y} " . $unite . "</b><br/>',
-                        },
-                        //marker: { symbol: 'square' },
-                        dateTimeLabelFormats: {
-                            millisecond: [
-                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
-                            ],
-                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
-                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                            month: ['%B %Y', 'De %B', ' à %B %Y'],
-                            year: ['%Y', 'De %Y', ' à %Y']
-                        },
-                        yAxis: {$axisIndex},
-                        stacking: " . json_encode($stackingOption) . ",
-                        dataGrouping: { {$dataGroupingJS}
-                                        dateTimeLabelFormats: { {$dataGroupingDateTimeLabelFormatsJS} }
-                                    },
-                    },\n";
-
-                    $xDateFormatJS = "%d %B %Y - %Hh%M";
-                    $dateTimeLabelFormats = "
-                            millisecond: [
-                                '%A, %e %b, %H:%M:%S.%L', '%A, %e %b, %H:%M:%S.%L', '-%H:%M:%S.%L'
-                            ],
-                            second: ['%A, %e %b, %H:%M:%S', '%A, %e %b, %H:%M:%S', '-%H:%M:%S'],
-                            minute: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            hour: ['%A %e %b, %H:%M', '%A %e %b de %H:%M', ' à %H:%M'],
-                            day: ['%A %e %b %Y', 'Du %A %b %e', ' au %A %b %e %Y'],
-                            week: ['Semaine du %e %b', 'Du %e %b', ' au %e %b'],
-                            month: ['%B %Y', 'De %B', ' à %B %Y'],
-                            year: ['%Y', 'De %Y', ' à %Y']
-                                                ";
-                    $navigatorJS =    " 
-                        enabled: $configNavigatorEnabled,
-                        margin: 1,
-                        ";
-                    $xAxisJS .=  "
-                                labels: {
-                                    {$colorAxisXJS}
-                                    skew3d: true,
-                                    },";
-                }
-
-            }
-            
-            $appendJS = '';
-            //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} year= {$year} cmdId= {$cmdId} actualisation= " . ($actualisation ? 'true' : 'false'));
-            if ($cmdId and $actualisation) {
-                //log::add(__CLASS__, 'debug', "Equipment: '{$nameEqpmnt}' Graph {$g} i= {$i} nbSeries= {$nbSeries} graphtype= {$graphType}");
-                //log::add(__CLASS__, 'debug', "{$graphType} data: " . json_encode($listeHisto));
-                if ($updateAppend === 'false') {
-                    $appendJS = "if (window.chart_g{$g}_id{$idEqpmnt}) {
-                        for (let s = 0; s < window.chart_g{$g}_id{$idEqpmnt}.series.length; s++) {
-                            const seriesToUPdate = window.chart_g{$g}_id{$idEqpmnt}.series[s];
-                            const newMin = dateLastValue - {$delta};
-                            const newMax = dateLastValue;
-                            const dataToUpdate = seriesToUPdate.data;
-                            while (dataToUpdate.length > 0 && dataToUpdate[0]?.x < newMin) {
-                                dataToUpdate[0].remove(false);
-                            }
-                            //const graphnavigator = window.chart_g{$g}_id{$idEqpmnt}.navigator;
-                            //if (graphnavigator) {
-                                //if (debug){console.log('Décalage de la période d\'affichage pour le navigator', graphnavigator);}
-                                //graphnavigator.zoomedMin = 0;
-                                //graphnavigator.render();
-                            //}
-                        }
-                    }";
-                }
-                elseif (isset($isSlidingPeriod) && $isSlidingPeriod) {
-                    $jsPeriodeType = json_encode($periodeHistoGraph);
-                    
-                    $appendJS = "
-                    if (window.chart_g{$g}_id{$idEqpmnt}){
-                        const now = new Date();
-                        let calculatedMin = null;
-                        const typePeriode = {$jsPeriodeType};
-                        const currentMax = now.getTime(); 
-                        
-                        if (typePeriode === 'dDay') {
-                            calculatedMin = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime(); // Minuit
-                        } else if (typePeriode === 'dWeek') {
-                            const day = now.getDay();
-                            const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-                            const monday = new Date(now.setDate(diff));
-                            calculatedMin = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()).getTime();
-                        } else if (typePeriode === 'dMonth') {
-                            calculatedMin = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-                        } else if (typePeriode === 'dYear') {
-                            calculatedMin = new Date(now.getFullYear(), 0, 1).getTime();
-                        }
-
-                        if (calculatedMin) {
-                            const axis = window.chart_g{$g}_id{$idEqpmnt}.xAxis[0];
-                            let remove = false;
-                            for (let s = 0; s < window.chart_g{$g}_id{$idEqpmnt}.series.length; s++) {
-                                const seriesToUPdate = window.chart_g{$g}_id{$idEqpmnt}.series[s];
-                                if (!seriesToUPdate.data) continue;
-                                
-                                const dataToUpdate = seriesToUPdate.data;
-                                while (dataToUpdate.length > 0 && dataToUpdate[0]?.x < calculatedMin) {
-                                    dataToUpdate[0].remove(false);
-                                    remove = true;
-                                }
-                            }
-                            
-                            if (remove) {
-                                axis.setExtremes(calculatedMin, currentMax, false, false, true);
-                            }
-                        }
-                    }";
-                }
-
-                $isToday = ($periodeVisuGraph == 'today') ? 'true' : 'false';
-                $setExtremesJS = ($isToday == 'true') ? "
-                    if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
-                        var chart = window.chart_g{$g}_id{$idEqpmnt};
-                        var now = new Date();
-                        var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                        var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
-                        chart.xAxis[0].setExtremes(startOfDay, endOfDay);
-                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = true;
-                    } else {
-                        window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
-                    }" . "\n" : "\n"; // Si on démarre en mode "aujourd'hui", on positionne directement les extrêmes sur la journée courante
-
-                if ($graphType == 'timeline') {
-                    if ($refPrec){
-                        $cmdUpdateJS .= "
-                        window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
-                        if ('{$cmdId}' !== '') {
-                            jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.collectDate).getTime();
-                                const y = parseFloat(_options.value);
-                                
-                                {$appendJS}
-                                
-
-                                if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
-                                    const chart = window.chart_g{$g}_id{$idEqpmnt};
-                                    const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
-                                    const valeur = y + ' {$unite}';
+                                    }
                                     
-                                    // Récupérer le label du dernier point existant (si il y en a un)
-                                    let previousLabel = '';
-                                    const points = series.points;
-                                    if (points.length > 0) {
-                                        const lastPoint = points[points.length - 1];
-                                        previousLabel = lastPoint.label || '';
-                                    }
-
-                                    const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
-                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
-                                                            ' à ' + 
-                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
-
-                                    series.addPoint({
-                                        x: dateLastValue,
-                                        name: '{$indexNom}',
-                                        label: valeur,
-                                        description: dateFormatee 
-                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                    
-                                    if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
-                                        var now = new Date();
-                                        var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
-                                        var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                        window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
-                                    }
-                                };
-                            });
-                        }\n";
-                    } else {
-                        $cmdUpdateJS .= "
-                        window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
-                        if ('{$cmdId}' !== '') {
-                            jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                                const dateLastValue = new Date(_options.collectDate).getTime();
-                                const y = parseFloat(_options.value);
-
-                                {$appendJS}
-                                
-                                if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
-                                    const chart = window.chart_g{$g}_id{$idEqpmnt};
-                                    const series = chart.series[{$nbSeries}-1];
-                                    const dateObj = new Date(new Date(_options.collectDate).getTime());
-                                    const valeur = y + ' {$unite}';
-                                    
-                                    const dateFormatee = 'Le ' + 
-                                                            dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
-                                                            ' à ' + 
-                                                            dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
-
-                                    series.addPoint({
-                                        x: dateLastValue,
-                                        name: '{$indexNom}',
-                                        label: valeur,
-                                        description: dateFormatee 
-                                    }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
-                                };
-
-                                if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
-                                    var now = new Date();
-                                    var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
-                                    var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                    window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
-                                }
-                            });
-                        }\n";
-                    }
-                    //log::add(__CLASS__, 'debug', "graph{$g} nbseries: {$nbSeries}");
-                } else {
-                    $var = $variation ? 'true':'false';
-                    $cmdUpdateJS .= "
-                    window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
-                    window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = {$isToday};
-                    if ('{$cmdId}' !== '') {
-                        jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
-                            
-                            debug = false;
-
-                            const dateLastValue = new Date(_options.collectDate).getTime();
-
-                            {$appendJS}
-
-                            if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
-                                
-                                const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
-
-                                const series = window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1];
-                                let currentRawValue = _options.value;
-                                if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
-                                if (debug){console.log('options: ', _options);}
-                                
-                                // Récupère la dernière valeur brute stockée (ou null si première fois)
-                                let lastRawValue = series.userOptions?.lastRawValue ?? null;
-
-                                let yToAdd = currentRawValue * {$coef}; // par défaut : valeur brute
-
-                                if (variation) {
-                                    if (lastRawValue !== null) {
-                                        yToAdd = currentRawValue - lastRawValue; // vrai delta
-                                    } else {
-                                        yToAdd = 0; // premier point en mode variation
+                                    if (remove) {
+                                        axis.setExtremes(calculatedMin, currentMax, false, false, true);
                                     }
                                 }
-                                
-                                if (debug){console.log('yToAdd: ', yToAdd);}
-                                
-                                series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
-                                 
-
-                                if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) { // Si on est en mode 'aujourd'hui', on repositionne les extrêmes sur la journée courante pour faire défiler les données
-                                    var now = new Date();
-                                    var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
-                                    var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                    //console.log('window min: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].userMax);
-                                    //console.log('window all: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0]);
-                                    window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, false, false, true);
-                                    //console.log('window 2: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].getExtremes());
-                                }
- 
-                                window.chart_g{$g}_id{$idEqpmnt}.redraw();
-
-                                if (debug){console.log('series : ', series);}
-                                
-                                // Sauvegarde la valeur brute pour la prochaine mise à jour
-                                if (!series.userOptions) series.userOptions = {};
-                                series.userOptions.lastRawValue = currentRawValue;
-                            };
-                        });
-                    }\n";
-                }
-            }
-
-        }
-
-        
-        $rangeSelectorJS = "
-            enabled: {$configButtonsEnabled},
-            selected: {$selectedRangeSelectorButton},
-            inputEnabled: false,
-            floating: true,
-            allButtonsEnabled: true,
-            dropdown: 'always',
-            {$buttonJS},
-            buttonPosition: {
-                align: '$buttonAxisAlign',
-                x: {$xRangeSelectorButtonPosition},
-                y: {$yRangeSelectorButtonPosition},
-            }
-        ";
-
-        // === DÉTECTION TIMELINE ET FORCAGE DU TYPE ===
-        $isTimeline = false;
-        for ($i = 1; $i <= 10; $i++) {
-            $curveTypeKey = "graph{$g}_curve{$i}_type";
-            $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
-            if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
-                $isTimeline = true;
-            }
-        }
-        if ($isTimeline) {
-            $headerFormatJS = ''; // pas de header pour les timelines
-            $graphType = 'timeline';
-            $xAxisNavigatorJS = '';
-            if ($inverted == 'true') {
-                $xAxisJS .=  "
-                    dateTimeLabelFormats: {
-                        millisecond: '%H:%M:%S.%L',
-                        second: '%H:%M:%S',
-                        minute: '%H:%M',
-                        hour: '%H:%M',
-                        day: '%e/%m/%y',
-                        week: '%e/%m/%y',
-                        month: '%m/%y',
-                        year: '%Y'
-                    },";
-                $xAxisNavigatorJS = "xAxis: {
-                    labels: {
-                        formatter: function () {
-                            return Highcharts.dateFormat('%d/%o', this.value);
-                            }
+                            }";
                         }
-                    },";
-            }
-            $navigatorJS =    " 
-                enabled: $configNavigatorEnabled,
-                margin: 20,
-                {$xAxisNavigatorJS}
-            ";
-        }
 
-        $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
-        $xAxisJS .= "
-            crosshair: {
-                enabled: true,
-                snap: $cros,
-            },";
+                        $isToday = ($periodeVisuGraph == 'today') ? 'true' : 'false';
+                        $setExtremesJS = ($isToday == 'true') ? "
+                            if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
+                                var chart = window.chart_g{$g}_id{$idEqpmnt};
+                                var now = new Date();
+                                var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                chart.xAxis[0].setExtremes(startOfDay, endOfDay);
+                                window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = true;
+                            } else {
+                                window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = false;
+                            }" . "\n" : "\n"; // Si on démarre en mode "aujourd'hui", on positionne directement les extrêmes sur la journée courante
 
-        
-        if ($config3DEnabled != 'true'){
-            $plotBackgroundColorJS = "{$plotBgCode}";
-        } else {
-            $plotBackgroundColorJS = "'transparent'";
-        }
-        //$plotBackgroundColorJS = "{$plotBgCode}";
+                        if ($graphType == 'timeline') {
+                            if ($refPrec){
+                                $cmdUpdateJS .= "
+                                window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
+                                if ('{$cmdId}' !== '') {
+                                    jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                                        const dateLastValue = new Date(_options.collectDate).getTime();
+                                        const y = parseFloat(_options.value);
+                                        
+                                        {$appendJS}
+                                        
 
+                                        if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
+                                            const chart = window.chart_g{$g}_id{$idEqpmnt};
+                                            const series = chart.series[{$nbSeries}-1];
+                                            const dateObj = new Date(new Date(_options.collectDate).getTime());
+                                            const valeur = y + ' {$unite}';
+                                            
+                                            // Récupérer le label du dernier point existant (si il y en a un)
+                                            let previousLabel = '';
+                                            const points = series.points;
+                                            if (points.length > 0) {
+                                                const lastPoint = points[points.length - 1];
+                                                previousLabel = lastPoint.label || '';
+                                            }
 
-        $chartScripts .= "
-            $(document).ready(function() {        
-                    window.chart_g{$g}_id{$idEqpmnt} = Highcharts.{$chartOrStock}('{$containerId}', {
-                        chart: {
-                            alignThresholds: $alignThresholdsJS,
-                            inverted: {$inverted},
-                            options3d: {
-                                enabled: {$config3DEnabled},
-                                alpha: {$config3DAlpha},
-                                beta: {$config3DBeta},
-                                depth: {$config3DDepth},
-                                viewDistance: {$config3DViewDistance},
-                                fitToPlot: true,
-                                axisLabelPosition: 'auto',
-                                frame: {
-                                    visible: 'auto',
-                                    top: {
-                                        color: {$plotBgCode3d},
-                                        visible: 'auto'
-                                    },
-                                    bottom: {
-                                        color: {$plotBgCode3d},
-                                        visible: 'auto'
-                                    },
-                                    front: {
-                                        color: {$plotBgCode},
-                                        visible: 'auto'
-                                    },
-                                    back: {
-                                        color: {$plotBgCode},
-                                        visible: 'auto',
-                                    },
-                                    left: {
-                                        color: {$plotBgCode3d},
-                                        visible: 'auto'
-                                    },
-                                    right: {
-                                        color: {$plotBgCode3d},
-                                        visible: 'auto'
-                                    },
-                                }                    
-                            },
-                            panning: true,
-                            panKey: 'shift',                
-                            plotBackgroundColor: $plotBackgroundColorJS,
-                            spacing: [10, 0, 10, 0],
-                            type: '$graphType',
-                            zooming: {
-                                mouseWheel: true,
-                                type: '{$zoomType}',
-                                resetButton: {
-                                    position: {
-                                        align: '$buttonAxisAlign',
-                                        verticalAlign: 'top',
-                                        x: $xZoomResetButtonPosition,
-                                        y: $yZoomResetButtonPosition,
-                                    },
-                                    theme: {
-                                        style: {
-                                            fontSize: '10px',
-                                        }, 
-                                    }
-                                }                    
-                            },                
-                        },
-                        boost: {
-                                enabled: true,
-                            },
-                        credits: { enabled: false },
-                        exporting: {
-                            enabled: true,
-                            fallbackToExportServer: false,
-                            libURL: '/3rdparty/highstock/lib',
-                            local: true,
-                        },
-                        legend: { 
-                            enabled: {$showLegend},
-                        },
-                        navigator: { 
-                            {$navigatorJS}
-                            },
-                        plotOptions: {
-                            series: {
-                                stacking: " . json_encode($stackingOption) . ",
-                                groupPadding:0.1,
-                                pointPadding:0,
-                                fillOpacity: 0.1,
-                                connectNulls: false,
-                                turboThreshold: 0                    
-                            },
-                        },
-                        rangeSelector: {
-                            {$rangeSelectorJS}
-                            },
-                        scrollbar: {
-                            {$scrollbarConfig}
-                        },
-                        series: [{$seriesJS}],
-                        title: { 
-                            floating: false,
-                            margin: 0,
-                            y: 5,
-                            text: " . json_encode($titleGraph) . ", 
-                            align: '{$titleAlign}',
-                            x: $xTitlePosition,
-                            height: 10,
-                            style: { 
-                                fontWeight: 'bold', 
-                                color: '{$titleColor}', 
-                            }
-                        },
-                        time: {
-                            useUTC: false
-                        },
-                        tooltip: {
-                            enabled: $tooltipEnabled,
-                            xDateFormat: '{$xDateFormatJS}',
-                            dateTimeLabelFormats: { 
-                                {$dateTimeLabelFormats} 
-                                },
-                            backgroundColor: 'rgb(var(--bg-color))',
-                            useHTML: true,
-                            shadow: true,
-                            style: {
-                                color: 'rgb(var(--contrast-color))',
-                            },
-                            headerFormat: '{$headerFormatJS}',
-                            split: $splitJS,
-                            shared: $sharedJS,
-                            valueDecimals: 2,
-                        },
-                        xAxis: {
-                            showLastLabel: true,
-                            min: $xAxisMinJS,
-                            max: $xAxisMaxJS,
-                            {$xAxisJS}
-                            events: {
-                                afterSetExtremes: function(e) {
-                                    // 'navigator' -> déplacement via la barre du bas
-                                    // 'zoom' -> zoom à la souris
-                                    if (e.trigger === 'navigator' || e.trigger === 'zoom') {
-                                        if (window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} === true) {
-                                            if (e.userMin !== undefined && e.userMax !== undefined) {
-                                                console.log('L utilisateur a bougé manuellement : on désactive le mode Aujourd hui pour le graphique n° ' + {$g} + ' de l\'équipement ' + '{$nameEqpmnt}' + ' (id: ' + {$idEqpmnt} + ')');
-                                                window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
-                                            } else {
-                                                console.log('L utilisateur a annulé le zoom : on réactive le mode Aujourd hui pour le graphique n° ' + {$g} + ' de l\'équipement ' + '{$nameEqpmnt}' + ' (id: ' + {$idEqpmnt} + ')');
-                                                window.isTodayMode_g{$g}_id{$idEqpmnt} = true;
+                                            const dateFormatee = previousLabel + ' → ' + valeur + ' le ' + 
+                                                                    dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                                    ' à ' + 
+                                                                    dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+
+                                            series.addPoint({
+                                                x: dateLastValue,
+                                                name: '{$indexNom}',
+                                                label: valeur,
+                                                description: dateFormatee 
+                                            }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                            
+                                            if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
                                                 var now = new Date();
-                                                var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                                                 var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                                var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                                                 window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
+                                            }
+                                        };
+                                    });
+                                }\n";
+                            } else {
+                                $cmdUpdateJS .= "
+                                window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
+                                if ('{$cmdId}' !== '') {
+                                    jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                                        const dateLastValue = new Date(_options.collectDate).getTime();
+                                        const y = parseFloat(_options.value);
+
+                                        {$appendJS}
+                                        
+                                        if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
+                                            const chart = window.chart_g{$g}_id{$idEqpmnt};
+                                            const series = chart.series[{$nbSeries}-1];
+                                            const dateObj = new Date(new Date(_options.collectDate).getTime());
+                                            const valeur = y + ' {$unite}';
+                                            
+                                            const dateFormatee = 'Le ' + 
+                                                                    dateObj.toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric', }) + 
+                                                                    ' à ' + 
+                                                                    dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit',second: '2-digit',});
+
+                                            series.addPoint({
+                                                x: dateLastValue,
+                                                name: '{$indexNom}',
+                                                label: valeur,
+                                                description: dateFormatee 
+                                            }, true, false, true);  // redraw, shift (supprime le plus ancien si trop de points), animation
+                                        };
+
+                                        if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) {
+                                            var now = new Date();
+                                            var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                            var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                            window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
+                                        }
+                                    });
+                                }\n";
+                            }
+                            //log::add(__CLASS__, 'debug', "graph{$g} nbseries: {$nbSeries}");
+                        } else {
+                            $var = $variation ? 'true':'false';
+                            $cmdUpdateJS .= "
+                            window.isTodayMode_g{$g}_id{$idEqpmnt} = {$isToday};
+                            window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} = {$isToday};
+                            if ('{$cmdId}' !== '') {
+                                jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                                    
+                                    debug = false;
+
+                                    const dateLastValue = new Date(_options.collectDate).getTime();
+
+                                    {$appendJS}
+
+                                    if (window.chart_g{$g}_id{$idEqpmnt} && window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1]) {
+                                        
+                                        const variation = ({$var} === true || {$var} === 'true' || {$var} === 1 || {$var} === '1');
+
+                                        const series = window.chart_g{$g}_id{$idEqpmnt}.series[{$nbSeries}-1];
+                                        let currentRawValue = _options.value;
+                                        if (debug){console.log('options display: ', _options.display_value, ' options value: ', _options.value, ' options unit: ', _options.unit, ' options raw unit: ', _options.raw_unit, ' date: ', _options.collectDate);}
+                                        if (debug){console.log('options: ', _options);}
+                                        
+                                        // Récupère la dernière valeur brute stockée (ou null si première fois)
+                                        let lastRawValue = series.userOptions?.lastRawValue ?? null;
+
+                                        let yToAdd = currentRawValue * {$coef}; // par défaut : valeur brute
+
+                                        if (variation) {
+                                            if (lastRawValue !== null) {
+                                                yToAdd = currentRawValue - lastRawValue; // vrai delta
+                                            } else {
+                                                yToAdd = 0; // premier point en mode variation
+                                            }
+                                        }
+                                        
+                                        if (debug){console.log('yToAdd: ', yToAdd);}
+                                        
+                                        series.addPoint([dateLastValue, yToAdd], true, false, true);  // redraw, shift , animation
+                                        
+
+                                        if (window.isTodayMode_g{$g}_id{$idEqpmnt} === true) { // Si on est en mode 'aujourd'hui', on repositionne les extrêmes sur la journée courante pour faire défiler les données
+                                            var now = new Date();
+                                            var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                            var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                            //console.log('window min: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].userMax);
+                                            //console.log('window all: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0]);
+                                            window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, false, false, true);
+                                            //console.log('window 2: ', window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].getExtremes());
+                                        }
+        
+                                        window.chart_g{$g}_id{$idEqpmnt}.redraw();
+
+                                        if (debug){console.log('series : ', series);}
+                                        
+                                        // Sauvegarde la valeur brute pour la prochaine mise à jour
+                                        if (!series.userOptions) series.userOptions = {};
+                                        series.userOptions.lastRawValue = currentRawValue;
+                                    };
+                                });
+                            }\n";
+                        }
+                    } else {
+                        $cmdUpdateJS .= "
+                            if ('{$cmdId}' !== '') {
+                                jeedom.cmd.addUpdateFunction('{$cmdId}', function(_options) {
+                                    const y = parseFloat(_options.value) * {$coef}; // Appliquer le coefficient de conversion si nécessaire
+                                    const chartInstance = window.chart_g{$g}_id{$idEqpmnt};
+                                    
+                                    // On vérifie que l'instance et la série existent
+                                    if (chartInstance && chartInstance.series[0] && chartInstance.series[0].data[{$nbSeriesPie}-1]) {
+                                        const point = chartInstance.series[0].data[{$nbSeriesPie}-1];
+                                        
+                                        console.log('Mise à jour du point index {$nbSeriesPie}-1 avec la valeur: ', y);
+                                        
+                                        // Utilisation de la méthode officielle .update()
+                                        // true : force le redessin du graphique
+                                        point.update(y, true); 
+                                    }
+                                });
+                            }\n";
+                        log::add(__CLASS__, 'INFO', "Mise en place de la fonction de mise à jour pour le camembert du graphique {$g} de l'équipement '{$nameEqpmnt}' avec la commande '{$cmdId}'");
+                    }
+                }
+
+            }
+
+            if ($finalCurveType === 'pie' || $finalCurveType === 'piePercent') {
+                if ($graphTypePiePercent == true) {
+                    $point = "{point.percentage:.1f}% ({point.y} {$unite})";
+                } else {
+                    $point = "{point.y} " . $unite;
+                }
+                $seriesJS .= "{
+                    allowPointSelect: true,
+                    name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
+                    showInNavigator: true,
+                    //borderColor: " . json_encode($color) . ",
+                    colors: " . json_encode($colorPieJS) . ",
+                    type: " . json_encode($finalCurveType) . ",
+                    id: " . json_encode("graph_g{$g}_pie") . ",
+                    data: ". json_encode($listeHisto) . ",
+                    tooltip: {
+                        pointFormat: '<b>{$point}</b><br/>',
+                    },
+                    //marker: { symbol: 'square' },
+                    yAxis: {$axisIndex},
+                    stacking: " . json_encode($stackingOption) . ",
+                },\n";
+            }
+
+            
+            $rangeSelectorJS = "
+                enabled: {$configButtonsEnabled},
+                selected: {$selectedRangeSelectorButton},
+                inputEnabled: false,
+                floating: true,
+                allButtonsEnabled: true,
+                dropdown: 'always',
+                {$buttonJS},
+                buttonPosition: {
+                    align: '$buttonAxisAlign',
+                    x: {$xRangeSelectorButtonPosition},
+                    y: {$yRangeSelectorButtonPosition},
+                }
+            ";
+
+            // === DÉTECTION TIMELINE ET FORCAGE DU TYPE ===
+            $isTimeline = false;
+            for ($i = 1; $i <= 10; $i++) {
+                $curveTypeKey = "graph{$g}_curve{$i}_type";
+                $curveTypeOverride = $eqLogic->getConfiguration($curveTypeKey, 'inherit_curve');
+                if ($curveTypeOverride === 'timeline' || $graphType === 'timeline') {
+                    $isTimeline = true;
+                }
+            }
+            if ($isTimeline) {
+                $headerFormatJS = ''; // pas de header pour les timelines
+                $graphType = 'timeline';
+                $xAxisNavigatorJS = '';
+                if ($inverted == 'true') {
+                    $xAxisJS .=  "
+                        dateTimeLabelFormats: {
+                            millisecond: '%H:%M:%S.%L',
+                            second: '%H:%M:%S',
+                            minute: '%H:%M',
+                            hour: '%H:%M',
+                            day: '%e/%m/%y',
+                            week: '%e/%m/%y',
+                            month: '%m/%y',
+                            year: '%Y'
+                        },";
+                    $xAxisNavigatorJS = "xAxis: {
+                        labels: {
+                            formatter: function () {
+                                return Highcharts.dateFormat('%d/%o', this.value);
+                                }
+                            }
+                        },";
+                }
+                $navigatorJS =    " 
+                    enabled: $configNavigatorEnabled,
+                    margin: 20,
+                    {$xAxisNavigatorJS}
+                ";
+            }
+
+            $cros = $crosshair[$g] == 'false' ? 'true' : 'false';
+            $xAxisJS .= "
+                crosshair: {
+                    enabled: true,
+                    snap: $cros,
+                },";
+
+            
+            if ($config3DEnabled != 'true'){
+                $plotBackgroundColorJS = "{$plotBgCode}";
+            } else {
+                $plotBackgroundColorJS = "'transparent'";
+            }
+            //$plotBackgroundColorJS = "{$plotBgCode}";
+
+            $chartScripts .= "
+                $(document).ready(function() {        
+                        window.chart_g{$g}_id{$idEqpmnt} = Highcharts.{$chartOrStock}('{$containerId}', {
+                            chart: {
+                                alignThresholds: $alignThresholdsJS,
+                                inverted: {$inverted},
+                                options3d: {
+                                    enabled: {$config3DEnabled},
+                                    alpha: {$config3DAlpha},
+                                    beta: {$config3DBeta},
+                                    depth: {$config3DDepth},
+                                    viewDistance: {$config3DViewDistance},
+                                    fitToPlot: true,
+                                    axisLabelPosition: 'auto',
+                                    frame: {
+                                        visible: 'auto',
+                                        top: {
+                                            color: {$plotBgCode3d},
+                                            visible: 'auto'
+                                        },
+                                        bottom: {
+                                            color: {$plotBgCode3d},
+                                            visible: 'auto'
+                                        },
+                                        front: {
+                                            color: {$plotBgCode},
+                                            visible: 'auto'
+                                        },
+                                        back: {
+                                            color: {$plotBgCode},
+                                            visible: 'auto',
+                                        },
+                                        left: {
+                                            color: {$plotBgCode3d},
+                                            visible: 'auto'
+                                        },
+                                        right: {
+                                            color: {$plotBgCode3d},
+                                            visible: 'auto'
+                                        },
+                                    }                    
+                                },
+                                panning: true,
+                                panKey: 'shift',                
+                                plotBackgroundColor: $plotBackgroundColorJS,
+                                spacing: [10, 0, 10, 0],
+                                type: '$graphType',
+                                zooming: {
+                                    mouseWheel: true,
+                                    type: '{$zoomType}',
+                                    resetButton: {
+                                        position: {
+                                            align: '$buttonAxisAlign',
+                                            verticalAlign: 'top',
+                                            x: $xZoomResetButtonPosition,
+                                            y: $yZoomResetButtonPosition,
+                                        },
+                                        theme: {
+                                            style: {
+                                                fontSize: '10px',
+                                            }, 
+                                        }
+                                    }                    
+                                },                
+                            },
+                            boost: {
+                                    enabled: true,
+                                },
+                            credits: { enabled: false },
+                            exporting: {
+                                enabled: true,
+                                fallbackToExportServer: false,
+                                libURL: '/3rdparty/highstock/lib',
+                                local: true,
+                            },
+                            legend: { 
+                                enabled: {$showLegend},
+                            },
+                            navigator: { 
+                                {$navigatorJS}
+                                },
+                            plotOptions: {
+                                series: {
+                                    stacking: " . json_encode($stackingOption) . ",
+                                    groupPadding:0.1,
+                                    pointPadding:0,
+                                    fillOpacity: 0.1,
+                                    connectNulls: false,
+                                    turboThreshold: 0                    
+                                },
+                            },
+                            rangeSelector: {
+                                {$rangeSelectorJS}
+                                },
+                            scrollbar: {
+                                {$scrollbarConfig}
+                            },
+                            series: [{$seriesJS}],
+                            title: { 
+                                floating: false,
+                                margin: 0,
+                                y: 5,
+                                text: " . json_encode($titleGraph) . ", 
+                                align: '{$titleAlign}',
+                                x: $xTitlePosition,
+                                height: 10,
+                                style: { 
+                                    fontWeight: 'bold', 
+                                    color: '{$titleColor}', 
+                                }
+                            },
+                            time: {
+                                useUTC: false
+                            },
+                            tooltip: {
+                                enabled: $tooltipEnabled,
+                                xDateFormat: '{$xDateFormatJS}',
+                                dateTimeLabelFormats: { 
+                                    {$dateTimeLabelFormats} 
+                                    },
+                                backgroundColor: 'rgb(var(--bg-color))',
+                                useHTML: true,
+                                shadow: true,
+                                style: {
+                                    color: 'rgb(var(--contrast-color))',
+                                },
+                                headerFormat: '{$headerFormatJS}',
+                                split: $splitJS,
+                                shared: $sharedJS,
+                                valueDecimals: 2,
+                            },
+                            xAxis: {
+                                visible: $xAxisVisibleJS,
+                                showLastLabel: true,
+                                min: $xAxisMinJS,
+                                max: $xAxisMaxJS,
+                                {$xAxisJS}
+                                events: {
+                                    afterSetExtremes: function(e) {
+                                        // 'navigator' -> déplacement via la barre du bas
+                                        // 'zoom' -> zoom à la souris
+                                        if (e.trigger === 'navigator' || e.trigger === 'zoom') {
+                                            if (window.isTodayModeEnabled_g{$g}_id{$idEqpmnt} === true) {
+                                                if (e.userMin !== undefined && e.userMax !== undefined) {
+                                                    console.log('L utilisateur a bougé manuellement : on désactive le mode Aujourd hui pour le graphique n° ' + {$g} + ' de l\'équipement ' + '{$nameEqpmnt}' + ' (id: ' + {$idEqpmnt} + ')');
+                                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = false;
+                                                } else {
+                                                    console.log('L utilisateur a annulé le zoom : on réactive le mode Aujourd hui pour le graphique n° ' + {$g} + ' de l\'équipement ' + '{$nameEqpmnt}' + ' (id: ' + {$idEqpmnt} + ')');
+                                                    window.isTodayMode_g{$g}_id{$idEqpmnt} = true;
+                                                    var now = new Date();
+                                                    var startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                                    var endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).getTime();
+                                                    window.chart_g{$g}_id{$idEqpmnt}.xAxis[0].setExtremes(startOfDay, endOfDay, true);
+                                                }
                                             }
                                         }
                                     }
-                                }
+                                },
                             },
-                        },
-                        yAxis: [ 
-                            {$yAxisJS} 
-                            ],
-                    });
-
-                    {$setExtremesJS};
-
-
-                    $(window).trigger('resize'); // Simule un resize pour forcer le reflow
-                });        
-                    setTimeout(() => {
-                    if (is_object(window.chart_g{$g}_id{$idEqpmnt})) {
-                        window.chart_g{$g}_id{$idEqpmnt}.reflow()
-                    }
-                    }, 50);       
-                    {$cmdUpdateJS}
-                    ";
-
-        // Refresh complet UNIQUEMENT quand le graphique redevient visible et si actualisation activée
-        $cmdRefresh = $eqLogic->getCmd('action', 'refresh');
-        if (is_object($cmdRefresh) && $cmdId && $actualisation && $refreshEnabled) {
-            $cmdIdRefresh = $cmdRefresh->getId();
-
-                $chartScripts .= "
-                (function() {
-                    const container = document.getElementById('{$containerId}');
-                    if (!container) return;
-
-                    const COOLDOWN_KEY = 'jeeHistoCooldown_{$idEqpmnt}_g{$g}';
-                    const COOLDOWN_MS = 5000;  // 5 secondes pour bloquer doublon au chargement
-
-                    function isInCooldown() {
-                        const start = sessionStorage.getItem(COOLDOWN_KEY);
-                        if (!start) return false;
-                        return (Date.now() - parseInt(start, 10)) < COOLDOWN_MS;
-                    }
-
-                    function startCooldown() {
-                        sessionStorage.setItem(COOLDOWN_KEY, Date.now().toString());
-                        setTimeout(() => sessionStorage.removeItem(COOLDOWN_KEY), COOLDOWN_MS + 2000);
-                    }
-
-                    // On pose un cooldown IMMÉDIAT au chargement (anti-doublon F5)
-                    startCooldown();
-
-                    let observer = null;
-                    let visibilityListener = null;
-
-                    function doRefresh(source = 'unknown') {
-                        if (isInCooldown() && source !== 'visibilitychange') {
-                            //console.log('[Graph {$g}] Refresh ignoré (cooldown actif) depuis ' + source);
-                            return;
-                        }
-                        //console.log('[Graph {$g}] Refresh déclenché depuis ' + source);
-                        jeedom.cmd.execute({
-                            id: '{$cmdIdRefresh}',
-                            success: function() {
-                                startCooldown();  // prolonge cooldown après refresh réussi
-                            },
-                            error: function(error) {
-                                console.error('[Graph {$g}] Erreur refresh :', error);
-                                startCooldown();
-                            }
+                            yAxis: [ 
+                                {$yAxisJS} 
+                                ],
                         });
-                    }
 
-                    function init() {
-                        if (observer) observer.disconnect();
-                        if (visibilityListener) document.removeEventListener('visibilitychange', visibilityListener);
+                        {$setExtremesJS};
 
-                        // Observer viewport (scroll)
-                        observer = new IntersectionObserver((entries) => {
-                            entries.forEach(entry => {
-                                if (entry.isIntersecting) {
-                                    doRefresh('viewport');
+
+                        $(window).trigger('resize'); // Simule un resize pour forcer le reflow
+                    });        
+                        setTimeout(() => {
+                        if (is_object(window.chart_g{$g}_id{$idEqpmnt})) {
+                            window.chart_g{$g}_id{$idEqpmnt}.reflow()
+                        }
+                        }, 50);       
+                        {$cmdUpdateJS}
+                        ";
+
+            // Refresh complet UNIQUEMENT quand le graphique redevient visible et si actualisation activée
+            $cmdRefresh = $eqLogic->getCmd('action', 'refresh');
+            if (is_object($cmdRefresh) && $cmdId && $actualisation && $refreshEnabled) {
+                $cmdIdRefresh = $cmdRefresh->getId();
+
+                    $chartScripts .= "
+                    (function() {
+                        const container = document.getElementById('{$containerId}');
+                        if (!container) return;
+
+                        const COOLDOWN_KEY = 'jeeHistoCooldown_{$idEqpmnt}_g{$g}';
+                        const COOLDOWN_MS = 5000;  // 5 secondes pour bloquer doublon au chargement
+
+                        function isInCooldown() {
+                            const start = sessionStorage.getItem(COOLDOWN_KEY);
+                            if (!start) return false;
+                            return (Date.now() - parseInt(start, 10)) < COOLDOWN_MS;
+                        }
+
+                        function startCooldown() {
+                            sessionStorage.setItem(COOLDOWN_KEY, Date.now().toString());
+                            setTimeout(() => sessionStorage.removeItem(COOLDOWN_KEY), COOLDOWN_MS + 2000);
+                        }
+
+                        // On pose un cooldown IMMÉDIAT au chargement (anti-doublon F5)
+                        startCooldown();
+
+                        let observer = null;
+                        let visibilityListener = null;
+
+                        function doRefresh(source = 'unknown') {
+                            if (isInCooldown() && source !== 'visibilitychange') {
+                                //console.log('[Graph {$g}] Refresh ignoré (cooldown actif) depuis ' + source);
+                                return;
+                            }
+                            //console.log('[Graph {$g}] Refresh déclenché depuis ' + source);
+                            jeedom.cmd.execute({
+                                id: '{$cmdIdRefresh}',
+                                success: function() {
+                                    startCooldown();  // prolonge cooldown après refresh réussi
+                                },
+                                error: function(error) {
+                                    console.error('[Graph {$g}] Erreur refresh :', error);
+                                    startCooldown();
                                 }
                             });
-                        }, { threshold: 0.1 });
+                        }
 
-                        setTimeout(() => observer.observe(container), 2000);  // délai pour éviter déclenchement initial
+                        function init() {
+                            if (observer) observer.disconnect();
+                            if (visibilityListener) document.removeEventListener('visibilitychange', visibilityListener);
 
-                        // Listener retour onglet (prioritaire)
-                        visibilityListener = () => {
-                            if (document.visibilityState === 'visible') {
-                                setTimeout(() => {
-                                    const rect = container.getBoundingClientRect();
-                                    if (rect.top < window.innerHeight && rect.bottom > 0) {
-                                        doRefresh('visibilitychange');
+                            // Observer viewport (scroll)
+                            observer = new IntersectionObserver((entries) => {
+                                entries.forEach(entry => {
+                                    if (entry.isIntersecting) {
+                                        doRefresh('viewport');
                                     }
-                                }, 1800);  // délai raisonnable
-                            }
-                        };
-                        document.addEventListener('visibilitychange', visibilityListener);
-                    }
+                                });
+                            }, { threshold: 0.1 });
 
-                    init();
+                            setTimeout(() => observer.observe(container), 2000);  // délai pour éviter déclenchement initial
 
-                    // Nettoyage
-                    window.addEventListener('beforeunload', () => {
-                        if (observer) observer.disconnect();
-                        if (visibilityListener) document.removeEventListener('visibilitychange', visibilityListener);
-                    });
-                })();
-                ";
+                            // Listener retour onglet (prioritaire)
+                            visibilityListener = () => {
+                                if (document.visibilityState === 'visible') {
+                                    setTimeout(() => {
+                                        const rect = container.getBoundingClientRect();
+                                        if (rect.top < window.innerHeight && rect.bottom > 0) {
+                                            doRefresh('visibilitychange');
+                                        }
+                                    }, 1800);  // délai raisonnable
+                                }
+                            };
+                            document.addEventListener('visibilitychange', visibilityListener);
+                        }
+
+                        init();
+
+                        // Nettoyage
+                        window.addEventListener('beforeunload', () => {
+                            if (observer) observer.disconnect();
+                            if (visibilityListener) document.removeEventListener('visibilitychange', visibilityListener);
+                        });
+                    })();
+                    ";
+            }
         }
-    }
 
     $syncCrosshairJS = "";
     
