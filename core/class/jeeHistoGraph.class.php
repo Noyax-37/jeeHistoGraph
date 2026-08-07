@@ -342,6 +342,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             $chartOrStock = 'StockChart';
             $inverted = 'false';
             $tooltipEnabled = 'true';
+            $plotOptionsPieJS = '';
 
             // couleur axe X
             $colorAxisXJS = "
@@ -1795,12 +1796,13 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
             if ($finalCurveType === 'pie' || $finalCurveType === 'piePercent') {
                 if ($graphTypePiePercent == true) {
                     $point = "{point.percentage:.1f}% ({point.y} {$unite})";
+                    $pointFormat= "<b>{point.name}</b><br>{point.percentage:.1f} %,";
                 } else {
                     $point = "{point.y} " . $unite;
+                    $pointFormat= "<b>{point.name}</b><br>{point.y} " . $unite;
                 }
                 $seriesJS .= "{
                     allowPointSelect: true,
-                    name: " . json_encode($indexNom . ($unite !== '' ? ' (' . $unite . ')' : '')) . ",
                     showInNavigator: true,
                     //borderColor: " . json_encode($color) . ",
                     colors: " . json_encode($colorPieJS) . ",
@@ -1814,6 +1816,17 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                     yAxis: {$axisIndex},
                     stacking: " . json_encode($stackingOption) . ",
                 },\n";
+                $plotOptionsPieJS = "
+                    pie: {
+                        dataLabels: {
+                            enabled: true,
+                            format: '{$pointFormat}',
+                            style: {
+                                color: 'rgb(var(--contrast-color))',
+                            }
+                        },
+                        showInLegend: true,
+                    }";
             }
 
             
@@ -1958,9 +1971,71 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                             credits: { enabled: false },
                             exporting: {
                                 enabled: true,
+                                filename: 'export', // Définit le nom par défaut pour Highcharts (si besoin ailleurs)
                                 fallbackToExportServer: false,
                                 libURL: '/3rdparty/highstock/lib',
                                 local: true,
+                                menuItemDefinitions: {
+                                    downloadCSV: {
+                                        textKey: 'downloadCSV',
+                                        onclick: function () {
+                                            var csvContent = this.getCSV();
+                                            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                            
+                                            // Création d'un lien invisible pour forcer le nom du fichier
+                                            var a = document.createElement('a');
+                                            a.href = URL.createObjectURL(blob);
+                                            a.download = 'export.csv';
+                                            
+                                            // Sécurité pour Jeedom
+                                            a.setAttribute('data-ajax', 'false');
+                                            a.className = 'noAjax';
+                                            
+                                            // Bloque l'interception par le routeur global de Jeedom
+                                            a.onclick = function(e) { e.stopPropagation(); };
+                                            
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            
+                                            // Nettoyage de la mémoire
+                                            setTimeout(function() { 
+                                                URL.revokeObjectURL(a.href);
+                                                document.body.removeChild(a);
+                                            }, 1000);
+                                        }
+                                    },
+                                    downloadXLS: {
+                                        textKey: 'downloadXLS',
+                                        onclick: function () {
+                                            var xlsContent = '<html xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns=\"http://www.w3.org/TR/REC-html40\">' +
+                                                '<head></head>' +
+                                                '<body>' + this.getTable(true) + '</body></html>';
+                                                
+                                            var blob = new Blob([xlsContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+                                            
+                                            // Création d'un lien invisible pour forcer le nom du fichier
+                                            var a = document.createElement('a');
+                                            a.href = URL.createObjectURL(blob);
+                                            a.download = 'export.xls';
+                                            
+                                            // Sécurité pour Jeedom
+                                            a.setAttribute('data-ajax', 'false');
+                                            a.className = 'noAjax';
+                                            
+                                            // Bloque l'interception par le routeur global de Jeedom
+                                            a.onclick = function(e) { e.stopPropagation(); };
+                                            
+                                            document.body.appendChild(a);
+                                            a.click();
+                                            
+                                            // Nettoyage de la mémoire
+                                            setTimeout(function() { 
+                                                URL.revokeObjectURL(a.href);
+                                                document.body.removeChild(a);
+                                            }, 1000);
+                                        }
+                                    }
+                                }
                             },
                             legend: { 
                                 enabled: {$showLegend},
@@ -1977,6 +2052,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                     connectNulls: false,
                                     turboThreshold: 0                    
                                 },
+                                {$plotOptionsPieJS}
                             },
                             rangeSelector: {
                                 {$rangeSelectorJS}

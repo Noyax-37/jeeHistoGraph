@@ -13,9 +13,14 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+
+# v2.51
+- amélioration de l'affichage des infos pour les graphiques camembert
+- permettre d'exporter les données même en https
+
 # v2.50
-- ajout d'un type de graphique "camembert" qui affiche les dernières valeurs de plusieurs commandes sur un camenbert (en construction, pas encore de gestion des légendes, etc.)
-- ajout d'un type de graphique "camembert en %" idem ci dessus mais qui affiche les valeurs des commandesen pourcentage du total (en construction, pas encore de gestion des légendes, etc.)
+- ajout d'un type de graphique "camembert" qui affiche les dernières valeurs de plusieurs commandes sur un camembert (en construction, pas encore de gestion des légendes, etc.)
+- ajout d'un type de graphique "camembert en %" idem ci dessus mais qui affiche les valeurs des commandes en pourcentage du total (en construction, pas encore de gestion des légendes, etc.)
 
 # v2.41
 - ajout de la possibilité de fixer un seuil par courbe, avant un seul seuil était possible par axe Y avec unité commune.
