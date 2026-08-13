@@ -59,37 +59,98 @@
     .jeeHistoGraph .graphs-container.layout-3grid > div:nth-child(2) { grid-area: 1 / 3 / 1 / 4; }
     .jeeHistoGraph .graphs-container.layout-3grid > div:nth-child(3) { grid-area: 2 / 2 / 2 / 3; }
 
+
+    #graph_au_survol#
+
 </style>
-    <script src="/3rdparty/highstock/modules/timeline.js"></script>
-    <script src="/3rdparty/highstock/modules/exporting.js"></script>
-    <script src="/3rdparty/highstock/modules/export-data.js"></script>
-    <script src="/3rdparty/highstock/modules/accessibility.js"></script>
-    <script src="/3rdparty/highstock/highcharts-more.js"></script>
-    <script src="/3rdparty/highstock/highcharts-3d.js"></script>
     <div class="graphs-container layout-#graphLayout#" data-layout="#graphLayout#" data-nb-graphs="#nbGraphs#" style="flex: 1; min-height: 0; overflow: hidden; display: grid; gap: 6px; padding: 0;">
         #graph_containers#
     </div>
     <div style="flex: 0 0 auto; text-align: right; font-size: 0.8em; padding: 2px 6px;">
-        <span>Powered by jeeHistoGraph v#coreVersion# for #version# #message#</span>
+        <span>#message#</span>
     </div>
 
 <script>
-        try {
 
-            window.charts = window.charts || {};
-            #chart_scripts#
+(function() {
+        // 1. Liste des modules requis
+        var modulesToLoad = [
+            '3rdparty/highstock/modules/timeline.js',
+            '3rdparty/highstock/modules/exporting.js',
+            '3rdparty/highstock/modules/export-data.js',
+            '3rdparty/highstock/modules/accessibility.js',
+            '3rdparty/highstock/highcharts-more.js',
+            '3rdparty/highstock/highcharts-3d.js'
+        ];
 
-        } catch(e) { 
-            console.error('Erreur Highcharts jeeHistoGraph:', e); 
+        // 2. Chargeur de script local robuste et respectueux du cache
+        window.jeeHistoGraphLoadedScripts = window.jeeHistoGraphLoadedScripts || {};
+
+        function customLoadScript(url, callback) {
+            // Si le script est déjà chargé ou en cours, on passe à la suite
+            if (window.jeeHistoGraphLoadedScripts[url] === 'loaded') {
+                callback();
+                return;
+            }
+            
+            // Si une balise script avec cet src existe déjà dans la page (chargée par un autre équipement)
+            if (document.querySelector('script[src="' + url + '"]')) {
+                window.jeeHistoGraphLoadedScripts[url] = 'loaded';
+                callback();
+                return;
+            }
+
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = url;
+            script.async = true;
+
+            script.onload = function() {
+                window.jeeHistoGraphLoadedScripts[url] = 'loaded';
+                callback();
+            };
+
+            script.onerror = function() {
+                console.error('Erreur de chargement du script : ' + url);
+                callback(); // On continue quand même le flux pour ne pas bloquer tout le dashboard
+            };
+
+            document.head.appendChild(script);
         }
 
+        // 3. Initialisation en cascade
+        function loadHighchartsModules(index, callback) {
+            if (index < modulesToLoad.length) {
+                customLoadScript(modulesToLoad[index], function() {
+                    loadHighchartsModules(index + 1, callback);
+                });
+            } else {
+                callback();
+            }
+        }
+
+        // 4. Lancement du rendu du graphique
+        loadHighchartsModules(0, function() {
+            try {
+                window.charts = window.charts || {};
+                
+                // Vos options Highcharts générées par la classe PHP
+                #chart_scripts#
+                
+            } catch(e) { 
+                console.error('Erreur d\'initialisation Highcharts jeeHistoGraph [#uid#]:', e); 
+            }
+        });
+
+
+        
         if ('#refresh_id#' != '') {
-            $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+            $('.eqLogic[data-eqLogic_uid=#uid#]').find('.refresh').on('click', function () {
                 jeedom.cmd.execute({ id: '#refresh_id#'});
             });
         } else {
-            $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove();
+            $('.eqLogic[data-eqLogic_uid=#uid#]').find('.refresh').remove();
         }
-
+})();
     </script>
 </div>

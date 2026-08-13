@@ -199,8 +199,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 			</span>
 		</div>
 
-		<!-- Barre d'onglets principale (Équipement + Graphiques) -->
-		<ul class="nav nav-tabs" role="tablist">
+		<!-- Barre d'onglets principale -->
+		<ul class="nav nav-tabs sortable-graph-tabs" role="tablist">
 			<li role="presentation"><a href="#" class="eqLogicAction" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="eqlogictab" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
 
@@ -208,7 +208,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 			for ($g = 1; $g <= 4; $g++) {
 				$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
 				echo '<li role="presentation" class="graph-tab-li" data-graph="' . $g . '" ' . $display . '>';
-				echo '<a href="#graph' . $g . 'tab" aria-controls="graph' . $g . 'tab" role="tab" data-toggle="tab"><i class="fas fa-chart-line"></i> {{Graphique ' . $g . '}}</a>';
+				echo '<a href="#graph' . $g . 'tab" aria-controls="graph' . $g . 'tab" role="tab" data-toggle="tab"><i class="fas fa-chart-line"></i> {{Graphique ' . $g . '}} <span class="drag-handle-graph" style="cursor:move; margin-left:5px;">☰</span></a>';
 				echo '</li>';
 			}
 			?>
@@ -369,6 +369,65 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 								</div>
 
+								<!-- Design -->
+								</br>
+								<div class="form-group">
+									<div class="col-sm-2"></div>
+									<span><b><i class="fa fa-exclamation-triangle"></i> {{Personnalisation globale}}</b></span>
+
+									<div class="form-group">
+										<label class="col-sm-7 control-label">{{Activer les fonctions plein écran, imprimer et export (csv, xls, ...) : }}
+											<sup>
+												<i class="fas fa-question-circle tooltips" title="{{Active l'affichage du carré à 3 barres de chaque graphique faisant apparaitre le menu d'export}}"></i>
+											</sup>
+										</label>
+										<div class="col-sm-1">
+											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="exporting_enabled" checked>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="col-sm-7 control-label">{{Désactiver l'affichage de 'Powered by jeeHistoGraph v...': }}</label>
+										<div class="col-sm-1">
+											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="powered_by_disabled">
+										</div>
+									</div>
+
+								<div class="form-group">
+									<div class="col-sm-2"></div>
+									<span><b><i class="fa fa-exclamation-triangle"></i> {{Personnalisation uniquement pour design}}</b></span>
+
+									<div class="form-group">
+										<div class="row">
+											<label class="col-sm-8 control-label">{{En cas d'utilisation de l'affichage du graphique "au survol" dans un design: }}
+												<sup>
+													<i class="fas fa-question-circle tooltips" title="{{Permet de fixer les dimensions du graphique au survol. Si un des deux paramètres à 0 alors le graphique prendra la largeur paramétrée dans le design. Utile si vous voulez fixer une petite zone de survol et un graphique plus grand}}"></i>
+												</sup>
+											</label>
+										</div>
+										<div class="row">
+											<label class="col-sm-6 control-label">{{largeur à fixer: }}
+											</label>
+											<div class="col-sm-1">
+												<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="survol_width" placeholder="0"/>
+											</div>
+											<div class="col-sm-1">
+												<label class="col-sm-1 pull-left"> pixel(s) </label>
+											</div>
+										</div>
+										<div class="row">
+											<label class="col-sm-6 control-label">{{hauteur à fixer: }}
+											</label>
+											<div class="col-sm-1">
+												<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="survol_height" placeholder="0"/>
+											</div>
+											<div class="col-sm-1">
+												<label class="col-sm-1 pull-left"> pixel(s) </label>
+											</div>
+										</div>
+									</div>
+								</div>								
+
 								<div class="form-group">
 									<label class="col-sm-3 control-label"></label>
 									<div class="col-sm-6">
@@ -500,6 +559,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 									</div>
 								</div>											
 								<br>
+								<label class="col-lg-12 control-label pull-left">{{Personnalisation  uniquement pour design affichage au survol: }}{{fixer la taille de la zone d'affichage de l'équipement sans modifier la taille d'affichage initiale}}</label>
+								<br>
 								<label class="col-lg-12 control-label pull-left">{{Remettre tous les fonds transparents: }}{{permet de remettre le fond de tous les graphiques transparents en un seul clic}}</label>
 							</div>
 						</div>
@@ -563,6 +624,15 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<option value="left">{{Gauche}}</option>
 												<option value="right">{{Droite}}</option>
 											</select>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="col-sm-7 control-label">{{Couleur du titre}}
+											 <sup><i class="fas fa-question-circle tooltips" title="{{Pour remettre la couleur par défaut saisir 100 100 100}}"></i></sup>
+										</label>
+										<div class="col-sm-2">
+											<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_titre_couleur" value="rgb(100, 100, 100)">
 										</div>
 									</div>
 
@@ -742,7 +812,14 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_zoom_axe_y" checked>
 											</div>
 										</div>
-
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Couleur labels de l'axe des X :}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Pour remettre la couleur par défaut saisir 102 102 102}}"></i></sup>
+											</label>
+											<div class="col-sm-2">
+												<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_label_x_couleur" value="rgb(102, 102, 102)">
+											</div>
+										</div>
 										<div class="form-group">
 											<label class="col-sm-6 control-label">{{Fond transparent : }}</label>
 											<div class="col-sm-1">
@@ -868,6 +945,28 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 
 										</br>
 										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Au chargement du graphique limiter la période affichée à:}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Permet d'afficher une période limitée au chargement du graphique même si la période d'affichage est plus grande.}}"></i></sup>
+											</label>
+											<div class="col-sm-4">
+												<select class="eqLogicAttr form-control periodeSelect" data-l1key="configuration" data-l2key="periode_visu_graph<?= $g ?>">
+													<option value="all" selected>{{Toute la période}}</option>
+													<option value="30sec">{{30 secondes}}</option>
+													<option value="min">{{1 minute}}</option>
+													<option value="5min">{{5 minutes}}</option>
+													<option value="15min">{{15 minutes}}</option>
+													<option value="30min">{{30 minutes}}</option>
+													<option value="1hour">{{1 heure}}</option>
+													<option value="12hour">{{12 heures}}</option>
+													<option value="today">{{Aujourd'hui (de 00h00 à 23h59)}}</option>
+													<option value="1day">{{1 jour}}</option>
+													<option value="7day">{{1 semaine}}</option>
+													<option value="month">{{1 mois}}</option>
+													<option value="year">{{1 an}}</option>
+												</select>
+											</div>
+										</div>
+										<div class="form-group">
 											<label class="col-sm-6 control-label">{{Permettre update des courbes:}}
 												<sup><i class="fas fa-question-circle tooltips" title="{{Si coché, les courbes des graphiques s'actualisent automatiquement lorsque de nouvelles données sont disponibles.}}"></i></sup>
 											</label>
@@ -885,7 +984,14 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_update_append" checked>
 											</div>
 										</div>
-
+										<div class="form-group">
+											<label class="col-sm-6 control-label">{{Permettre le refresh du graphique sur visibilité:}}
+												<sup><i class="fas fa-question-circle tooltips" title="{{Si coché, le graphique se raffraichit lorsqu'il redevient visible, attention, si coché les zomms sont remis à 0. Lorsqu'un graphique n'est pas visible les updates ne se font pas, il faut un refresh soit manuel soit auto}}"></i></sup>
+											</label>
+											<div class="col-sm-5">
+												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_refresh_enabled">
+											</div>
+										</div>
 
 									</div>
 
@@ -907,8 +1013,11 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											</div>
 											<div class="row">
 												<div class="col-lg-12 compareRollingMonth" style="display:none;">
-													<label class="col-sm-7 control-label">{{Mois de début}}</label>
+													<label class="col-sm-7 control-label">{{Mois pivot}}
+														<sup><i class="fas fa-question-circle tooltips" title="{{ce sera le mois qui se situera le plus à droite sur le graphique}}"></i></sup>
+													</label>
 													<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_rolling_start_month">
+														<option value="00">{{Mois en cours}}</option>
 														<option value="01">{{Janvier}}</option>
 														<option value="02">{{Février}}</option>
 														<option value="03">{{Mars}}</option>
@@ -926,6 +1035,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<div class="col-lg-12 compareMonth" style="display:none;">
 													<label class="col-sm-7 control-label">{{Mois à comparer}}</label>
 													<select class="col-sm-3 eqLogicAttr form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_compare_month">
+														<option value="00">{{Mois en cours}}</option>
 														<option value="01">{{Janvier}}</option>
 														<option value="02">{{Février}}</option>
 														<option value="03">{{Mars}}</option>
@@ -986,7 +1096,6 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 											</div>
 									</div>
 
-									<br>
 								</div>
 							</div>
 
@@ -1002,7 +1111,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 														<th class="text-center sticky-left" style="width: 80px;">{{Courbe}}</th> 		<!-- 1 -->
 														<th class="text-center sticky-left-20" style="width: 40px;">{{Aff?}} 		<!-- 3 -->
 															<sup>
-																<i class="fas fa-question-circle tooltips" title="{{Cochez pour afficher la courbe dans le graphique}}"></i>
+																<i class="fas fa-question-circle tooltips" title="{{Décochez pour ne pas afficher la courbe dans le graphique}}"></i>
 															</sup>
 														</th>
 														<th class="text-center sticky-left-30" style="width: 140px;">{{Libellé}} 		<!-- 4 -->
@@ -1010,7 +1119,11 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																<i class="fas fa-question-circle tooltips" title="{{Nom de la courbe dans le graphique, laisser vide pour utiliser le nom de la commande}}"></i>
 															</sup>
 														</th>
-														<th class="text-center" style="width: 400px;">{{Commande}}</th> 		<!-- 5 -->
+														<th class="text-center" style="width: 400px;">{{Commande}} 		<!-- 5 -->
+															<sup>
+																<i class="fas fa-question-circle tooltips" title="{{Même si aff est coché s'il n'y a pas de commande sélectionnée ici la courbe ne sera pas affichée}}"></i>
+															</sup>
+														</th>
 														<th class="text-center" style="width: 400px;"> 							<!-- 6 -->
 															<div>{{Type de courbe par défaut (ci-dessous) ou par courbe}}</div>
 															<div>
@@ -1023,6 +1136,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 																	<option value="bar">{{Barre}}</option>
 																	<option value="scatter">{{Simples points}}</option>
 																	<option value="timeline">{{Ligne de temps (permet les valeurs alphanumériques)}}</option>
+																	<option value="pie">{{Camembert (en construction)}}</option>
+																	<option value="piePercent">{{Camembert (en %) (en construction)}}</option>
 																</select>
 															</div>
 														</th>
@@ -1099,7 +1214,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 													<tr data-courbe-index="<?= $i ?>">
 														<td class="text-center sticky-left">{{Courbe <?= $index ?>}}</td> 		<!-- 1 -->
 														<td class="text-center sticky-left-20">				<!-- 3 -->
-															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="display_graph<?= $g ?>_curve<?= $i ?>">
+															<input type="checkbox" class="eqLogicAttr stairStepCheckbox" data-l1key="configuration" data-l2key="display_graph<?= $g ?>_curve<?= $i ?>"  checked>
 														</td>
 														<td class="sticky-left-30">					<!-- 4 -->
 															<input type="text" class="eqLogicAttr configKey form-control" data-l1key="configuration" data-l2key="graph<?= $g ?>_index<?= $index ?>_nom" placeholder="..."/>
@@ -1129,6 +1244,9 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 															<select class="eqLogicAttr form-control graphRegroup" data-l1key="configuration" data-l2key="graph<?= $g ?>_curve<?= $i ?>_regroup">
 																<option value="aucun">{{Toutes}}</option>
 																<option value="minute">{{par minute}}</option>
+																<option value="min5">{{par 5 minutes}}</option>
+																<option value="min15">{{par 15 minutes}}</option>
+																<option value="min30">{{par 30 minutes}}</option>
 																<option value="hour">{{par heure}}</option>
 																<option value="day">{{par jour}}</option>
 																<option value="week">{{par semaine}}</option>
@@ -1887,6 +2005,94 @@ $(function() {
         }
     });
 });
+
+$(function() {
+    $('.sortable-graph-tabs').sortable({
+        items: 'li.graph-tab-li',
+        handle: '.drag-handle-graph',
+        axis: 'x',
+        opacity: 0.7,
+        update: function(event, ui) {
+            // 0. Retenir quel onglet est actuellement actif à l'écran
+            const $activeTab = $('.sortable-graph-tabs li.active');
+            const activeGraphNum = $activeTab.length ? $activeTab.attr('data-graph') : '1';
+
+            // 1. Récupérer l'ordre issu du glisser-déposer
+            const newOrder = [];
+            $('.sortable-graph-tabs .graph-tab-li').each(function() {
+                newOrder.push(parseInt($(this).attr('data-graph'), 10));
+            });
+
+            // 2. Extraire la configuration courante
+            let configData = {};
+            $('.eqLogicAttr[data-l1key="configuration"]').each(function() {
+                const key = $(this).data('l2key');
+                if (key) {
+                    configData[key] = $(this).is(':checkbox') ? ($(this).is(':checked') ? 1 : 0) : $(this).val();
+                }
+            });
+
+            // 3. Permuter les clés de configuration
+            let newConfigData = jQuery.extend(true, {}, configData);
+
+            newOrder.forEach((oldG, index) => {
+                const newG = index + 1;
+                if (oldG === newG) return;
+
+                const regPrefix  = new RegExp(`^graph${oldG}_`, 'i');
+                const regMiddle  = new RegExp(`_graph${oldG}(_|$)`, 'i');
+                const regTitle   = new RegExp(`^titlegraph${oldG}$`, 'i');
+                const regTooltip = new RegExp(`^tooltip${oldG}$`, 'i');
+
+                Object.keys(configData).forEach(key => {
+                    let newKey = null;
+
+                    if (regPrefix.test(key)) {
+                        newKey = key.replace(new RegExp(`^graph${oldG}_`, 'i'), `graph${newG}_`);
+                    } else if (regMiddle.test(key)) {
+                        newKey = key.replace(new RegExp(`_graph${oldG}(_|$)`, 'i'), `_graph${newG}$1`);
+                    } else if (regTitle.test(key)) {
+                        newKey = key.replace(new RegExp(`${oldG}$`, 'i'), `${newG}`);
+                    } else if (regTooltip.test(key)) {
+                        newKey = `tooltip${newG}`;
+                    }
+
+                    if (newKey) {
+                        newConfigData[newKey] = configData[key];
+                    }
+                });
+            });
+
+            // 4. Réinjecter les valeurs permutées
+            Object.keys(newConfigData).forEach(key => {
+                const $input = $(`.eqLogicAttr[data-l1key="configuration"][data-l2key="${key}"]`);
+                if ($input.length) {
+                    if ($input.is(':checkbox')) {
+                        $input.prop('checked', parseInt(newConfigData[key], 10) === 1).trigger('change');
+                    } else {
+                        $input.val(newConfigData[key]).trigger('change');
+                    }
+                }
+            });
+
+            // 5. Réordonner physiquement les onglets 1, 2, 3, 4 dans la barre
+            const $tabContainer = $('.sortable-graph-tabs');
+            const $lis = $tabContainer.find('.graph-tab-li').detach();
+            $lis.sort((a, b) => parseInt($(a).attr('data-graph'), 10) - parseInt($(b).attr('data-graph'), 10));
+            $tabContainer.append($lis);
+
+            // 6. Simuler un vrai clic sur l'onglet actif initial pour forcer la mise à jour visuelle du contenu
+            const $targetTab = $tabContainer.find(`.graph-tab-li[data-graph="${activeGraphNum}"] a`);
+            if ($targetTab.length) {
+                $targetTab.trigger('click');
+            }
+
+            // Signaler le changement à Jeedom
+            $('.eqLogicAttr').first().trigger('change');
+        }
+    });
+});
+
 </script>
 
 
