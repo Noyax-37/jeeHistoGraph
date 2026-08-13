@@ -175,6 +175,8 @@ public static function config() {
                     ["graph2_crosshair", 0],
                     ["graph3_crosshair", 0],
                     ["graph4_crosshair", 0],
+                    ["exporting_enabled", 1],
+                    ["powered_by_disabled", 0],
                     ["survol_width", '0'],
                     ["survol_height", '0']
                 ];
@@ -312,6 +314,10 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
         $crosshair[3] = 'false';
         $crosshair[4] = 'false';
     }
+    $configExportingEnabled = $eqLogic->getConfiguration("exporting_enabled", 1) ? 'true' : 'false';
+    $eqLogic->getConfiguration("powered_by_disabled", 0) ? '' : $poweredMessage = "Powered by jeeHistoGraph v" . $eqLogic->getConfiguration("version", "inconnue") . " for " . $version . ".";
+
+
 
 
     $graphContainers = '';
@@ -346,6 +352,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
 
             // couleur axe X
             $colorAxisXJS = "
+                        useHTML: true,
                         style: {
                             color: '{$axisXColor}'
                         },";
@@ -1970,7 +1977,7 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
                                 },
                             credits: { enabled: false },
                             exporting: {
-                                enabled: true,
+                                enabled: $configExportingEnabled,
                                 filename: 'export', // Définit le nom par défaut pour Highcharts (si besoin ailleurs)
                                 fallbackToExportServer: false,
                                 libURL: '/3rdparty/highstock/lib',
@@ -2304,9 +2311,9 @@ public function toHtml($_version = 'dashboard', $eqLogic = null) {
     $replace['#graph_containers#'] = $graphContainers;
     $replace['#chart_scripts#'] = $chartScripts;
     if (!empty($message)) {
-        $replace['#message#'] = '. Message: ' . $message;
+        $replace['#message#'] = $poweredMessage . ' Message: ' . $message;
     } else {
-        $replace['#message#'] = '';
+        $replace['#message#'] = $poweredMessage;
     }
     $replace['#coreVersion#'] = config::byKey('version',__CLASS__);
     

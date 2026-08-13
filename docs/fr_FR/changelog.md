@@ -13,6 +13,11 @@ Lien vers:
 
 Si vous souhaitez me payer un café par Paypal: [Offrir un café](https://www.paypal.com/donate/?hosted_button_id=JD64LAEUMUWMU)
 
+# v2.60
+- ajout de la possiblité de modifier l'ordre des graphiques par drag and drop dans la page de configuration du plugin
+- ajout d'une option pour désactiver les fonctions plein écran, imprimer et export (csv, xls, ...) dans le menu de chaque graphique
+- ajout d'une option pour choisir la couleur de l'axe des X
+- ajout d'une option pour désactiver l'affichage de "Powered by ..." en bas des tuiles
 
 # v2.51
 - amélioration de l'affichage des infos pour les graphiques camembert

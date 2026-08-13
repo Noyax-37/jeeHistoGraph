@@ -199,8 +199,8 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 			</span>
 		</div>
 
-		<!-- Barre d'onglets principale (Équipement + Graphiques) -->
-		<ul class="nav nav-tabs" role="tablist">
+		<!-- Barre d'onglets principale -->
+		<ul class="nav nav-tabs sortable-graph-tabs" role="tablist">
 			<li role="presentation"><a href="#" class="eqLogicAction" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="eqlogictab" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
 
@@ -208,7 +208,7 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 			for ($g = 1; $g <= 4; $g++) {
 				$display = ($g <= $nbGraphs) ? '' : 'style="display:none;"';
 				echo '<li role="presentation" class="graph-tab-li" data-graph="' . $g . '" ' . $display . '>';
-				echo '<a href="#graph' . $g . 'tab" aria-controls="graph' . $g . 'tab" role="tab" data-toggle="tab"><i class="fas fa-chart-line"></i> {{Graphique ' . $g . '}}</a>';
+				echo '<a href="#graph' . $g . 'tab" aria-controls="graph' . $g . 'tab" role="tab" data-toggle="tab"><i class="fas fa-chart-line"></i> {{Graphique ' . $g . '}} <span class="drag-handle-graph" style="cursor:move; margin-left:5px;">☰</span></a>';
 				echo '</li>';
 			}
 			?>
@@ -371,6 +371,28 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 
 								<!-- Design -->
 								</br>
+								<div class="form-group">
+									<div class="col-sm-2"></div>
+									<span><b><i class="fa fa-exclamation-triangle"></i> {{Personnalisation globale}}</b></span>
+
+									<div class="form-group">
+										<label class="col-sm-7 control-label">{{Activer les fonctions plein écran, imprimer et export (csv, xls, ...) : }}
+											<sup>
+												<i class="fas fa-question-circle tooltips" title="{{Active l'affichage du carré à 3 barres de chaque graphique faisant apparaitre le menu d'export}}"></i>
+											</sup>
+										</label>
+										<div class="col-sm-1">
+											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="exporting_enabled" checked>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="col-sm-7 control-label">{{Désactiver l'affichage de 'Powered by jeeHistoGraph v...': }}</label>
+										<div class="col-sm-1">
+											<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="powered_by_disabled">
+										</div>
+									</div>
+
 								<div class="form-group">
 									<div class="col-sm-2"></div>
 									<span><b><i class="fa fa-exclamation-triangle"></i> {{Personnalisation uniquement pour design}}</b></span>
@@ -790,16 +812,14 @@ $nbGraphs = max(1, min(4, $nbGraphs));
 												<input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_zoom_axe_y" checked>
 											</div>
 										</div>
-<!--
 										<div class="form-group">
-											<label class="col-sm-7 control-label">{{Couleur labels de l'axe des X}}
+											<label class="col-sm-6 control-label">{{Couleur labels de l'axe des X :}}
 												<sup><i class="fas fa-question-circle tooltips" title="{{Pour remettre la couleur par défaut saisir 102 102 102}}"></i></sup>
 											</label>
 											<div class="col-sm-2">
 												<input type="color" class="eqLogicAttr" data-l1key="configuration" data-l2key="graph<?= $g ?>_label_x_couleur" value="rgb(102, 102, 102)">
 											</div>
 										</div>
--->
 										<div class="form-group">
 											<label class="col-sm-6 control-label">{{Fond transparent : }}</label>
 											<div class="col-sm-1">
@@ -1985,6 +2005,94 @@ $(function() {
         }
     });
 });
+
+$(function() {
+    $('.sortable-graph-tabs').sortable({
+        items: 'li.graph-tab-li',
+        handle: '.drag-handle-graph',
+        axis: 'x',
+        opacity: 0.7,
+        update: function(event, ui) {
+            // 0. Retenir quel onglet est actuellement actif à l'écran
+            const $activeTab = $('.sortable-graph-tabs li.active');
+            const activeGraphNum = $activeTab.length ? $activeTab.attr('data-graph') : '1';
+
+            // 1. Récupérer l'ordre issu du glisser-déposer
+            const newOrder = [];
+            $('.sortable-graph-tabs .graph-tab-li').each(function() {
+                newOrder.push(parseInt($(this).attr('data-graph'), 10));
+            });
+
+            // 2. Extraire la configuration courante
+            let configData = {};
+            $('.eqLogicAttr[data-l1key="configuration"]').each(function() {
+                const key = $(this).data('l2key');
+                if (key) {
+                    configData[key] = $(this).is(':checkbox') ? ($(this).is(':checked') ? 1 : 0) : $(this).val();
+                }
+            });
+
+            // 3. Permuter les clés de configuration
+            let newConfigData = jQuery.extend(true, {}, configData);
+
+            newOrder.forEach((oldG, index) => {
+                const newG = index + 1;
+                if (oldG === newG) return;
+
+                const regPrefix  = new RegExp(`^graph${oldG}_`, 'i');
+                const regMiddle  = new RegExp(`_graph${oldG}(_|$)`, 'i');
+                const regTitle   = new RegExp(`^titlegraph${oldG}$`, 'i');
+                const regTooltip = new RegExp(`^tooltip${oldG}$`, 'i');
+
+                Object.keys(configData).forEach(key => {
+                    let newKey = null;
+
+                    if (regPrefix.test(key)) {
+                        newKey = key.replace(new RegExp(`^graph${oldG}_`, 'i'), `graph${newG}_`);
+                    } else if (regMiddle.test(key)) {
+                        newKey = key.replace(new RegExp(`_graph${oldG}(_|$)`, 'i'), `_graph${newG}$1`);
+                    } else if (regTitle.test(key)) {
+                        newKey = key.replace(new RegExp(`${oldG}$`, 'i'), `${newG}`);
+                    } else if (regTooltip.test(key)) {
+                        newKey = `tooltip${newG}`;
+                    }
+
+                    if (newKey) {
+                        newConfigData[newKey] = configData[key];
+                    }
+                });
+            });
+
+            // 4. Réinjecter les valeurs permutées
+            Object.keys(newConfigData).forEach(key => {
+                const $input = $(`.eqLogicAttr[data-l1key="configuration"][data-l2key="${key}"]`);
+                if ($input.length) {
+                    if ($input.is(':checkbox')) {
+                        $input.prop('checked', parseInt(newConfigData[key], 10) === 1).trigger('change');
+                    } else {
+                        $input.val(newConfigData[key]).trigger('change');
+                    }
+                }
+            });
+
+            // 5. Réordonner physiquement les onglets 1, 2, 3, 4 dans la barre
+            const $tabContainer = $('.sortable-graph-tabs');
+            const $lis = $tabContainer.find('.graph-tab-li').detach();
+            $lis.sort((a, b) => parseInt($(a).attr('data-graph'), 10) - parseInt($(b).attr('data-graph'), 10));
+            $tabContainer.append($lis);
+
+            // 6. Simuler un vrai clic sur l'onglet actif initial pour forcer la mise à jour visuelle du contenu
+            const $targetTab = $tabContainer.find(`.graph-tab-li[data-graph="${activeGraphNum}"] a`);
+            if ($targetTab.length) {
+                $targetTab.trigger('click');
+            }
+
+            // Signaler le changement à Jeedom
+            $('.eqLogicAttr').first().trigger('change');
+        }
+    });
+});
+
 </script>
 
 
